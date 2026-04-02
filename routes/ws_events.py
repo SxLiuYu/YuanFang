@@ -1,141 +1,61 @@
+# routes/ws_events.py
 """
-📡 WebSocket 事件处理
-�?main.py 拆分出来的所�?WebSocket 事件处理器�?
+WebSocket 事件处理 · WS Events
 """
-import base64
-import datetime
+from flask_socketio import emit, disconnect
 import logging
-
-from flask import request as req
-from flask_socketio import join_room, emit
-
-import app_state as state
 
 logger = logging.getLogger(__name__)
 
-# 这些会在 create_app 中注�?
 _socketio = None
-_voice_chat_pipeline = None
+_voice_pipeline = None
 
 
-def init_ws(socketio, voice_pipeline_fn):
-    """注入依赖（在 create_app 中调用）"""
-    global _socketio, _voice_chat_pipeline
+def init_ws(socketio, voice_pipeline):
+    global _socketio, _voice_pipeline
     _socketio = socketio
-    _voice_chat_pipeline = voice_pipeline_fn
+    _voice_pipeline = voice_pipeline
 
 
 def register_handlers(socketio):
-    """注册所�?WebSocket 事件处理�?""
+    """注册所有 WebSocket 事件处理器"""
 
-    @socketio.on('connect')
-    def ws_connect():
-        logger.debug("WebSocket 客户端连�?)
+    @socketio.on("connect")
+    def on_connect():
+        logger.info("Client connected")
+        emit("connected", {"status": "ok"})
 
-    @socketio.on('disconnect')
-    def ws_disconnect():
-        logger.debug("WebSocket 客户端断开")
+    @socketio.on("disconnect")
+    def on_disconnect():
+        logger.info("Client disconnected")
 
-    @socketio.on('register')
-    def ws_register(data):
-        """Termux 节点通过 WebSocket 注册"""
-        node_id = data.get("node_id", "unknown")
-        device = data.get("device", {})
-        logger.info(f"节点注册: {node_id} ({device.get('brand', '?')} {device.get('model', '?')})")
-        socketio.emit("node_online", {
-            "node_id": node_id,
-            "device": device,
-            "timestamp": datetime.datetime.now().isoformat(),
-        })
+    @socketio.on("message")
+    def on_message(data):
+        logger.info(f"WS message: {data}")
+        emit("response", {"echo": data})
 
-    @socketio.on('wake_register')
-    def ws_wake_register(data):
-        """唤醒节点通过 WebSocket 注册"""
-        node_id = data.get("node_id", "unknown")
-        platform = data.get("platform", "unknown")
-        logger.info(f"唤醒节点上线: {node_id} ({platform})")
-        join_room(node_id)
-        socketio.emit("node_online", {
-            "node_id": node_id,
-            "type": "wake_client",
-            "platform": platform,
-            "timestamp": datetime.datetime.now().isoformat(),
-        })
-
-    @socketio.on('voice_wake')
-    def ws_voice_wake(data):
-        """唤醒节点发来语音音频，执�?STT �?LLM �?TTS 并回�?""
-        node_id = data.get("node_id", "unknown")
-        audio_b64 = data.get("audio", "")
-        audio_format = data.get("format", "pcm_s16le")
-        sample_rate = data.get("sample_rate", 16000)
-
-        if not audio_b64:
-            logger.warning(f"[voice_wake] 节点 {node_id} 发送空音频")
-            return
-
-        audio_bytes = base64.b64decode(audio_b64)
-        logger.info(f"[voice_wake] 节点 {node_id} 发�?{len(audio_bytes)} bytes 音频")
-
-        # 如果是裸 PCM，包装为 WAV
-        if audio_format == "pcm_s16le":
-            from routes.chat import _pcm_to_wav
-            wav_bytes = _pcm_to_wav(audio_bytes, sample_rate=sample_rate)
-            filename = "wake_voice.wav"
-            mime_type = "audio/wav"
-        else:
-            wav_bytes = audio_bytes
-            filename = f"wake_voice.{audio_format}"
-            mime_type = "audio/wav" if "wav" in audio_format else "audio/ogg"
-
-        # 执行语音对话管线
-        result = _voice_chat_pipeline(wav_bytes, filename, mime_type, node_id=node_id)
-
-        if result["text"]:
-            logger.info(f"[voice_wake] 识别: {result['text']} �?回复: {result['response'][:50]}...")
-        else:
-            logger.warning("[voice_wake] 识别失败")
-
-        # 通过 WebSocket 回复 TTS 音频给唤醒节�?
-        socketio.emit("voice_response", {
-            "type": "voice_response",
-            "text": result["text"],
-            "response": result.get("voice_response", result["response"]),
-            "audio": result["audio_b64"],
-            "format": result["format"],
-        }, room=node_id)
-
-        # 同时广播�?Dashboard 显示对话
-        socketio.emit("chat_message", {
-            "type": "chat_message",
-            "source": node_id,
-            "user_text": result["text"],
-            "ai_response": result["response"],
-            "timestamp": datetime.datetime.now().isoformat(),
-        })
-
-    @socketio.on('sensor_update')
-    def ws_sensor_update(data):
-        """WebSocket 实时传感器数�?""
-        node_id = data.get("node_id", "unknown")
-        state.update_node(node_id, data)
-        logger.debug(f"[WS] 节点 {node_id} 数据更新")
-
-        # 场景快照（带冷却�?
-        if state.try_snapshot():
+    @socketio.on("voice_input")
+    def on_voice(data):
+        logger.info("Voice input received")
+        # Forward to voice pipeline
+        if _voice_pipeline:
             try:
-                from core.memory_system import get_memory
-                mem = get_memory()
-                scene_type = mem.scene.predict_next()
-                mem.scene.snapshot(scene_type, state.get_nodes_copy(),
-                                   note=f"WS 自动快照（节�?{node_id}�?)
+                result = _voice_pipeline.process(data)
+                emit("voice_result", result)
             except Exception as e:
-                logger.error(f"场景快照失败: {e}")
+                logger.error(f"Voice pipeline error: {e}")
+                emit("voice_result", {"error": str(e)})
 
-        # 广播给其他客户端
-        socketio.emit("sensor_realtime", {
-            "node_id": node_id,
-            "timestamp": data.get("timestamp", ""),
-            "sensors": data.get("sensors", {}),
-        }, include_self=False)
+    @socketio.on("memory_event")
+    def on_memory_event(data):
+        logger.info(f"Memory event: {data}")
+        emit("memory_ack", {"received": True})
 
+    @socketio.on("skill_event")
+    def on_skill_event(data):
+        logger.info(f"Skill event: {data}")
+        emit("skill_ack", {"received": True})
+
+    @socketio.on("ping")
+    def on_ping():
+        emit("pong", {"ts": __import__("time").time()})

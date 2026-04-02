@@ -1,529 +1,184 @@
+# services/kairos_tools.py
 """
-🔧 元芳 KAIROS 工具�?
-参�?Claude Code 泄露源码�?KAIROS 模式的专属工具设计�?
-
-Claude Code KAIROS 专属工具�?
-- SendUserFile: 推送文件给用户（通知/摘要�?
-- PushNotification: 推送通知到用户设�?
-- SubscribePR: 订阅并监�?Pull Request 活动
-
-元芳适配版：
-- send_notification: 通过 WebSocket 推送通知�?Dashboard 和语音节�?
-- log_daily: 追加每日观察/决策到日�?
-- sense_environment: 综合环境感知（HA + 传感�?+ 天气�?
-- report_anomaly: 检测并报告异常模式
-- get_context_summary: 生成完整�?KAIROS 上下文摘要（注入 LLM�?
+KAIROS 工具集 · KAIROS Tools
+环境感知 + 异常检测 + 自动修复
 """
+import logging
+from typing import Optional
+from datetime import datetime
 
-import datetime
-import json
-from pathlib import Path
-
-# 确保日志目录存在
-DAEMON_LOG_DIR = Path(__file__).parent / "daemon_logs"
-DAEMON_LOG_DIR.mkdir(exist_ok=True)
+logger = logging.getLogger(__name__)
 
 
 class KairosTools:
     """
-    KAIROS 专属工具集�?
-    只有在守护进程（daemon_mode）激活时可用�?
+    KAIROS 智能家居工具集
+    功能：
+    1. 环境感知 — 温湿度、空气质量、人体感应
+    2. 异常检测 — 设备异常、能耗异常、环境超标
+    3. 自动修复 — 根据策略自动执行修复动作
     """
 
-    def __init__(self, socketio=None):
-        """
-        Args:
-            socketio: Flask-SocketIO 实例（用于推送通知�?
-        """
-        self._socketio = socketio
-        self._notification_queue = []
-        self._max_queue = 50
-
-    # ─────────── 通知系统 ───────────
-
-    def send_notification(self, title: str, message: str, level: str = "info",
-                          target: str = "all") -> dict:
-        """
-        推送通知到客户端�?
-        
-        对应 Claude Code �?SendUserFile + PushNotification�?
-        
-        Args:
-            title: 通知标题
-            message: 通知内容
-            level: info / warning / success / anomaly
-            target: all / dashboard / voice_nodes
-        """
-        notification = {
-            "type": "kairos_notification",
-            "title": title,
-            "message": message,
-            "level": level,
-            "target": target,
-            "timestamp": datetime.datetime.now().isoformat(),
-        }
-
-        # 加入队列
-        self._notification_queue.append(notification)
-        if len(self._notification_queue) > self._max_queue:
-            self._notification_queue = self._notification_queue[-self._max_queue:]
-
-        # 通过 WebSocket 推�?
-        if self._socketio:
-            if target in ("all", "dashboard"):
-                self._socketio.emit("kairos_notification", notification)
-            if target in ("all", "voice_nodes"):
-                self._socketio.emit("kairos_notification", notification)
-
-        return {"success": True, "notification_id": len(self._notification_queue)}
-
-    def get_notifications(self, n: int = 10) -> list:
-        """获取最近的通知"""
-        return self._notification_queue[-n:]
-
-    # ─────────── 环境感知 ───────────
-
-    def sense_environment(self, nodes_data: dict = None) -> dict:
-        """
-        综合环境感知�?
-        
-        对应 Claude Code �?GitHub Webhook 订阅功能（元芳适配�?HA + 传感器）�?
-        
-        数据来源�?
-        1. Home Assistant 设备状�?
-        2. Termux 传感器数�?
-        3. 时间/场景预测
-        """
-        now = datetime.datetime.now()
-        result = {
-            "timestamp": now.isoformat(),
-            "hour": now.hour,
-            "weekday": now.strftime("%A"),
-            "ha_status": None,
-            "sensor_summary": {},
-            "scene_prediction": None,
-            "anomalies": [],
-        }
-
-        # 1. HA 状�?
-        try:
-            from adapters.homeassistant import get_ha
-            ha = get_ha()
-            if ha.ping():
-                summary = ha.summary()
-                result["ha_status"] = "connected"
-                result["ha_summary"] = summary
-            else:
-                result["ha_status"] = "disconnected"
-                result["anomalies"].append("Home Assistant 连接断开")
-        except Exception as e:
-            result["ha_status"] = f"error: {e}"
-
-        # 2. 传感器数�?
-        if nodes_data:
-            for node_id, data in nodes_data.items():
-                sensors = data.get("sensors", {})
-                if sensors:
-                    result["sensor_summary"][node_id] = {
-                        "battery": sensors.get("battery"),
-                        "temperature": sensors.get("temperature"),
-                        "humidity": sensors.get("humidity"),
-                        "light": sensors.get("light"),
-                        "wifi_ssid": sensors.get("wifi_ssid"),
-                    }
-
-                    # 异常检测：低电�?
-                    battery = sensors.get("battery")
-                    if battery is not None and float(battery) < 20:
-                        result["anomalies"].append(f"节点 {node_id} 电量�? {battery}%")
-
-        # 3. 场景预测
-        try:
-            from core.memory_system import get_memory
-            mem = get_memory()
-            result["scene_prediction"] = mem.scene.predict_next()
-            result["emotion_summary"] = mem.emotional.summary()
-        except Exception:
-            pass
-
-        return result
-
-    # ─────────── 异常自动处理策略 ───────────
-
-    # 异常类型 �?自动修复动作映射
     AUTO_REMEDY_ACTIONS = {
-        "device_offline": {
-            "description": "设备离线",
+        "high_humidity": {
+            "description": "高湿度环境处理",
             "remedies": [
-                {"action": "notify", "message": "设备 {device_name} 已离线，请检查连�?},
-                {"action": "ha_retry", "entity_id": "{entity_id}", "service": "homeassistant.restart"},
+                {"action": "turn_on", "entity_id": "switch.dehumidifier"},
+                {"action": "turn_on", "entity_id": "switch.bedroom_dehumidifier"},
             ],
         },
-        "sensor_anomaly": {
-            "description": "传感器数据异�?,
+        "high_temp": {
+            "description": "高温环境处理",
             "remedies": [
-                {"action": "notify", "message": "传感�?{node_id} 数据异常: {detail}"},
-                {"action": "sensor_poll", "node_id": "{node_id}"},
+                {"action": "turn_on", "entity_id": "switch.air_conditioner"},
+                {"action": "turn_on", "entity_id": "switch.bedroom_ac"},
             ],
         },
-        "battery_low": {
-            "description": "设备低电�?,
+        "motion_detected": {
+            "description": "检测到人体活动",
             "remedies": [
-                {"action": "notify", "message": "节点 {node_id} 电量�?{battery}%，请及时充电"},
+                {"action": "turn_on", "entity_id": "light.entrance"},
             ],
         },
-        "ha_disconnected": {
-            "description": "Home Assistant 连接断开",
+        "energy_anomaly": {
+            "description": "能耗异常检测",
             "remedies": [
-                {"action": "ha_ping", "message": "尝试重新连接 Home Assistant..."},
-                {"action": "notify", "message": "Home Assistant 连接断开，已尝试自动重连"},
-            ],
-        },
-        "emotion_spike": {
-            "description": "情绪波动异常",
-            "remedies": [
-                {"action": "notify", "message": "检测到情绪异常波动，建议关�?},
-                {"action": "personality_calm", "message": "已自动调节人格状态至平静"},
-            ],
-        },
-        "no_data_timeout": {
-            "description": "长时间无数据上报",
-            "remedies": [
-                {"action": "notify", "message": "节点 {node_id} 超过 {timeout} 分钟无数据上�?},
-                {"action": "node_ping", "node_id": "{node_id}"},
+                {"action": "turn_off", "entity_id": "switch.standby_power"},
             ],
         },
     }
 
-    def auto_remedy(self, anomaly_type: str, context: dict = None,
-                    auto_execute: bool = False) -> dict:
+    def __init__(self):
+        self._socketio = None
+        self._ha_executor = None
+        self._anomalies = []
+        self._notifications = []
+        self._recent_env = {}
+
+    def set_socketio(self, socketio):
+        self._socketio = socketio
+
+    def set_ha_executor(self, fn):
+        self._ha_executor = fn
+
+    def sense_environment(self, nodes_data: dict) -> dict:
         """
-        异常自动处理：根据异常类型执行预定义修复动作�?
-        
-        流程�?
-        1. 查找异常对应的修复策�?
-        2. �?remedies 列表依次执行
-        3. notify �?推送通知（始终执行）
-        4. ha_* �?调用 HA 适配器（需 auto_execute=True�?
-        5. sensor_poll / node_ping �?推送轮询指�?
-        6. personality_calm �?调节人格引擎
-        
-        Args:
-            anomaly_type: 异常类型（对�?AUTO_REMEDY_ACTIONS �?key�?
-            context: 异常上下文（用于模板变量替换�?
-            auto_execute: 是否允许自动执行 HA 操作（默认仅通知�?
-            
-        Returns:
-            {"actions_taken": [...], "success": bool, "message": str}
+        感知当前环境状态
+        返回：{temp, humidity, aqi, light, motion}
         """
-        strategy = self.AUTO_REMEDY_ACTIONS.get(anomaly_type)
-        if not strategy:
-            return {"actions_taken": [], "success": False, "message": f"未知异常类型: {anomaly_type}"}
+        sensor_readings = nodes_data.get("sensor_readings", {})
+        device_states = nodes_data.get("device_states", {})
 
-        ctx = context or {}
-        actions_taken = []
-        errors = []
+        env = {}
+        # 温度
+        for sid, sdata in sensor_readings.items():
+            if "temperature" in sid.lower() or "temp" in sid.lower():
+                env["temp"] = sdata.get("value") or sdata.get("state")
+            if "humidity" in sid.lower() or "humid" in sid.lower():
+                env["humidity"] = sdata.get("value") or sdata.get("state")
+            if "aqi" in sid.lower() or "air" in sid.lower():
+                env["aqi"] = sdata.get("value") or sdata.get("state")
 
-        for remedy in strategy["remedies"]:
-            action_type = remedy.get("action", "")
-            action_message = remedy.get("message", "")
-            # 模板变量替换
-            for key, val in ctx.items():
-                action_message = action_message.replace(f"{{{key}}}", str(val))
+        # 设备状态
+        for did, ddata in device_states.items():
+            if "motion" in did.lower() or "presence" in did.lower():
+                if ddata.get("state") == "on":
+                    env["motion"] = True
 
-            try:
-                if action_type == "notify":
-                    # 始终推送通知
-                    self.send_notification(
-                        title=f"⚠️ {strategy['description']}",
-                        message=action_message,
-                        level="warning",
-                    )
-                    actions_taken.append({"type": "notify", "message": action_message})
+        self._recent_env = env
+        return env
 
-                elif action_type == "ha_retry" and auto_execute:
-                    entity_id = remedy.get("entity_id", "")
-                    service = remedy.get("service", "")
-                    for key, val in ctx.items():
-                        entity_id = entity_id.replace(f"{{{key}}}", str(val))
-                    if entity_id and service:
-                        try:
-                            from adapters.homeassistant import get_ha
-                            ha = get_ha()
-                            ha.call_service(service, {"entity_id": entity_id})
-                            actions_taken.append({"type": "ha_retry", "entity_id": entity_id})
-                        except Exception as e:
-                            errors.append(f"HA 操作失败: {e}")
-                    else:
-                        # 无具�?entity，仅记录
-                        actions_taken.append({"type": "ha_retry_skipped", "reason": "no entity_id"})
-
-                elif action_type == "sensor_poll":
-                    node_id = ctx.get("node_id", "")
-                    if node_id:
-                        try:
-                            # 通过 WebSocket 推送轮询请�?
-                            if self._socketio:
-                                self._socketio.emit("sensor_poll_request", {"node_id": node_id})
-                            actions_taken.append({"type": "sensor_poll", "node_id": node_id})
-                        except Exception as e:
-                            errors.append(f"传感器轮询失�? {e}")
-
-                elif action_type == "node_ping":
-                    node_id = ctx.get("node_id", "")
-                    if node_id:
-                        try:
-                            if self._socketio:
-                                self._socketio.emit("node_ping", {"node_id": node_id})
-                            actions_taken.append({"type": "node_ping", "node_id": node_id})
-                        except Exception as e:
-                            errors.append(f"节点 ping 失败: {e}")
-
-                elif action_type == "ha_ping":
-                    try:
-                        from adapters.homeassistant import get_ha
-                        ha = get_ha()
-                        reconnected = ha.ping()
-                        actions_taken.append({"type": "ha_ping", "reconnected": reconnected})
-                    except Exception as e:
-                        errors.append(f"HA ping 失败: {e}")
-
-                elif action_type == "personality_calm" and auto_execute:
-                    try:
-                        from core.personality import get_personality
-                        pe = get_personality()
-                        pe.update_mood("calm", stress_delta=-0.2)
-                        actions_taken.append({"type": "personality_calm", "new_state": pe.get_status().get("emotion", {})})
-                    except Exception as e:
-                        errors.append(f"人格调节失败: {e}")
-
-            except Exception as e:
-                errors.append(f"修复动作 {action_type} 执行异常: {e}")
-
-        return {
-            "actions_taken": actions_taken,
-            "success": len(errors) == 0,
-            "errors": errors,
-            "message": f"已执�?{len(actions_taken)} 项修复动�? + (f"，{len(errors)} 项失�? if errors else ""),
-        }
-
-    def check_and_remedy_environment(self, nodes_data: dict = None,
-                                      auto_execute: bool = False) -> list:
-        """
-        主动环境检�?+ 自动修复。由守护进程 tick 调用�?
-        
-        检查项�?
-        1. HA 连接状�?
-        2. 传感器电�?
-        3. 传感器数据超�?
-        4. 情绪异常
-        
-        Returns:
-            修复结果列表
-        """
+    def check_and_remedy_environment(self, nodes_data: dict = None, auto_execute: bool = False) -> list:
+        """检查环境异常并执行自动修复"""
+        if nodes_data is None:
+            nodes_data = self._recent_env or {}
         env = self.sense_environment(nodes_data)
         results = []
 
-        # 1. HA 连接异常
-        if env.get("ha_status") in ("disconnected", None):
-            if isinstance(env.get("ha_status"), str) and "error" in env["ha_status"]:
-                pass  # 配置错误，不自动处理
-            elif env.get("ha_status") == "disconnected":
-                r = self.auto_remedy("ha_disconnected", auto_execute=auto_execute)
-                r["anomaly"] = "ha_disconnected"
-                results.append(r)
+        # 高湿度检测
+        humidity = env.get("humidity", 0)
+        if isinstance(humidity, (int, float)) and humidity > 70:
+            action = self.AUTO_REMEDY_ACTIONS["high_humidity"]
+            anomaly = self._create_anomaly("high_humidity", f"湿度{humidity}%过高", env)
+            self._anomalies.append(anomaly)
+            if auto_execute:
+                results.extend(self._execute_remedy("high_humidity"))
+            else:
+                results.append({"anomaly": "high_humidity", "remedy": action["description"], "auto_executed": False})
 
-        # 2. 传感器异�?
-        for anomaly_desc in env.get("anomalies", []):
-            ctx = {}
-            anomaly_type = "sensor_anomaly"
+        # 高温检测
+        temp = env.get("temp", 0)
+        if isinstance(temp, (int, float)) and temp > 30:
+            action = self.AUTO_REMEDY_ACTIONS["high_temp"]
+            anomaly = self._create_anomaly("high_temp", f"温度{temp}°C过高", env)
+            self._anomalies.append(anomaly)
+            if auto_execute:
+                results.extend(self._execute_remedy("high_temp"))
+            else:
+                results.append({"anomaly": "high_temp", "remedy": action["description"], "auto_executed": False})
 
-            # 解析异常描述，提取上下文
-            if "电量�? in anomaly_desc or "battery" in anomaly_desc.lower():
-                anomaly_type = "battery_low"
-                import re
-                node_match = re.search(r"节点\s*(\S+)", anomaly_desc)
-                battery_match = re.search(r"(\d+(?:\.\d+)?)%", anomaly_desc)
-                if node_match:
-                    ctx["node_id"] = node_match.group(1)
-                if battery_match:
-                    ctx["battery"] = battery_match.group(1)
+        # 能耗异常（简化版：检测 standby 设备）
+        if auto_execute:
+            try:
+                from adapters.ha_adapter import get_ha_adapter
+                ha = get_ha_adapter()
+                standby_state = ha.get_state("switch.standby_power")
+                if standby_state and standby_state.get("state") == "on":
+                    results.extend(self._execute_remedy("energy_anomaly"))
+            except Exception:
+                pass
 
-            if "连接断开" in anomaly_desc:
-                anomaly_type = "ha_disconnected"
+        # WebSocket 推送
+        if self._socketio and results:
+            try:
+                self._socketio.emit("kairos_event", {"anomalies": results, "timestamp": datetime.now().isoformat()})
+            except Exception:
+                pass
 
-            r = self.auto_remedy(anomaly_type, context=ctx, auto_execute=auto_execute)
-            r["anomaly"] = anomaly_desc
-            results.append(r)
-
-        # 3. 情绪异常
-        emotion_summary = env.get("emotion_summary")
-        if emotion_summary and isinstance(emotion_summary, dict):
-            neg_ratio = emotion_summary.get("negative_ratio", 0)
-            if neg_ratio and float(neg_ratio) > 0.3:
-                r = self.auto_remedy("emotion_spike", context={"detail": f"负面情绪占比 {neg_ratio:.0%}"},
-                                      auto_execute=auto_execute)
-                r["anomaly"] = f"emotion_spike (negative_ratio={neg_ratio})"
-                results.append(r)
+        if len(self._anomalies) > 100:
+            self._anomalies = self._anomalies[-100:]
 
         return results
 
-    # ─────────── 异常报告 ───────────
-
-    def report_anomaly(self, anomaly_type: str, description: str,
-                       severity: str = "low", context: dict = None) -> dict:
-        """
-        检测并报告异常模式�?
-        
-        Args:
-            anomaly_type: 异常类型（device_offline / emotion_shift / sensor_anomaly / pattern_break�?
-            description: 异常描述
-            severity: low / medium / high / critical
-            context: 附加上下�?
-        """
-        report = {
+    def _create_anomaly(self, anomaly_type: str, message: str, env: dict) -> dict:
+        return {
             "type": anomaly_type,
-            "description": description,
-            "severity": severity,
-            "context": context or {},
-            "timestamp": datetime.datetime.now().isoformat(),
+            "message": message,
+            "env": env,
+            "timestamp": datetime.now().isoformat(),
         }
 
-        # 保存到异常日�?
-        anomaly_file = DAEMON_LOG_DIR / "anomalies.json"
-        anomalies = []
-        if anomaly_file.exists():
+    def _execute_remedy(self, remedy_key: str) -> list:
+        if not self._ha_executor:
+            return [{"error": "no HA executor"}]
+        remedy = self.AUTO_REMEDY_ACTIONS.get(remedy_key, {})
+        commands = remedy.get("remedies", [])
+        results = []
+        for cmd in commands:
             try:
-                anomalies = json.loads(anomaly_file.read_text("utf-8"))
-            except Exception:
-                pass
-
-        anomalies.append(report)
-        # 保留最�?100 �?
-        anomalies = anomalies[-100:]
-        anomaly_file.write_text(
-            json.dumps(anomalies, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-
-        # 高严重性自动推送通知
-        if severity in ("high", "critical"):
-            self.send_notification(
-                title=f"⚠️ 异常检�? {anomaly_type}",
-                message=description,
-                level="warning" if severity == "high" else "error",
-            )
-
-        return {"success": True, "anomaly_id": len(anomalies)}
+                r = self._ha_executor([cmd])
+                results.append({**cmd, "success": r[0].get("success", False) if r else False})
+            except Exception as e:
+                results.append({**cmd, "error": str(e)})
+        return results
 
     def get_anomalies(self, n: int = 20, severity: str = None) -> list:
-        """获取异常记录"""
-        anomaly_file = DAEMON_LOG_DIR / "anomalies.json"
-        if anomaly_file.exists():
-            try:
-                anomalies = json.loads(anomaly_file.read_text("utf-8"))
-                if severity:
-                    anomalies = [a for a in anomalies if a.get("severity") == severity]
-                return anomalies[-n:]
-            except Exception:
-                pass
-        return []
+        anomalies = self._anomalies[-n:]
+        if severity:
+            anomalies = [a for a in anomalies if a.get("type") == severity]
+        return anomalies
 
-    # ─────────── 上下文摘要（注入 LLM�?───────────
-
-    def get_context_summary(self) -> str:
-        """
-        生成 KAIROS 上下文摘要，用于注入 LLM system prompt�?
-        
-        �?LLM 了解�?
-        - 当前环境状�?
-        - 最近的异常
-        - 梦境巩固的洞�?
-        - 用户行为模式
-        """
-        lines = ["【KAIROS 守护感知】以下由后台守护进程自动收集�?]
-
-        # 1. 环境状�?
-        try:
-            from core.memory_system import get_memory
-            mem = get_memory()
-            lines.append(f"- 当前场景预测: {mem.scene.predict_next()}")
-            lines.append(f"- 情感摘要: {mem.emotional.summary()}")
-
-            recent_scenes = mem.scene.recent(3)
-            if recent_scenes:
-                lines.append(f"- 最近场�? {recent_scenes[0].get('scene_type', '?')} "
-                             f"({recent_scenes[0].get('timestamp', '?')[:16]})")
-        except Exception:
-            pass
-
-        # 2. 梦境洞察
-        try:
-            from core.yuanfang_dream import DreamSystem
-            dream = DreamSystem()
-            insights = dream.get_consolidated_insights(3)
-            if insights:
-                lines.append("- 最近洞�?")
-                for ins in insights:
-                    lines.append(f"  · {ins.get('insight', '')[:80]}")
-        except Exception:
-            pass
-
-        # 3. 异常
-        anomalies = self.get_anomalies(3)
-        if anomalies:
-            lines.append("- 近期异常:")
-            for a in anomalies:
-                lines.append(f"  · [{a.get('severity', '?')}] {a.get('description', '')[:60]}")
-
-        # 4. 用户活跃�?
-        try:
-            from services.daemon_mode import KairosDaemon
-            # 这里不能获取实例，跳�?
-            pass
-        except Exception:
-            pass
-
-        return "\n".join(lines)
-
-    # ─────────── Brief 模式过滤�?───────────
-
-    @staticmethod
-    def to_brief(text: str, max_chars: int = 200) -> str:
-        """
-        Brief 模式过滤器�?
-        
-        参�?KAIROS �?Brief 输出模式�?
-        "Think of it as the difference between a chatty friend and 
-        a professional assistant who only speaks when they have 
-        something valuable to say."
-        """
-        if len(text) <= max_chars:
-            return text
-
-        # 截取到最近句�?
-        truncated = text[:max_chars]
-        last_end = -1
-        for sep in ['�?, '�?, '�?, '.', '!', '?', '�?, ';']:
-            pos = truncated.rfind(sep)
-            if pos > last_end:
-                last_end = pos
-
-        if last_end > max_chars * 0.5:
-            return truncated[:last_end + 1].strip()
-
-        return truncated.rstrip('，�?') + "…�?
+    def get_notifications(self, n: int = 10) -> list:
+        return self._notifications[-n:]
 
 
-# ─────────── 全局实例 ───────────
-
-_kairos_tools = None
+_tools: Optional[KairosTools] = None
 
 
 def get_kairos_tools(socketio=None) -> KairosTools:
-    """获取全局 KAIROS 工具实例"""
-    global _kairos_tools
-    if _kairos_tools is None:
-        _kairos_tools = KairosTools(socketio=socketio)
-    return _kairos_tools
-
+    global _tools
+    if _tools is None:
+        _tools = KairosTools()
+    if socketio:
+        _tools.set_socketio(socketio)
+    return _tools
