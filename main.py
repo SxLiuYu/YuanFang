@@ -61,13 +61,16 @@ _notification_hub = None
 from routes.openai_compat import api_bp
 from routes.chat import chat_bp, _voice_chat_pipeline, init_chat
 from routes.ha import ha_bp
-from routes.agent import agent_bp, init_agent
 from routes.rules_users import sys_bp, init_sys
+from routes import register_all_blueprints, init_kairos
 
+# 注册分层路由（personality + memory + skills + kairos + hyper + agent）
+register_all_blueprints(app)
+
+# 注册遗留 Blueprint
 app.register_blueprint(api_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(ha_bp)
-app.register_blueprint(agent_bp)
 app.register_blueprint(sys_bp)
 
 from routes.ws_events import register_handlers
@@ -129,6 +132,7 @@ def main():
 
     init_chat(socketio, _kairos_daemon)
     init_agent(_kairos_daemon, _kairos_tools, _rule_engine, _notification_hub)
+    init_kairos(_kairos_daemon, _kairos_tools, _rule_engine)
     init_sys(_rule_engine, _notification_hub)
     from routes.ws_events import init_ws
     init_ws(socketio, _voice_chat_pipeline)

@@ -1,2 +1,2 @@
-"""元芳服务层 — 守护进程 / 通知 / 工具集 / 用户管理"""
-
+# services/__init__.py
+"""Services package - notification hub, security, KAIROS tools, daemon mode"""
