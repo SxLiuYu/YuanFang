@@ -1,0 +1,3524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1">
+<title>元芳 · 智能家居控制台</title>
+<!-- PWA -->
+<link rel="manifest" href="/pwa/manifest.json">
+<meta name="theme-color" content="#0a0e1a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="元芳">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="/pwa/icons/icon-192.svg">
+<meta name="msapplication-TileColor" content="#0a0e1a">
+<meta name="msapplication-TileImage" content="/pwa/icons/icon-192.svg">
+<script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --border: #1e2a3a;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --green: #10b981;
+    --red: #ef4444;
+    --orange: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 顶部导航 */
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .logo-icon {
+    font-size: 1.5rem;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: blink 2s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .nav-time {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-family: monospace;
+  }
+
+  /* 主布局 */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    grid-template-rows: auto 1fr;
+    gap: 16px;
+    padding: 16px 20px;
+    min-height: calc(100vh - 57px);
+  }
+
+  /* 卡片基础 */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0.5;
+  }
+  .card-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* 状态栏 - 顶部 4 格 */
+  .stats-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .stat-icon {
+    font-size: 1.8rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(0, 212, 255, 0.08);
+  }
+  .stat-val { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* 左栏：Agent 状态 */
+  .agent-list { display: flex; flex-direction: column; gap: 10px; }
+  .agent-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .agent-item:hover { border-color: var(--accent); background: rgba(0,212,255,0.04); }
+  .agent-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .agent-info { flex: 1; min-width: 0; }
+  .agent-name { font-size: 0.85rem; font-weight: 600; }
+  .agent-role { font-size: 0.7rem; color: var(--muted); }
+  .agent-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .badge-active { background: rgba(16,185,129,0.15); color: var(--green); }
+  .badge-idle { background: rgba(100,116,139,0.15); color: var(--muted); }
+  .badge-evolving { background: rgba(245,158,11,0.15); color: var(--orange); }
+
+  /* 中栏：对话 */
+  .chat-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-right: 4px;
+    margin-bottom: 14px;
+    max-height: 420px;
+    min-height: 280px;
+  }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .msg { display: flex; gap: 10px; align-items: flex-start; }
+  .msg.user { flex-direction: row-reverse; }
+  .msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    background: var(--border);
+  }
+  .msg.user .msg-avatar { background: rgba(0,212,255,0.15); }
+  .msg-bubble {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+  }
+  .msg.user .msg-bubble {
+    background: rgba(0,212,255,0.08);
+    border-color: rgba(0,212,255,0.2);
+    text-align: right;
+  }
+  .msg-meta { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    transition: border-color 0.2s;
+  }
+  .chat-input-row:focus-within { border-color: var(--accent); }
+  .chat-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 0.9rem;
+    resize: none;
+    height: 36px;
+    line-height: 36px;
+    font-family: inherit;
+  }
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00b8e0; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* 模型选择器 */
+  .model-selector {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .model-chip {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .model-chip.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.08);
+  }
+  .model-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* 右栏：系统信息 */
+  .right-col { display: flex; flex-direction: column; gap: 14px; }
+
+  /* 人格状态 */
+  .personality-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .personality-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    border: 2px solid rgba(0,212,255,0.3);
+    flex-shrink: 0;
+  }
+  .personality-info { flex: 1; }
+  .personality-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+  .personality-mood { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  .personality-mood .mood-tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+  .mood-calm { background: rgba(16,185,129,0.15); color: #10b981; }
+  .mood-excited { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .mood-tired { background: rgba(100,116,139,0.15); color: #64748b; }
+  .mood-focused { background: rgba(0,212,255,0.15); color: #00d4ff; }
+  .mood-curious { background: rgba(124,58,237,0.15); color: #7c3aed; }
+
+  .meter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.75rem;
+  }
+  .meter-label { width: 36px; color: var(--muted); text-align: right; }
+  .meter-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+  .meter-fill.energy { background: linear-gradient(90deg, #10b981, #34d399); }
+  .meter-fill.stress { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+  .meter-val { width: 32px; color: var(--muted); font-size: 0.7rem; }
+
+  .trait-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .trait-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    padding: 3px 0;
+  }
+  .trait-name { color: var(--muted); }
+  .trait-val { color: var(--text); font-weight: 500; }
+
+  /* 记忆统计 */
+  .memory-stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .memory-stat-box {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+  }
+  .memory-stat-val { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+  .memory-stat-label { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+  .emotion-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .emotion-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .emotion-tag span { font-weight: 600; color: var(--text); margin-left: 3px; }
+  .scene-tag {
+    background: rgba(124,58,237,0.1);
+    border-color: rgba(124,58,237,0.2);
+  }
+
+  /* 节点卡片 */
+  .node-list { display: flex; flex-direction: column; gap: 8px; }
+  .node-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+  .node-name { color: var(--text); font-weight: 500; }
+  .node-status { display: flex; align-items: center; gap: 5px; color: var(--green); font-size: 0.72rem; }
+
+  /* 进化记录 */
+  .evo-log {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .evo-log::-webkit-scrollbar { width: 3px; }
+  .evo-log::-webkit-scrollbar-thumb { background: var(--border); }
+  .evo-item {
+    font-size: 0.75rem;
+    color: var(--muted);
+    padding: 6px 8px;
+    border-left: 2px solid var(--accent2);
+    background: rgba(124,58,237,0.04);
+    border-radius: 0 6px 6px 0;
+  }
+  .evo-item strong { color: var(--accent); }
+
+  /* API 状态 */
+  .api-list { display: flex; flex-direction: column; gap: 6px; }
+  .api-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+  }
+  .api-name { color: var(--muted); }
+  .api-status-ok { color: var(--green); display: flex; align-items: center; gap: 4px; }
+  .api-status-err { color: var(--red); display: flex; align-items: center; gap: 4px; }
+  .api-status-unk { color: var(--muted); display: flex; align-items: center; gap: 4px; }
+
+  /* 加载动画 */
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: fit-content;
+  }
+  .typing-dots span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  /* 响应式 */
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 240px 1fr; }
+    .right-col { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+    .right-col .card { flex: 1; min-width: 220px; }
+  }
+  @media (max-width: 720px) {
+    .layout { grid-template-columns: 1fr; padding: 10px 12px; gap: 10px; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-card { padding: 10px 12px; }
+    .stat-icon { width: 36px; height: 36px; font-size: 1.4rem; }
+    .stat-val { font-size: 1.2rem; }
+    .navbar { padding: 10px 16px; }
+    .logo { font-size: 1rem; }
+    .logo-icon { font-size: 1.2rem; }
+    .card { padding: 14px; border-radius: 10px; }
+    .chat-messages { max-height: 55vh; min-height: 200px; }
+    .msg-bubble { max-width: 85%; font-size: 0.84rem; }
+    .ha-device-grid { grid-template-columns: 1fr; }
+    .ha-scene-grid { grid-template-columns: repeat(2, 1fr); }
+    .ha-temp-control { flex-wrap: wrap; }
+    .ha-temp-val { font-size: 1.2rem; min-width: 48px; }
+    .right-col { flex-direction: column; }
+    .right-col .card { flex: none; min-width: 0; }
+    .trait-grid { grid-template-columns: 1fr; }
+    .memory-stats { gap: 6px; }
+    .model-selector { gap: 4px; }
+    .model-chip { padding: 3px 8px; font-size: 0.68rem; }
+    /* 移动端隐藏左栏，提供抽屉按钮 */
+    .left-col-drawer { display: none; }
+    .left-col-mobile-hidden { display: none; }
+    .mobile-nav-btn {
+      display: flex;
+      padding: 8px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.8rem;
+      cursor: pointer;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .mobile-nav-btn:hover { border-color: var(--accent); }
+  }
+  @media (min-width: 721px) {
+    .left-col-mobile-hidden { display: flex; }
+    .mobile-nav-btn { display: none; }
+    .left-col-drawer { display: none !important; }
+  }
+  /* 抽屉样式 */
+  .left-col-drawer {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 280px;
+    background: var(--surface);
+    z-index: 200;
+    overflow-y: auto;
+    padding: 16px;
+    border-right: 1px solid var(--border);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .left-col-drawer.open { transform: translateX(0); }
+  .drawer-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 199;
+    display: none;
+  }
+  .drawer-overlay.open { display: block; }
+
+  /* 分隔线 */
+  hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+  /* 标签页切换 */
+  .tab-bar {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 7px 0;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--muted);
+  }
+  .tab-btn.active {
+    background: rgba(0,212,255,0.1);
+    color: var(--accent);
+  }
+  .tab-btn:hover { color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: flex; flex-direction: column; flex: 1; }
+
+  /* 语音按钮 */
+  .voice-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    background: rgba(0,212,255,0.08);
+    color: var(--muted);
+  }
+  .voice-btn:hover { background: rgba(0,212,255,0.15); color: var(--accent); }
+  .voice-btn.recording {
+    background: rgba(239,68,68,0.15);
+    color: var(--red);
+    animation: pulse 1s infinite;
+  }
+
+  /* HA 设备面板 */
+  .ha-panel { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex: 1; max-height: 480px; padding-right: 4px; }
+  .ha-panel::-webkit-scrollbar { width: 4px; }
+  .ha-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .ha-section-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ha-device-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .ha-device {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .ha-device:hover { border-color: var(--accent); }
+  .ha-device.on { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.05); }
+  .ha-device-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .ha-device-icon { font-size: 1.1rem; }
+  .ha-device-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+  .ha-device-state { font-size: 0.72rem; color: var(--muted); }
+  .ha-toggle {
+    width: 36px; height: 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    background: var(--border);
+  }
+  .ha-toggle.on { background: var(--green); }
+  .ha-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: all 0.2s;
+  }
+  .ha-toggle.on::after { left: 18px; }
+  .ha-light-slider {
+    width: 100%;
+    margin-top: 6px;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+  }
+  .ha-light-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .ha-scene-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .ha-scene-btn {
+    padding: 10px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .ha-scene-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.05); }
+  .ha-scene-btn .scene-icon { font-size: 1.2rem; display: block; margin-bottom: 4px; }
+  .ha-temp-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+  }
+  .ha-temp-val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 60px;
+    text-align: center;
+  }
+  .ha-temp-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .ha-temp-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ha-connect-status {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .ha-connect-status.error { color: var(--orange); }
+  .ha-mode-chips {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .ha-mode-chip {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ha-mode-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.08); }
+
+  /* 空节点提示 */
+  .empty-tip {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    padding: 20px 0;
+  }
+
+  /* ===== KAIROS 卡片样式 ===== */
+  .kairos-card::before {
+    background: linear-gradient(90deg, #7c3aed, #06b6d4);
+  }
+  .kairos-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .kairos-status-indicator {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(100,116,139,0.15);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .kairos-status-indicator.active {
+    background: rgba(124,58,237,0.2);
+  }
+  .kairos-pulse {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: all 0.4s;
+  }
+  .kairos-status-indicator.active .kairos-pulse {
+    background: #7c3aed;
+    box-shadow: 0 0 10px rgba(124,58,237,0.5);
+    animation: kairos-glow 2s infinite;
+  }
+  @keyframes kairos-glow {
+    0%, 100% { box-shadow: 0 0 6px rgba(124,58,237,0.4); }
+    50% { box-shadow: 0 0 14px rgba(124,58,237,0.7); }
+  }
+  .kairos-header-info { flex: 1; }
+  .kairos-status-text { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+  .kairos-uptime { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+
+  .kairos-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .kairos-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 8px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .kairos-metric-label { font-size: 0.7rem; color: var(--muted); }
+  .kairos-metric-val { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+
+  /* 梦境系统 */
+  .dream-stats {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .dream-stat-box {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: rgba(124,58,237,0.06);
+    border: 1px solid rgba(124,58,237,0.15);
+  }
+  .dream-stat-val { font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+  .dream-stat-label { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+  .dream-insights-list {
+    max-height: 160px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .dream-insights-list::-webkit-scrollbar { width: 3px; }
+  .dream-insights-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .dream-insight-item {
+    font-size: 0.72rem;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(124,58,237,0.04);
+    border-left: 2px solid var(--accent2);
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .dream-insight-item .dream-time {
+    font-size: 0.62rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* 异常监控 */
+  .anomaly-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .anomaly-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .anomaly-badge.warning {
+    background: rgba(245,158,11,0.15);
+    color: var(--orange);
+  }
+  .anomaly-badge.critical {
+    background: rgba(239,68,68,0.15);
+    color: var(--red);
+  }
+  .anomaly-list, .notification-list {
+    max-height: 120px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .anomaly-list::-webkit-scrollbar, .notification-list::-webkit-scrollbar { width: 3px; }
+  .anomaly-list::-webkit-scrollbar-thumb, .notification-list::-webkit-scrollbar-thumb { background: var(--border); }
+  .anomaly-item, .notification-item {
+    font-size: 0.72rem;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+    border-left: 2px solid var(--border);
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .anomaly-item.warning { border-left-color: var(--orange); }
+  .anomaly-item.critical { border-left-color: var(--red); }
+  .notification-item { border-left-color: var(--accent2); }
+  .anomaly-item .anomaly-time, .notification-item .notif-time {
+    font-size: 0.6rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* 技能面板 (M9) */
+  .skill-panel-header { margin-bottom: 12px; }
+  .skill-summary-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .skill-summary-box {
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: rgba(0,212,255,0.05);
+    border: 1px solid var(--border);
+  }
+  .skill-summary-val { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+  .skill-summary-label { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+  .skill-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+    max-height: 400px;
+    padding-right: 4px;
+  }
+  .skill-list::-webkit-scrollbar { width: 4px; }
+  .skill-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .skill-item {
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .skill-item:hover { border-color: rgba(0,212,255,0.3); }
+  .skill-item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .skill-item-name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+  .skill-item-badges { display: flex; gap: 4px; }
+  .skill-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .skill-badge-auto { background: rgba(16,185,129,0.15); color: #10b981; }
+  .skill-badge-manual { background: rgba(124,58,237,0.15); color: #7c3aed; }
+  .skill-badge-cat {
+    background: rgba(0,212,255,0.1);
+    color: var(--accent);
+    font-size: 0.58rem;
+  }
+  .skill-item-desc { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }
+  .skill-item-triggers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: 6px;
+  }
+  .skill-trigger-tag {
+    font-size: 0.65rem;
+    padding: 1px 7px;
+    border-radius: 8px;
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.2);
+    color: var(--orange);
+  }
+  .skill-item-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .skill-item-stats span { color: var(--text); font-weight: 500; }
+  .skill-item-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .skill-delete-btn {
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(239,68,68,0.3);
+    background: rgba(239,68,68,0.08);
+    color: var(--red);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .skill-delete-btn:hover { background: rgba(239,68,68,0.2); }
+  .skill-quality-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .skill-quality-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s;
+  }
+  /* 技能弹窗 */
+  .skill-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .skill-modal-overlay.open { display: flex; }
+  .skill-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    width: 360px;
+    max-width: 90vw;
+  }
+  .skill-form-group { margin-bottom: 10px; }
+  .skill-form-group label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .skill-input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    font-size: 0.82rem;
+    outline: none;
+  }
+  .skill-input:focus { border-color: var(--accent); }
+
+  /* 响应式 KAIROS */
+  @media (max-width: 720px) {
+    .kairos-metrics { grid-template-columns: 1fr; }
+    .dream-stats { flex-direction: column; gap: 4px; }
+    .kairos-card .dream-insights-list,
+    .kairos-card .anomaly-list,
+    .kairos-card .notification-list { max-height: 100px; }
+    .skill-summary-row { grid-template-columns: repeat(2, 1fr); }
+    .skill-list { max-height: 55vh; }
+  }
+
+  /* ===== M11: PWA 移动端底部导航 ===== */
+  .bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: rgba(17, 24, 39, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    z-index: 150;
+    padding: 0 env(safe-area-inset-bottom, 0px);
+  }
+  .bottom-nav-inner {
+    display: flex;
+    height: 100%;
+    align-items: stretch;
+    justify-content: space-around;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.6rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+    position: relative;
+  }
+  .bottom-nav-item .nav-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: transform 0.2s;
+  }
+  .bottom-nav-item.active {
+    color: var(--accent);
+  }
+  .bottom-nav-item.active .nav-icon {
+    transform: scale(1.1);
+  }
+  .bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 25%; right: 25%;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 0 0 2px 2px;
+  }
+  .bottom-nav-item .nav-badge {
+    position: absolute;
+    top: 4px; right: 15%;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background: var(--red);
+    color: #fff;
+    font-size: 0.55rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s;
+  }
+  .bottom-nav-item .nav-badge.show {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* M11: 安装提示横幅 */
+  .install-banner {
+    display: none;
+    position: fixed;
+    bottom: 70px; left: 12px; right: 12px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(124,58,237,0.12));
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 14px;
+    padding: 14px 16px;
+    z-index: 160;
+    backdrop-filter: blur(12px);
+    animation: slideUp 0.4s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .install-banner .install-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+  .install-banner .install-text .install-icon {
+    font-size: 1.5rem;
+  }
+  .install-banner .install-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    justify-content: flex-end;
+  }
+  .install-banner .install-actions button {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
+  .install-banner .btn-install {
+    background: var(--accent);
+    color: #000;
+  }
+  .install-banner .btn-dismiss {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  /* M11: 更精细的移动端适配 */
+  @media (max-width: 720px) {
+    .bottom-nav { display: block; }
+    /* 底部导航高度补偿 */
+    body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+    .layout { padding-bottom: 8px; }
+    /* 隐藏中栏 tab-bar（用底部导航替代） */
+    .tab-bar { display: none !important; }
+    /* 让 tab-content 全高 */
+    .chat-wrap { min-height: calc(100vh - 180px); }
+    .chat-messages { max-height: calc(100vh - 340px); min-height: 180px; }
+    /* 右栏在移动端也隐藏，改为底部导航的子页面 */
+    .right-col { display: none; }
+    /* 安装横幅显示 */
+    .install-banner { display: flex; flex-direction: column; }
+    /* 安装横幅关闭后隐藏 */
+    .install-banner.dismissed { display: none !important; }
+    /* 安全区域适配 */
+    .navbar { padding-top: env(safe-area-inset-top, 10px); }
+    /* 防止 iOS 弹性滚动 */
+    .layout { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    /* 输入框聚焦时避免键盘遮挡 */
+    .chat-input-row { position: sticky; bottom: 60px; z-index: 10; background: var(--surface); }
+    /* 更大的触控目标 */
+    .agent-item { padding: 12px; min-height: 48px; }
+    .ha-device { padding: 12px; }
+    .ha-scene-btn { padding: 12px 8px; }
+    .ha-temp-btn { width: 36px; height: 36px; }
+    .voice-btn { width: 42px; height: 42px; }
+    .ha-toggle { width: 44px; height: 24px; }
+    .ha-toggle::after { width: 20px; height: 20px; }
+    .ha-toggle.on::after { left: 22px; }
+    .btn { min-height: 36px; padding: 8px 14px; }
+    .skill-delete-btn { min-height: 32px; padding: 6px 12px; }
+    /* 模态框全屏适配 */
+    .skill-modal {
+      width: 100% !important;
+      max-width: 100vw !important;
+      max-height: 85vh;
+      overflow-y: auto;
+      border-radius: 14px 14px 0 0;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+    }
+    .skill-modal-overlay.open { align-items: flex-end; }
+    /* 状态行水平滚动 */
+    .stats-row {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .stats-row::-webkit-scrollbar { display: none; }
+    .stat-card { min-width: 100px; flex-shrink: 0; }
+    /* 抽屉宽度适配 */
+    .left-col-drawer { width: 85vw; max-width: 320px; }
+  }
+
+  @media (min-width: 721px) {
+    .bottom-nav { display: none !important; }
+    .install-banner { display: none !important; }
+  }
+
+  /* M11: 可访问性 - focus-visible */
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* M11: 平滑滚动 */
+  html { scroll-behavior: smooth; }
+
+  /* M11: 暗色滚动条 */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav class="navbar">
+  <div class="logo">
+    <span class="logo-icon">🤖</span>
+    元芳 · YuanFang
+    <div class="status-dot" id="mainDot"></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <span id="healthStatus" style="font-size:0.78rem;color:var(--muted)">连接中…</span>
+    <span class="nav-time" id="clock">--:--:--</span>
+  </div>
+</nav>
+
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="left-col-drawer" id="leftDrawer">
+    <div class="card" style="border:none;padding:0;background:transparent;">
+    <div class="card-title">🤖 Agent 矩阵</div>
+    <div class="agent-list">
+      <div class="agent-item" onclick="runAgent('commander');closeDrawer()">
+        <div class="agent-avatar" style="background:rgba(0,212,255,0.12)">🎖️</div>
+        <div class="agent-info"><div class="agent-name">指挥官</div><div class="agent-role">Commander · 任务拆解</div></div>
+        <div class="agent-badge badge-active">待命</div>
+      </div>
+      <div class="agent-item" onclick="runAgent('researcher');closeDrawer()">
+        <div class="agent-avatar" style="background:rgba(124,58,237,0.12)">🔬</div>
+        <div class="agent-info"><div class="agent-name">研究员</div><div class="agent-role">Researcher · 信息分析</div></div>
+        <div class="agent-badge badge-active">待命</div>
+      </div>
+      <div class="agent-item" onclick="runAgent('executor');closeDrawer()">
+        <div class="agent-avatar" style="background:rgba(245,158,11,0.12)">⚡</div>
+        <div class="agent-info"><div class="agent-name">执行者</div><div class="agent-role">Executor · 指令执行</div></div>
+        <div class="agent-badge badge-active">待命</div>
+      </div>
+      <div class="agent-item" onclick="runAgent('sensor_agent');closeDrawer()">
+        <div class="agent-avatar" style="background:rgba(16,185,129,0.12)">📡</div>
+        <div class="agent-info"><div class="agent-name">哨兵</div><div class="agent-role">Sensor · 环境感知</div></div>
+        <div class="agent-badge badge-idle" id="sensorBadgeMobile">待命</div>
+      </div>
+      <div class="agent-item" onclick="showHyperStatus();closeDrawer()">
+        <div class="agent-avatar" style="background:rgba(239,68,68,0.12)">🧬</div>
+        <div class="agent-info"><div class="agent-name">进化官</div><div class="agent-role">HyperAgent · 自进化</div></div>
+        <div class="agent-badge badge-evolving" id="hyperBadgeMobile">进化中</div>
+      </div>
+    </div>
+    <hr>
+    <div class="card-title" style="margin-top:4px">📱 手机节点</div>
+    <div class="node-list" id="nodeListMobile">
+      <div class="empty-tip">暂无节点在线</div>
+    </div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:0.75rem" onclick="refreshNodes();closeDrawer()">刷新节点</button>
+    </div>
+</div>
+
+<div class="layout">
+
+  <!-- 顶部状态行 -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">🧠</div>
+      <div>
+        <div class="stat-val" id="statNodes">-</div>
+        <div class="stat-label">在线节点</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔄</div>
+      <div>
+        <div class="stat-val" id="statEvo">-</div>
+        <div class="stat-label">进化次数</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💬</div>
+      <div>
+        <div class="stat-val" id="statMsgs">0</div>
+        <div class="stat-label">本次对话</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🏠</div>
+      <div>
+        <div class="stat-val" id="statPresence" style="font-size:1rem;color:var(--green)">检测中</div>
+        <div class="stat-label">在家状态</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💡</div>
+      <div>
+        <div class="stat-val" id="statHA" style="font-size:1rem;color:var(--muted)">-</div>
+        <div class="stat-label">HA 设备</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🌙</div>
+      <div>
+        <div class="stat-val" id="statKairos" style="font-size:1rem;color:var(--muted)">-</div>
+        <div class="stat-label">KAIROS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 左栏：Agent -->
+  <div class="card left-col-mobile-hidden">
+    <div class="card-title">🤖 Agent 矩阵</div>
+    <div class="agent-list">
+      <div class="agent-item" onclick="runAgent('commander')">
+        <div class="agent-avatar" style="background:rgba(0,212,255,0.12)">🎖️</div>
+        <div class="agent-info">
+          <div class="agent-name">指挥官</div>
+          <div class="agent-role">Commander · 任务拆解</div>
+        </div>
+        <div class="agent-badge badge-active">待命</div>
+      </div>
+      <div class="agent-item" onclick="runAgent('researcher')">
+        <div class="agent-avatar" style="background:rgba(124,58,237,0.12)">🔬</div>
+        <div class="agent-info">
+          <div class="agent-name">研究员</div>
+          <div class="agent-role">Researcher · 信息分析</div>
+        </div>
+        <div class="agent-badge badge-active">待命</div>
+      </div>
+      <div class="agent-item" onclick="runAgent('executor')">
+        <div class="agent-avatar" style="background:rgba(245,158,11,0.12)">⚡</div>
+        <div class="agent-info">
+          <div class="agent-name">执行者</div>
+          <div class="agent-role">Executor · 指令执行</div>
+        </div>
+        <div class="agent-badge badge-active">待命</div>
+      </div>
+      <div class="agent-item" onclick="runAgent('sensor_agent')">
+        <div class="agent-avatar" style="background:rgba(16,185,129,0.12)">📡</div>
+        <div class="agent-info">
+          <div class="agent-name">哨兵</div>
+          <div class="agent-role">Sensor · 环境感知</div>
+        </div>
+        <div class="agent-badge badge-idle" id="sensorBadge">待命</div>
+      </div>
+      <div class="agent-item" onclick="showHyperStatus()">
+        <div class="agent-avatar" style="background:rgba(239,68,68,0.12)">🧬</div>
+        <div class="agent-info">
+          <div class="agent-name">进化官</div>
+          <div class="agent-role">HyperAgent · 自进化</div>
+        </div>
+        <div class="agent-badge badge-evolving" id="hyperBadge">进化中</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- 手机节点 -->
+    <div class="card-title" style="margin-top:4px">📱 手机节点</div>
+    <div class="node-list" id="nodeList">
+      <div class="empty-tip">暂无节点在线<br>请在 Termux 运行 sensor_client</div>
+    </div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:0.75rem" onclick="refreshNodes()">刷新节点</button>
+  </div>
+
+  <!-- 中栏：对话/控制 -->
+  <div class="card chat-wrap">
+    <button class="mobile-nav-btn" onclick="openDrawer()">☰ 菜单</button>
+    <!-- 标签切换 -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('chat', this)">💬 对话</button>
+      <button class="tab-btn" onclick="switchTab('devices', this)">🏠 设备控制</button>
+      <button class="tab-btn" onclick="switchTab('skills', this)">🛠️ 技能</button>
+      <button class="tab-btn" onclick="switchTab('rules', this)">⚙️ 规则</button>
+      <button class="tab-btn" onclick="switchTab('users', this)">👤 用户</button>
+      <button class="tab-btn" onclick="switchTab('notify', this)">🔔 通知</button>
+    </div>
+
+    <!-- 对话面板 -->
+    <div class="tab-content active" id="tabChat">
+      <!-- 模型切换 -->
+      <div class="model-selector">
+        <button class="model-chip active" data-model="crew" onclick="selectModel(this,'crew')">多Agent协作</button>
+        <button class="model-chip" data-model="deepseek" onclick="selectModel(this,'deepseek')">DeepSeek V3</button>
+        <button class="model-chip" data-model="kimi" onclick="selectModel(this,'kimi')">Kimi K2</button>
+        <button class="model-chip" data-model="hyper" onclick="selectModel(this,'hyper')">HyperAgent</button>
+      </div>
+
+      <!-- 消息区 -->
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg">
+          <div class="msg-avatar">🤖</div>
+          <div>
+            <div class="msg-bubble">你好！我是元芳，你的 AI 智能家居助手。<br>有什么需要帮忙的？</div>
+            <div class="msg-meta">元芳 · 系统启动</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 输入区 -->
+      <div class="chat-input-row">
+        <button class="voice-btn" id="voiceBtn" title="语音输入" onclick="toggleVoice()">🎤</button>
+        <textarea class="chat-input" id="chatInput" placeholder="输入指令，回车发送…" rows="1"
+          onkeydown="handleKey(event)"></textarea>
+        <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">发送 ↑</button>
+      </div>
+    </div>
+
+    <!-- 设备控制面板 -->
+    <div class="tab-content" id="tabDevices">
+      <div id="haConnectStatus" class="ha-connect-status">正在连接 Home Assistant…</div>
+      <div class="ha-panel" id="haPanel" style="display:none">
+        <!-- 灯光 -->
+        <div id="haLightsSection" style="display:none">
+          <div class="ha-section-title">💡 灯光</div>
+          <div class="ha-device-grid" id="haLightsGrid"></div>
+        </div>
+        <!-- 空调 -->
+        <div id="haClimateSection" style="display:none">
+          <div class="ha-section-title">❄️ 空调 / 温控</div>
+          <div id="haClimateGrid"></div>
+        </div>
+        <!-- 场景 -->
+        <div id="haScenesSection" style="display:none">
+          <div class="ha-section-title">🎬 场景模式</div>
+          <div class="ha-scene-grid" id="haScenesGrid"></div>
+        </div>
+        <!-- 其他开关 -->
+        <div id="haSwitchSection" style="display:none">
+          <div class="ha-section-title">🔌 开关</div>
+          <div class="ha-device-grid" id="haSwitchGrid"></div>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:0.72rem" onclick="loadHADevices()">🔄 刷新设备</button>
+      </div>
+    </div>
+
+    <!-- 技能面板 (M9) -->
+    <div class="tab-content" id="tabSkills">
+      <div class="skill-panel-header">
+        <div class="skill-summary-row">
+          <div class="skill-summary-box">
+            <div class="skill-summary-val" id="skillTotal">-</div>
+            <div class="skill-summary-label">技能总数</div>
+          </div>
+          <div class="skill-summary-box">
+            <div class="skill-summary-val" id="skillLearned">-</div>
+            <div class="skill-summary-label">自动学习</div>
+          </div>
+          <div class="skill-summary-box">
+            <div class="skill-summary-val" id="skillTotalUses">-</div>
+            <div class="skill-summary-label">总使用次数</div>
+          </div>
+          <div class="skill-summary-box">
+            <div class="skill-summary-val" id="skillAvgScore">-</div>
+            <div class="skill-summary-label">平均质量</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="loadSkills()">🔄 刷新技能</button>
+          <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="abstractSkills()">🧠 抽象新技能</button>
+          <button class="btn btn-primary" style="flex:1;font-size:0.7rem" onclick="showAddSkillModal()">+ 注册技能</button>
+        </div>
+      </div>
+      <div class="skill-list" id="skillList">
+        <div class="empty-tip">加载技能列表…</div>
+      </div>
+      <!-- 注册技能弹窗 -->
+      <div class="skill-modal-overlay" id="skillModal" onclick="if(event.target===this)closeSkillModal()">
+        <div class="skill-modal">
+          <div style="font-size:0.9rem;font-weight:600;margin-bottom:12px">注册新技能</div>
+          <div class="skill-form-group">
+            <label>技能名称</label>
+            <input class="skill-input" id="newSkillName" placeholder="例：电影模式">
+          </div>
+          <div class="skill-form-group">
+            <label>描述</label>
+            <input class="skill-input" id="newSkillDesc" placeholder="技能功能描述">
+          </div>
+          <div class="skill-form-group">
+            <label>触发关键词（逗号分隔）</label>
+            <input class="skill-input" id="newSkillTriggers" placeholder="看电影,电影模式,投影仪">
+          </div>
+          <div class="skill-form-group">
+            <label>分类</label>
+            <select class="skill-input" id="newSkillCategory">
+              <option value="ha_control">设备控制</option>
+              <option value="daily">日常场景</option>
+              <option value="conversation">对话模式</option>
+              <option value="automation">自动化</option>
+              <option value="general">通用</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-ghost" style="flex:1" onclick="closeSkillModal()">取消</button>
+            <button class="btn btn-primary" style="flex:1" onclick="registerSkill()">注册</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 规则引擎面板 (M10) -->
+    <div class="tab-content" id="tabRules">
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="loadRules()">🔄 刷新</button>
+        <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="evaluateRules()">🔍 评估规则</button>
+        <button class="btn btn-primary" style="flex:1;font-size:0.7rem" onclick="showAddRuleModal()">+ 新增规则</button>
+      </div>
+      <div class="rule-summary-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="ruleTotal">-</div>
+          <div class="skill-summary-label">规则总数</div>
+        </div>
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="ruleEnabled">-</div>
+          <div class="skill-summary-label">已启用</div>
+        </div>
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="ruleTriggers">-</div>
+          <div class="skill-summary-label">总触发</div>
+        </div>
+      </div>
+      <div class="skill-list" id="ruleList">
+        <div class="empty-tip">加载规则列表…</div>
+      </div>
+      <!-- 规则弹窗 -->
+      <div class="skill-modal-overlay" id="ruleModal" onclick="if(event.target===this)closeRuleModal()">
+        <div class="skill-modal" style="width:400px">
+          <div style="font-size:0.9rem;font-weight:600;margin-bottom:12px">新增自动化规则</div>
+          <div class="skill-form-group"><label>规则名称</label><input class="skill-input" id="newRuleName" placeholder="例：高温预警"></div>
+          <div class="skill-form-group"><label>描述</label><input class="skill-input" id="newRuleDesc" placeholder="规则功能描述"></div>
+          <div class="skill-form-group">
+            <label>触发类型</label>
+            <select class="skill-input" id="newRuleTriggerType" onchange="updateRuleTriggerUI()">
+              <option value="sensor_threshold">传感器阈值</option>
+              <option value="time_schedule">定时触发</option>
+              <option value="user_presence">用户在/离家</option>
+              <option value="emotion_alert">情绪异常</option>
+              <option value="device_state">设备状态变化</option>
+              <option value="scene_change">场景切换</option>
+            </select>
+          </div>
+          <div id="ruleTriggerConfig">
+            <div class="skill-form-group"><label>传感器类型</label>
+              <select class="skill-input" id="ruleSensorType"><option value="temperature">温度</option><option value="humidity">湿度</option><option value="battery">电量</option><option value="light">光照</option></select>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <div class="skill-form-group"><label>运算符</label>
+                <select class="skill-input" id="ruleOperator"><option value=">">大于 ></option><option value="<">小于 <</option><option value=">=">大于等于 ≥</option><option value="<=">小于等于 ≤</option></select>
+              </div>
+              <div class="skill-form-group"><label>阈值</label><input class="skill-input" id="ruleThreshold" type="number" value="30"></div>
+            </div>
+          </div>
+          <div class="skill-form-group"><label>冷却时间（分钟）</label><input class="skill-input" id="newRuleCooldown" type="number" value="30"></div>
+          <div class="skill-form-group"><label>优先级 (1-10)</label><input class="skill-input" id="newRulePriority" type="number" value="5" min="1" max="10"></div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-ghost" style="flex:1" onclick="closeRuleModal()">取消</button>
+            <button class="btn btn-primary" style="flex:1" onclick="addRule()">创建</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 用户管理面板 (M10) -->
+    <div class="tab-content" id="tabUsers">
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="loadUsers()">🔄 刷新</button>
+        <button class="btn btn-primary" style="flex:1;font-size:0.7rem" onclick="showAddUserModal()">+ 添加用户</button>
+      </div>
+      <div class="skill-list" id="userList">
+        <div class="empty-tip">加载用户列表…</div>
+      </div>
+      <!-- 用户弹窗 -->
+      <div class="skill-modal-overlay" id="userModal" onclick="if(event.target===this)closeUserModal()">
+        <div class="skill-modal">
+          <div style="font-size:0.9rem;font-weight:600;margin-bottom:12px">添加用户</div>
+          <div class="skill-form-group"><label>用户名</label><input class="skill-input" id="newUserName" placeholder="例：alice"></div>
+          <div class="skill-form-group"><label>显示名</label><input class="skill-input" id="newUserDisplay" placeholder="例：Alice"></div>
+          <div class="skill-form-group"><label>角色</label>
+            <select class="skill-input" id="newUserRole"><option value="member">普通成员</option><option value="admin">管理员</option></select>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-ghost" style="flex:1" onclick="closeUserModal()">取消</button>
+            <button class="btn btn-primary" style="flex:1" onclick="addUser()">创建</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 通知中心面板 (M10) -->
+    <div class="tab-content" id="tabNotify">
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="loadNotifyHistory()">🔄 刷新</button>
+        <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="markAllRead()">✅ 全部已读</button>
+        <button class="btn btn-primary" style="flex:1;font-size:0.7rem" onclick="showSendNotifyModal()">📤 发送通知</button>
+      </div>
+      <div class="rule-summary-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="notifyTotal">-</div>
+          <div class="skill-summary-label">总通知</div>
+        </div>
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="notifyUnread" style="color:var(--orange)">-</div>
+          <div class="skill-summary-label">未读</div>
+        </div>
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="notifyChannels">-</div>
+          <div class="skill-summary-label">活跃渠道</div>
+        </div>
+      </div>
+      <div class="skill-list" id="notifyHistoryList">
+        <div class="empty-tip">加载通知历史…</div>
+      </div>
+      <!-- 发送通知弹窗 -->
+      <div class="skill-modal-overlay" id="notifyModal" onclick="if(event.target===this)closeNotifyModal()">
+        <div class="skill-modal">
+          <div style="font-size:0.9rem;font-weight:600;margin-bottom:12px">发送通知</div>
+          <div class="skill-form-group"><label>标题</label><input class="skill-input" id="newNotifyTitle" placeholder="通知标题"></div>
+          <div class="skill-form-group"><label>内容</label><textarea class="skill-input" id="newNotifyMessage" rows="3" placeholder="通知内容" style="resize:vertical"></textarea></div>
+          <div class="skill-form-group"><label>级别</label>
+            <select class="skill-input" id="newNotifyLevel"><option value="info">信息</option><option value="warning">警告</option><option value="high">重要</option><option value="critical">紧急</option></select>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-ghost" style="flex:1" onclick="closeNotifyModal()">取消</button>
+            <button class="btn btn-primary" style="flex:1" onclick="sendNotification()">发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M11: 状态面板（移动端替代右栏） -->
+    <div class="tab-content" id="tabStatus">
+      <!-- 简版人格 -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:10px;background:rgba(0,212,255,0.04);border-radius:10px;border:1px solid var(--border)">
+        <div class="personality-avatar" id="personaAvatarMobile" style="width:48px;height:48px;font-size:1.5rem">🤖</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">元芳</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">心情：<span class="mood-tag mood-calm" id="moodTagMobile">平静</span></div>
+        </div>
+        <button class="btn btn-ghost" style="font-size:0.65rem;padding:4px 10px" onclick="driftMood()">🎲</button>
+      </div>
+      <!-- 精力/压力 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:0.68rem;color:var(--muted);margin-bottom:4px">精力</div>
+          <div style="font-size:1.2rem;font-weight:700;color:var(--green)" id="energyValMobile">80%</div>
+          <div class="meter-track" style="margin-top:4px"><div class="meter-fill energy" id="energyBarMobile" style="width:80%"></div></div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:0.68rem;color:var(--muted);margin-bottom:4px">压力</div>
+          <div style="font-size:1.2rem;font-weight:700;color:var(--orange)" id="stressValMobile">10%</div>
+          <div class="meter-track" style="margin-top:4px"><div class="meter-fill stress" id="stressBarMobile" style="width:10%"></div></div>
+        </div>
+      </div>
+      <!-- 性格参数 -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:8px">性格参数</div>
+        <div class="trait-grid" id="traitGridMobile" style="grid-template-columns:1fr 1fr">
+          <div class="trait-item"><span class="trait-name">好奇心</span><span class="trait-val">85%</span></div>
+          <div class="trait-item"><span class="trait-name">忠诚度</span><span class="trait-val">95%</span></div>
+          <div class="trait-item"><span class="trait-name">活泼度</span><span class="trait-val">60%</span></div>
+          <div class="trait-item"><span class="trait-name">谨慎度</span><span class="trait-val">70%</span></div>
+          <div class="trait-item"><span class="trait-name">主动性</span><span class="trait-val">75%</span></div>
+        </div>
+      </div>
+      <!-- 记忆统计 -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px">
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="memEmotionalMobile">0</div>
+          <div class="skill-summary-label">情感记忆</div>
+        </div>
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="memSceneMobile">0</div>
+          <div class="skill-summary-label">场景快照</div>
+        </div>
+        <div class="skill-summary-box">
+          <div class="skill-summary-val" id="memSceneCurrentMobile">-</div>
+          <div class="skill-summary-label">当前场景</div>
+        </div>
+      </div>
+      <!-- 服务状态 -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:8px">🔌 服务状态</div>
+        <div class="api-list" id="apiListMobile">
+          <div class="api-item"><span class="api-name">Flask</span><span class="api-status-ok" id="mapi-flask">✓</span></div>
+          <div class="api-item"><span class="api-name">DeepSeek</span><span class="api-status-unk" id="mapi-deepseek">○</span></div>
+          <div class="api-item"><span class="api-name">Kimi</span><span class="api-status-unk" id="mapi-kimi">○</span></div>
+          <div class="api-item"><span class="api-name">HA</span><span class="api-status-unk" id="mapi-ha">○</span></div>
+        </div>
+      </div>
+      <!-- KAIROS -->
+      <div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.15);border-radius:8px;padding:12px">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:8px">🌙 KAIROS 守护</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="kairos-metric">
+            <span class="kairos-metric-label">Tick</span>
+            <span class="kairos-metric-val" id="kairosTicksMobile">0</span>
+          </div>
+          <div class="kairos-metric">
+            <span class="kairos-metric-label">观察</span>
+            <span class="kairos-metric-val" id="kairosObsCountMobile">0</span>
+          </div>
+          <div class="kairos-metric">
+            <span class="kairos-metric-label">活跃度</span>
+            <span class="kairos-metric-val" id="kairosActivityMobile">-</span>
+          </div>
+          <div class="kairos-metric">
+            <span class="kairos-metric-label">沉默</span>
+            <span class="kairos-metric-val" id="kairosSilenceMobile">-</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="kairosStartStop()" id="kairosToggleBtnMobile">启动守护</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右栏 -->
+  <div class="right-col">
+
+    <!-- 人格状态 -->
+    <div class="card">
+      <div class="card-title">🧠 元芳状态</div>
+      <div class="personality-bar">
+        <div class="personality-avatar" id="personaAvatar">🤖</div>
+        <div class="personality-info">
+          <div class="personality-name">元芳</div>
+          <div class="personality-mood">
+            当前心情：<span class="mood-tag mood-calm" id="moodTag">calm</span>
+          </div>
+        </div>
+      </div>
+      <div class="meter-row">
+        <span class="meter-label">精力</span>
+        <div class="meter-track"><div class="meter-fill energy" id="energyBar" style="width:80%"></div></div>
+        <span class="meter-val" id="energyVal">80%</span>
+      </div>
+      <div class="meter-row">
+        <span class="meter-label">压力</span>
+        <div class="meter-track"><div class="meter-fill stress" id="stressBar" style="width:10%"></div></div>
+        <span class="meter-val" id="stressVal">10%</span>
+      </div>
+      <div class="trait-grid" id="traitGrid">
+        <div class="trait-item"><span class="trait-name">好奇心</span><span class="trait-val" id="tr-curiosity">85%</span></div>
+        <div class="trait-item"><span class="trait-name">忠诚度</span><span class="trait-val" id="tr-loyalty">95%</span></div>
+        <div class="trait-item"><span class="trait-name">活泼度</span><span class="trait-val" id="tr-playfulness">60%</span></div>
+        <div class="trait-item"><span class="trait-name">谨慎度</span><span class="trait-val" id="tr-caution">70%</span></div>
+        <div class="trait-item"><span class="trait-name">主动性</span><span class="trait-val" id="tr-initiative">75%</span></div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:0.72rem" onclick="driftMood()">
+        🎲 触发情绪漂移
+      </button>
+    </div>
+
+    <!-- 记忆统计 -->
+    <div class="card">
+      <div class="card-title">💾 记忆系统</div>
+      <div class="memory-stats">
+        <div class="memory-stat-box">
+          <div class="memory-stat-val" id="memEmotional">0</div>
+          <div class="memory-stat-label">情感记忆</div>
+        </div>
+        <div class="memory-stat-box">
+          <div class="memory-stat-val" id="memScene">0</div>
+          <div class="memory-stat-label">场景快照</div>
+        </div>
+        <div class="memory-stat-box">
+          <div class="memory-stat-val" id="memSceneCurrent">-</div>
+          <div class="memory-stat-label">当前场景</div>
+        </div>
+      </div>
+      <div id="memoryTags" style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">加载中…</div>
+      <div class="emotion-tags" id="emotionTags"></div>
+      <div class="emotion-tags" id="sceneTags" style="margin-top:4px"></div>
+    </div>
+
+    <!-- 进化状态 -->
+    <div class="card">
+      <div class="card-title">🧬 进化状态</div>
+      <div id="hyperStatusBlock" style="font-size:0.8rem;color:var(--muted)">加载中…</div>
+      <hr>
+      <div class="card-title">📜 进化日志</div>
+      <div class="evo-log" id="evoLog">
+        <div class="evo-item">等待进化记录…</div>
+      </div>
+    </div>
+
+    <!-- API 状态 -->
+    <div class="card">
+      <div class="card-title">🔌 服务状态</div>
+      <div class="api-list">
+        <div class="api-item">
+          <span class="api-name">Flask API</span>
+          <span class="api-status-ok" id="api-flask">✓ 在线</span>
+        </div>
+        <div class="api-item">
+          <span class="api-name">DeepSeek V3.1</span>
+          <span class="api-status-unk" id="api-deepseek">○ 未检测</span>
+        </div>
+        <div class="api-item">
+          <span class="api-name">Kimi K2</span>
+          <span class="api-status-unk" id="api-kimi">○ 未检测</span>
+        </div>
+        <div class="api-item">
+          <span class="api-name">Qdrant</span>
+          <span class="api-status-unk" id="api-qdrant">○ 未检测</span>
+        </div>
+        <div class="api-item">
+          <span class="api-name">Redis</span>
+          <span class="api-status-unk" id="api-redis">○ 未检测</span>
+        </div>
+        <div class="api-item">
+          <span class="api-name">Home Assistant</span>
+          <span class="api-status-unk" id="api-ha">○ 未检测</span>
+        </div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:12px;font-size:0.75rem" onclick="checkHealth()">
+        检查连接
+      </button>
+    </div>
+
+    <!-- KAIROS 守护状态 -->
+    <div class="card kairos-card">
+      <div class="card-title">🌙 KAIROS 守护</div>
+      <div class="kairos-header">
+        <div class="kairos-status-indicator" id="kairosIndicator">
+          <div class="kairos-pulse"></div>
+        </div>
+        <div class="kairos-header-info">
+          <div class="kairos-status-text" id="kairosStatusText">检测中…</div>
+          <div class="kairos-uptime" id="kairosUptime">-</div>
+        </div>
+      </div>
+      <div class="kairos-metrics">
+        <div class="kairos-metric">
+          <span class="kairos-metric-label">Tick 次数</span>
+          <span class="kairos-metric-val" id="kairosTicks">0</span>
+        </div>
+        <div class="kairos-metric">
+          <span class="kairos-metric-label">观察记录</span>
+          <span class="kairos-metric-val" id="kairosObsCount">0</span>
+        </div>
+        <div class="kairos-metric">
+          <span class="kairos-metric-label">用户活跃度</span>
+          <span class="kairos-metric-val" id="kairosActivity">-</span>
+        </div>
+        <div class="kairos-metric">
+          <span class="kairos-metric-label">沉默时长</span>
+          <span class="kairos-metric-val" id="kairosSilence">-</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="kairosStartStop()" id="kairosToggleBtn">
+          启动守护
+        </button>
+        <button class="btn btn-ghost" style="flex:1;font-size:0.7rem" onclick="loadKairosStatus()">
+          🔄 刷新
+        </button>
+      </div>
+    </div>
+
+    <!-- KAIROS 梦境系统 -->
+    <div class="card kairos-card">
+      <div class="card-title">💭 梦境巩固</div>
+      <div class="dream-stats">
+        <div class="dream-stat-box">
+          <div class="dream-stat-val" id="dreamInsights">0</div>
+          <div class="dream-stat-label">洞察数</div>
+        </div>
+        <div class="dream-stat-box">
+          <div class="dream-stat-val" id="dreamChats">0</div>
+          <div class="dream-stat-label">对话计数</div>
+        </div>
+        <div class="dream-stat-box">
+          <div class="dream-stat-val" id="dreamPhase">-</div>
+          <div class="dream-stat-label">上次阶段</div>
+        </div>
+      </div>
+      <div class="dream-insights-list" id="dreamInsightsList">
+        <div class="empty-tip" style="padding:8px 0">暂无梦境洞察</div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:0.7rem" onclick="triggerDream()">
+        🌙 手动触发梦境巩固
+      </button>
+    </div>
+
+    <!-- KAIROS 异常监控 -->
+    <div class="card kairos-card">
+      <div class="card-title">⚠️ 异常监控</div>
+      <div class="anomaly-summary">
+        <span class="anomaly-badge" id="anomalyBadge" style="background:rgba(100,116,139,0.15);color:var(--muted)">无异常</span>
+        <span style="font-size:0.7rem;color:var(--muted)" id="anomalyTime">-</span>
+      </div>
+      <div class="anomaly-list" id="anomalyList">
+        <div class="empty-tip" style="padding:8px 0">系统正常运行</div>
+      </div>
+      <hr>
+      <div class="card-title" style="margin-top:0">🔔 最近通知</div>
+      <div class="notification-list" id="notificationList">
+        <div class="empty-tip" style="padding:8px 0">暂无通知</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- M11: 底部导航栏（移动端） -->
+<div class="bottom-nav" id="bottomNav">
+  <div class="bottom-nav-inner">
+    <button class="bottom-nav-item active" data-tab="chat" onclick="navToTab('chat', this)">
+      <span class="nav-icon">💬</span>
+      <span>对话</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="devices" onclick="navToTab('devices', this)">
+      <span class="nav-icon">🏠</span>
+      <span>设备</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="status" onclick="navToTab('status', this)">
+      <span class="nav-icon">🧠</span>
+      <span>状态</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="skills" onclick="navToTab('skills', this)">
+      <span class="nav-icon">🛠️</span>
+      <span>技能</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="notify" onclick="navToTab('notify', this)">
+      <span class="nav-icon">🔔</span>
+      <span>通知</span>
+      <span class="nav-badge" id="notifyBadge">0</span>
+    </button>
+  </div>
+</div>
+
+<!-- M11: PWA 安装提示 -->
+<div class="install-banner" id="installBanner">
+  <div class="install-text">
+    <span class="install-icon">🤖</span>
+    <div>
+      <strong>安装元芳到桌面</strong>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">快速访问智能家居控制，支持离线</div>
+    </div>
+  </div>
+  <div class="install-actions">
+    <button class="btn-dismiss" onclick="dismissInstall()">以后再说</button>
+    <button class="btn-install" onclick="installApp()">立即安装</button>
+  </div>
+</div>
+
+<script>
+// ====== 状态 ======
+let selectedModel = 'crew';
+let msgCount = 0;
+let drawerOpen = false;
+
+function openDrawer() {
+  document.getElementById('leftDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  drawerOpen = true;
+}
+function closeDrawer() {
+  document.getElementById('leftDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  drawerOpen = false;
+}
+
+const MODEL_MAP = {
+  crew: null, // 特殊路由
+  deepseek: 'Pro/deepseek-ai/DeepSeek-V3.1-Terminus',
+  kimi: 'Pro/moonshotai/Kimi-K2-Instruct',
+  hyper: null // 特殊路由
+};
+
+// ====== 时钟 ======
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('zh-CN', { hour12: false });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ====== 人格状态 ======
+async function loadPersonality() {
+  try {
+    const r = await fetch('/api/personality/status');
+    const d = await r.json();
+    // 情绪标签
+    const moodEl = document.getElementById('moodTag');
+    const moodMap = { calm:'平静', excited:'兴奋', tired:'疲惫', focused:'专注', curious:'好奇' };
+    moodEl.textContent = moodMap[d.mood] || d.mood;
+    moodEl.className = `mood-tag mood-${d.mood}`;
+    // 头像表情
+    const avatarMap = { calm:'😌', excited:'🤩', tired:'😴', focused:'🎯', curious:'🧐' };
+    document.getElementById('personaAvatar').textContent = avatarMap[d.mood] || '🤖';
+    // 精力/压力条
+    const energy = Math.round((d.energy ?? 0) * 100);
+    const stress = Math.round((d.stress ?? 0) * 100);
+    document.getElementById('energyBar').style.width = energy + '%';
+    document.getElementById('energyVal').textContent = energy + '%';
+    document.getElementById('stressBar').style.width = stress + '%';
+    document.getElementById('stressVal').textContent = stress + '%';
+    // 性格参数
+    const traits = d.traits || {};
+    for (const [k, v] of Object.entries(traits)) {
+      const el = document.getElementById('tr-' + k);
+      if (el) el.textContent = Math.round(v * 100) + '%';
+    }
+  } catch {}
+}
+
+async function driftMood() {
+  try {
+    const r = await fetch('/api/personality/drift', { method: 'POST' });
+    const d = await r.json();
+    if (d.success) {
+      await loadPersonality();
+      // 简单的视觉反馈
+      const avatar = document.getElementById('personaAvatar');
+      avatar.style.transform = 'scale(1.2)';
+      setTimeout(() => avatar.style.transform = '', 300);
+    }
+  } catch {}
+}
+
+// ====== 记忆统计 ======
+async function loadMemory() {
+  try {
+    const r = await fetch('/api/memory/report');
+    const d = await r.json();
+    // 数字
+    document.getElementById('memEmotional').textContent = d.emotional?.total ?? 0;
+    document.getElementById('memScene').textContent = d.scene?.total ?? 0;
+    const sceneMap = { morning:'早晨', evening:'傍晚', work:'工作', sleep:'睡眠' };
+    document.getElementById('memSceneCurrent').textContent = sceneMap[d.scene?.predicted_current] || d.scene?.predicted_current || '-';
+    // 摘要
+    const summaryEl = document.getElementById('memoryTags');
+    summaryEl.textContent = d.emotional?.summary || '暂无记忆';
+    summaryEl.style.color = 'var(--muted)';
+    summaryEl.style.fontSize = '0.75rem';
+    // 情感标签
+    const emoDiv = document.getElementById('emotionTags');
+    const emoStats = d.emotional?.stats || {};
+    emoDiv.innerHTML = Object.entries(emoStats).map(([k, v]) =>
+      `<div class="emotion-tag">${k}<span>${v}</span></div>`
+    ).join('');
+    // 场景标签
+    const sceneDiv = document.getElementById('sceneTags');
+    const sceneStats = d.scene?.stats || {};
+    sceneDiv.innerHTML = Object.entries(sceneStats).map(([k, v]) =>
+      `<div class="emotion-tag scene-tag">${sceneMap[k] || k}<span>${v}</span></div>`
+    ).join('');
+  } catch {}
+}
+
+// ====== 健康检查 ======
+async function checkHealth() {
+  try {
+    const r = await fetch('/api/health');
+    const d = await r.json();
+    document.getElementById('healthStatus').textContent = '✅ 已连接';
+    document.getElementById('healthStatus').style.color = 'var(--green)';
+    document.getElementById('mainDot').style.background = 'var(--green)';
+    document.getElementById('statNodes').textContent = d.nodes ?? 0;
+    document.getElementById('api-flask').textContent = '✓ 在线';
+    document.getElementById('api-flask').className = 'api-status-ok';
+    // HA 连接检测
+    fetch('/api/ha/ping').then(r => r.json()).then(d => {
+      const el = document.getElementById('api-ha');
+      if (d.connected) {
+        el.textContent = '✓ 已连接';
+        el.className = 'api-status-ok';
+      } else {
+        el.textContent = '✗ 未连接';
+        el.className = 'api-status-err';
+      }
+    }).catch(() => {
+      document.getElementById('api-ha').textContent = '✗ 未连接';
+      document.getElementById('api-ha').className = 'api-status-err';
+    });
+  } catch {
+    document.getElementById('healthStatus').textContent = '❌ 连接失败';
+    document.getElementById('healthStatus').style.color = 'var(--red)';
+    document.getElementById('mainDot').style.background = 'var(--red)';
+  }
+}
+
+// ====== 加载节点 ======
+async function refreshNodes() {
+  try {
+    const r = await fetch('/api/nodes');
+    const nodes = await r.json();
+    const list = document.getElementById('nodeList');
+    const keys = Object.keys(nodes);
+    if (keys.length === 0) {
+      list.innerHTML = '<div class="empty-tip">暂无节点在线<br>请在 Termux 运行 sensor_client</div>';
+      return;
+    }
+    list.innerHTML = keys.map(k => {
+      const n = nodes[k];
+      const ssid = n.sensors?.wifi_ssid || '未知网络';
+      return `<div class="node-item">
+        <span class="node-name">📱 ${k}</span>
+        <span class="node-status"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>${ssid}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('statNodes').textContent = keys.length;
+    document.getElementById('sensorBadge').textContent = '活跃';
+    document.getElementById('sensorBadge').className = 'agent-badge badge-active';
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ====== 在家检测 ======
+async function checkPresence() {
+  try {
+    const r = await fetch('/api/presence');
+    const d = await r.json();
+    const el = document.getElementById('statPresence');
+    if (d.is_home) {
+      el.textContent = '在家 🏠';
+      el.style.color = 'var(--green)';
+    } else {
+      el.textContent = '不在家';
+      el.style.color = 'var(--muted)';
+    }
+  } catch {}
+}
+
+// ====== HyperAgent 状态 ======
+async function showHyperStatus() {
+  try {
+    const r = await fetch('/api/hyper/status');
+    const d = await r.json();
+    document.getElementById('statEvo').textContent = d.evolution_count ?? 0;
+    const block = document.getElementById('hyperStatusBlock');
+    block.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div>进化次数：<strong style="color:var(--accent)">${d.evolution_count ?? 0}</strong></div>
+        <div>会话计数：<strong style="color:var(--accent)">${d.session_count ?? 0}</strong></div>
+        <div>记忆条目：<strong style="color:var(--accent)">${d.memory_entries ?? 0}</strong></div>
+        <div>当前模型：<strong style="color:var(--accent2);font-size:0.72rem">${d.current_model ?? '-'}</strong></div>
+      </div>`;
+  } catch {
+    document.getElementById('hyperStatusBlock').textContent = '无法连接到 HyperAgent';
+  }
+}
+
+async function loadEvoLog() {
+  try {
+    const r = await fetch('/api/hyper/memory');
+    const d = await r.json();
+    const log = document.getElementById('evoLog');
+    const entries = d.recent_evolutions || d.entries || [];
+    if (!entries.length) {
+      log.innerHTML = '<div class="evo-item">暂无进化记录</div>';
+      return;
+    }
+    log.innerHTML = entries.slice(-8).reverse().map(e =>
+      `<div class="evo-item"><strong>${e.timestamp?.slice(5,16) || '–'}</strong> ${e.improvement || e.task || '进化事件'}</div>`
+    ).join('');
+  } catch {}
+}
+
+// ====== 模型选择 ======
+function selectModel(btn, model) {
+  document.querySelectorAll('.model-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedModel = model;
+}
+
+// ====== 发送消息 ======
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function appendMsg(role, text, meta) {
+  const wrap = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-avatar">${role === 'user' ? '🧑' : '🤖'}</div>
+    <div>
+      <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>
+      <div class="msg-meta">${meta}</div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function appendTyping() {
+  const wrap = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="msg-avatar">🤖</div>
+    <div class="typing-dots"><span></span><span></span><span></span></div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  input.value = '';
+
+  const now = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+  appendMsg('user', msg, `我 · ${now}`);
+  msgCount++;
+  document.getElementById('statMsgs').textContent = msgCount;
+  appendTyping();
+
+  try {
+    let url, body;
+    if (selectedModel === 'crew') {
+      url = '/api/agent/crew';
+      body = JSON.stringify({ task: msg });
+    } else if (selectedModel === 'hyper') {
+      url = '/api/hyper/run';
+      body = JSON.stringify({ task: msg });
+    } else {
+      url = '/api/chat';
+      body = JSON.stringify({ message: msg, model: MODEL_MAP[selectedModel] });
+    }
+
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body
+    });
+    const d = await r.json();
+    removeTyping();
+
+    let reply = '';
+    if (d.error) {
+      reply = `⚠️ ${d.error}`;
+    } else {
+      reply = d.response || d.final_answer || d.result || JSON.stringify(d, null, 2);
+    }
+
+    const modelInfo = d.model ? `元芳 · ${d.model.split('/').pop()}` : '元芳';
+    appendMsg('assistant', reply, modelInfo + ` · ${new Date().toLocaleTimeString('zh-CN', {hour12:false})}`);
+
+    // 如果是 hyper 模式，顺手刷新进化状态
+    if (selectedModel === 'hyper') showHyperStatus();
+
+    // 每次对话后刷新人格和记忆
+    loadPersonality();
+    loadMemory();
+
+  } catch (e) {
+    removeTyping();
+    appendMsg('assistant', `连接失败：${e.message}`, '元芳 · 错误');
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+// ====== 点击 Agent 触发快捷任务 ======
+function runAgent(name) {
+  const prompts = {
+    commander: '帮我规划一下今天的任务',
+    researcher: '分析一下当前智能家居系统的状态',
+    executor: '执行一次环境检查',
+    sensor_agent: '获取所有节点的传感器数据',
+  };
+  const input = document.getElementById('chatInput');
+  input.value = prompts[name] || '';
+  input.focus();
+
+  // 切换到协作模式
+  document.querySelectorAll('.model-chip').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-model="crew"]').classList.add('active');
+  selectedModel = 'crew';
+}
+
+// ====== 标签页切换 ======
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  if (tab === 'chat') {
+    document.getElementById('tabChat').classList.add('active');
+  } else if (tab === 'skills') {
+    document.getElementById('tabSkills').classList.add('active');
+    loadSkills();
+  } else if (tab === 'rules') {
+    document.getElementById('tabRules').classList.add('active');
+    loadRules();
+  } else if (tab === 'users') {
+    document.getElementById('tabUsers').classList.add('active');
+    loadUsers();
+  } else if (tab === 'notify') {
+    document.getElementById('tabNotify').classList.add('active');
+    loadNotifyHistory();
+  } else {
+    document.getElementById('tabDevices').classList.add('active');
+    loadHADevices();
+  }
+}
+
+// ====== 语音输入 ======
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
+async function toggleVoice() {
+  const btn = document.getElementById('voiceBtn');
+  if (isRecording) {
+    stopRecording();
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      btn.classList.remove('recording');
+      btn.textContent = '🎤';
+      isRecording = false;
+      if (audioChunks.length === 0) return;
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      await sendVoiceMessage(blob);
+    };
+    mediaRecorder.start();
+    btn.classList.add('recording');
+    btn.textContent = '🔴';
+    isRecording = true;
+    // 自动停止（5秒）
+    setTimeout(() => { if (isRecording) stopRecording(); }, 5000);
+  } catch (e) {
+    alert('无法访问麦克风: ' + e.message);
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+}
+
+async function sendVoiceMessage(blob) {
+  const input = document.getElementById('chatInput');
+  appendTyping();
+  try {
+    const formData = new FormData();
+    formData.append('file', blob, 'voice.webm');
+    const r = await fetch('/api/voice/chat', { method: 'POST', body: formData });
+    const d = await r.json();
+    removeTyping();
+    if (d.error) {
+      appendMsg('assistant', `⚠️ ${d.error}`, '元芳 · 错误');
+      return;
+    }
+    const now = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    appendMsg('user', `[语音] ${d.text || '...'}`, `我 · ${now}`);
+    appendMsg('assistant', d.response, `元芳 · 语音对话`);
+    msgCount++;
+    document.getElementById('statMsgs').textContent = msgCount;
+    // 播放 TTS 回复
+    if (d.audio) {
+      const audio = new Audio('data:audio/wav;base64,' + d.audio);
+      audio.play().catch(() => {});
+    }
+    loadPersonality();
+    loadMemory();
+  } catch (e) {
+    removeTyping();
+    appendMsg('assistant', `语音对话失败: ${e.message}`, '元芳 · 错误');
+  }
+}
+
+// ====== Home Assistant 设备面板 ======
+let haDevices = { lights: [], climate: [], scenes: [], switches: [] };
+
+async function loadHADevices() {
+  const statusEl = document.getElementById('haConnectStatus');
+  const panelEl = document.getElementById('haPanel');
+  statusEl.style.display = '';
+  statusEl.className = 'ha-connect-status';
+  statusEl.textContent = '正在连接 Home Assistant…';
+  panelEl.style.display = 'none';
+
+  try {
+    // 检查连接
+    const ping = await fetch('/api/ha/ping').then(r => r.json());
+    if (!ping.connected) {
+      statusEl.className = 'ha-connect-status error';
+      statusEl.textContent = 'Home Assistant 未连接，请检查 .env 中 HA_URL 和 HA_TOKEN';
+      return;
+    }
+
+    statusEl.textContent = '加载设备列表…';
+
+    // 并行加载各类设备
+    const [lights, climate, scenes, switches] = await Promise.all([
+      fetch('/api/ha/states?domain=light').then(r => r.json()).catch(() => []),
+      fetch('/api/ha/states?domain=climate').then(r => r.json()).catch(() => []),
+      fetch('/api/ha/scenes').then(r => r.json()).catch(() => []),
+      fetch('/api/ha/states?domain=switch').then(r => r.json()).catch(() => []),
+    ]);
+
+    haDevices = {
+      lights: (Array.isArray(lights) ? lights : []).filter(e => !e.entity_id.startsWith('group.')),
+      climate: Array.isArray(climate) ? climate : [],
+      scenes: Array.isArray(scenes) ? scenes : [],
+      switches: Array.isArray(switches) ? switches : [],
+    };
+
+    renderLights();
+    renderClimate();
+    renderScenes();
+    renderSwitches();
+
+    statusEl.style.display = 'none';
+    panelEl.style.display = '';
+
+    // 更新顶部 HA 状态指示
+    document.getElementById('statHA').textContent = haDevices.lights.length + haDevices.switches.length;
+    document.getElementById('statHA').style.color = 'var(--green)';
+
+  } catch (e) {
+    statusEl.className = 'ha-connect-status error';
+    statusEl.textContent = '连接失败: ' + e.message;
+  }
+}
+
+function renderLights() {
+  const section = document.getElementById('haLightsSection');
+  const grid = document.getElementById('haLightsGrid');
+  if (haDevices.lights.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  grid.innerHTML = haDevices.lights.map(l => {
+    const name = l.attributes?.friendly_name || l.entity_id;
+    const isOn = l.state === 'on';
+    const brightness = l.attributes?.brightness;
+    const briPct = brightness ? Math.round(brightness / 255 * 100) : null;
+    return `<div class="ha-device ${isOn ? 'on' : ''}" id="dev-${l.entity_id.replace('.', '-')}">
+      <div class="ha-device-head">
+        <div>
+          <div class="ha-device-icon">${isOn ? '💡' : '🌑'}</div>
+          <div class="ha-device-name">${name}</div>
+        </div>
+        <button class="ha-toggle ${isOn ? 'on' : ''}" onclick="toggleLight('${l.entity_id}', ${!isOn})"></button>
+      </div>
+      <div class="ha-device-state">${isOn ? (briPct !== null ? `亮度 ${briPct}%` : '已开启') : '已关闭'}</div>
+      ${isOn && brightness ? `<input type="range" class="ha-light-slider" min="1" max="255" value="${brightness}" oninput="setLightBrightness('${l.entity_id}', this.value)">` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderClimate() {
+  const section = document.getElementById('haClimateSection');
+  const grid = document.getElementById('haClimateGrid');
+  if (haDevices.climate.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  grid.innerHTML = haDevices.climate.map(c => {
+    const name = c.attributes?.friendly_name || c.entity_id;
+    const temp = c.attributes?.temperature || '--';
+    const mode = c.attributes?.hvac_mode || 'off';
+    const modes = ['off', 'cool', 'heat', 'auto', 'fan_only'];
+    return `<div class="ha-temp-control">
+      <div style="flex:1">
+        <div class="ha-device-name" style="margin-bottom:6px">${name}</div>
+        <div class="ha-mode-chips">
+          ${modes.map(m => `<button class="ha-mode-chip ${mode === m ? 'active' : ''}" onclick="setClimateMode('${c.entity_id}', '${m}')">${m}</button>`).join('')}
+        </div>
+      </div>
+      <button class="ha-temp-btn" onclick="setClimateTemp('${c.entity_id}', ${parseFloat(temp) - 1})">−</button>
+      <div class="ha-temp-val" id="temp-${c.entity_id.replace('.', '-')}">${temp}°</div>
+      <button class="ha-temp-btn" onclick="setClimateTemp('${c.entity_id}', ${parseFloat(temp) + 1})">+</button>
+    </div>`;
+  }).join('');
+}
+
+function renderScenes() {
+  const section = document.getElementById('haScenesSection');
+  const grid = document.getElementById('haScenesGrid');
+  if (haDevices.scenes.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  const iconMap = { '回家': '🏠', '离家': '🚪', '晚安': '🌙', '影院': '🎬', '阅读': '📖', '会客': '☕', 'morning': '🌅', 'evening': '🌆' };
+  grid.innerHTML = haDevices.scenes.slice(0, 12).map(s => {
+    const name = s.attributes?.friendly_name || s.entity_id;
+    const icon = Object.entries(iconMap).find(([k]) => name.toLowerCase().includes(k))?.[1] || '✨';
+    return `<button class="ha-scene-btn" onclick="activateScene('${s.entity_id}')">
+      <span class="scene-icon">${icon}</span>${name}
+    </button>`;
+  }).join('');
+}
+
+function renderSwitches() {
+  const section = document.getElementById('haSwitchSection');
+  const grid = document.getElementById('haSwitchGrid');
+  if (haDevices.switches.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  grid.innerHTML = haDevices.switches.map(sw => {
+    const name = sw.attributes?.friendly_name || sw.entity_id;
+    const isOn = sw.state === 'on';
+    return `<div class="ha-device ${isOn ? 'on' : ''}">
+      <div class="ha-device-head">
+        <div>
+          <div class="ha-device-icon">${isOn ? '⚡' : '🔌'}</div>
+          <div class="ha-device-name">${name}</div>
+        </div>
+        <button class="ha-toggle ${isOn ? 'on' : ''}" onclick="toggleSwitch('${sw.entity_id}', ${!isOn})"></button>
+      </div>
+      <div class="ha-device-state">${isOn ? '已开启' : '已关闭'}</div>
+    </div>`;
+  }).join('');
+}
+
+// HA 控制函数
+async function toggleLight(entityId, on) {
+  const r = await fetch('/api/ha/control', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entity_id: entityId, action: on ? 'on' : 'off' }),
+  });
+  await r.json();
+  loadHADevices(); // 刷新
+}
+
+async function setLightBrightness(entityId, brightness) {
+  await fetch('/api/ha/light', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entity_id: entityId, brightness: parseInt(brightness) }),
+  });
+  loadHADevices();
+}
+
+async function toggleSwitch(entityId, on) {
+  await fetch('/api/ha/control', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entity_id: entityId, action: on ? 'on' : 'off' }),
+  });
+  loadHADevices();
+}
+
+async function setClimateTemp(entityId, temp) {
+  const el = document.getElementById('temp-' + entityId.replace('.', '-'));
+  if (el) el.textContent = temp + '°';
+  await fetch('/api/ha/climate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entity_id: entityId, temperature: temp }),
+  });
+  setTimeout(loadHADevices, 1000);
+}
+
+async function setClimateMode(entityId, mode) {
+  await fetch('/api/ha/climate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entity_id: entityId, temperature: 24, hvac_mode: mode }),
+  });
+  loadHADevices();
+}
+
+async function activateScene(entityId) {
+  await fetch('/api/ha/scene/activate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entity_id: entityId }),
+  });
+  loadHADevices();
+}
+
+// ====== KAIROS 守护进程 ======
+async function loadKairosStatus() {
+  try {
+    const r = await fetch('/api/kairos/status');
+    const d = await r.json();
+    const daemon = d.daemon || {};
+    const isRunning = daemon.running || false;
+
+    // 顶部统计格
+    const topEl = document.getElementById('statKairos');
+    if (isRunning) {
+      topEl.textContent = '守护中';
+      topEl.style.color = 'var(--accent2)';
+    } else {
+      topEl.textContent = '未启动';
+      topEl.style.color = 'var(--muted)';
+    }
+
+    // 守护指示器
+    const indicator = document.getElementById('kairosIndicator');
+    indicator.className = isRunning ? 'kairos-status-indicator active' : 'kairos-status-indicator';
+
+    // 状态文本
+    document.getElementById('kairosStatusText').textContent = isRunning ? '守护运行中' : '守护未启动';
+    document.getElementById('kairosUptime').textContent = daemon.uptime ? `运行 ${daemon.uptime}` : '-';
+    document.getElementById('kairosTicks').textContent = daemon.tick_count || 0;
+    document.getElementById('kairosObsCount').textContent = daemon.total_observations || 0;
+
+    // 用户活跃度
+    const activity = daemon.user_activity || {};
+    document.getElementById('kairosActivity').textContent = activity.level || '-';
+    document.getElementById('kairosSilence').textContent = activity.silence_minutes != null
+      ? `${activity.silence_minutes}分钟` : '-';
+
+    // 切换按钮文本
+    const btn = document.getElementById('kairosToggleBtn');
+    btn.textContent = isRunning ? '⏹ 停止守护' : '▶ 启动守护';
+    btn.dataset.running = isRunning;
+
+    // 梦境状态
+    const dream = d.dream || {};
+    document.getElementById('dreamInsights').textContent = dream.total_insights || 0;
+    document.getElementById('dreamChats').textContent = dream.chat_count || 0;
+    document.getElementById('dreamPhase').textContent = dream.last_phase || '-';
+  } catch {}
+}
+
+async function kairosStartStop() {
+  const btn = document.getElementById('kairosToggleBtn');
+  const isRunning = btn.dataset.running === 'true';
+  try {
+    const r = await fetch(isRunning ? '/api/kairos/stop' : '/api/kairos/start', { method: 'POST' });
+    await r.json();
+    await loadKairosStatus();
+  } catch {}
+}
+
+async function triggerDream() {
+  try {
+    const btn = event.target;
+    btn.textContent = '🌙 巩固中…';
+    btn.disabled = true;
+    const r = await fetch('/api/kairos/dream/run', { method: 'POST' });
+    const d = await r.json();
+    await loadKairosStatus();
+    await loadDreamInsights();
+    btn.textContent = '🌙 手动触发梦境巩固';
+    btn.disabled = false;
+  } catch {
+    event.target.textContent = '🌙 手动触发梦境巩固';
+    event.target.disabled = false;
+  }
+}
+
+async function loadDreamInsights() {
+  try {
+    const r = await fetch('/api/kairos/insights');
+    const insights = await r.json();
+    const list = document.getElementById('dreamInsightsList');
+    if (!insights || insights.length === 0) {
+      list.innerHTML = '<div class="empty-tip" style="padding:8px 0">暂无梦境洞察</div>';
+      return;
+    }
+    list.innerHTML = insights.slice(0, 5).map(i => `
+      <div class="dream-insight-item">
+        <span class="dream-time">${i.timestamp ? i.timestamp.slice(5,16) : '-'}</span>
+        ${i.insight || i.summary || JSON.stringify(i)}
+      </div>
+    `).join('');
+  } catch {}
+}
+
+async function loadAnomalies() {
+  try {
+    const [anomRes, notifRes] = await Promise.all([
+      fetch('/api/kairos/anomalies?n=10').then(r => r.json()).catch(() => []),
+      fetch('/api/kairos/notifications?n=10').then(r => r.json()).catch(() => []),
+    ]);
+
+    // 异常列表
+    const anomList = document.getElementById('anomalyList');
+    const badge = document.getElementById('anomalyBadge');
+    if (!anomRes || anomRes.length === 0) {
+      anomList.innerHTML = '<div class="empty-tip" style="padding:8px 0">系统正常运行</div>';
+      badge.textContent = '无异常';
+      badge.className = 'anomaly-badge';
+    } else {
+      const hasCritical = anomRes.some(a => a.severity === 'critical');
+      badge.textContent = hasCritical ? `${anomRes.length} 项异常` : `${anomRes.length} 项警告`;
+      badge.className = hasCritical ? 'anomaly-badge critical' : 'anomaly-badge warning';
+      anomList.innerHTML = anomRes.slice(0, 5).map(a => `
+        <div class="anomaly-item ${a.severity || ''}">
+          <span>${a.message || a.description || JSON.stringify(a)}</span>
+          <span class="anomaly-time">${a.timestamp ? a.timestamp.slice(11,16) : '-'}</span>
+        </div>
+      `).join('');
+    }
+    document.getElementById('anomalyTime').textContent = anomRes.length > 0
+      ? `最近: ${anomRes[0].timestamp ? anomRes[0].timestamp.slice(5,16) : '-'}` : '-';
+
+    // 通知列表
+    const notifList = document.getElementById('notificationList');
+    if (!notifRes || notifRes.length === 0) {
+      notifList.innerHTML = '<div class="empty-tip" style="padding:8px 0">暂无通知</div>';
+    } else {
+      notifList.innerHTML = notifRes.slice(0, 5).map(n => `
+        <div class="notification-item">
+          <span>${n.message || n.title || JSON.stringify(n)}</span>
+          <span class="notif-time">${n.timestamp ? n.timestamp.slice(11,16) : '-'}</span>
+        </div>
+      `).join('');
+    }
+  } catch {}
+}
+
+// ====== 初始化 ======
+(async () => {
+  await checkHealth();
+  await refreshNodes();
+  await checkPresence();
+  await showHyperStatus();
+  await loadEvoLog();
+  await loadPersonality();
+  await loadMemory();
+  await loadKairosStatus();
+  await loadDreamInsights();
+  await loadAnomalies();
+})();
+
+// 定时刷新
+setInterval(refreshNodes, 30000);
+setInterval(checkPresence, 60000);
+setInterval(showHyperStatus, 60000);
+setInterval(loadPersonality, 45000);
+setInterval(loadMemory, 45000);
+setInterval(loadKairosStatus, 30000);
+setInterval(loadAnomalies, 60000);
+
+// ====== 技能面板 (M9) ======
+let skillData = [];
+
+async function loadSkills() {
+  try {
+    const r = await fetch('/api/skills');
+    skillData = await r.json();
+    const list = document.getElementById('skillList');
+
+    if (!skillData || skillData.length === 0) {
+      list.innerHTML = '<div class="empty-tip">暂无技能，可通过对话自动学习或手动注册</div>';
+      document.getElementById('skillTotal').textContent = '0';
+      document.getElementById('skillLearned').textContent = '0';
+      document.getElementById('skillTotalUses').textContent = '0';
+      document.getElementById('skillAvgScore').textContent = '-';
+      return;
+    }
+
+    // 统计摘要
+    const total = skillData.length;
+    const learned = skillData.filter(s => s.auto_learned).length;
+    const totalUses = skillData.reduce((a, s) => a + (s.use_count || 0), 0);
+    const avgScore = (skillData.reduce((a, s) => a + (s.quality_score || 0), 0) / total).toFixed(1);
+    document.getElementById('skillTotal').textContent = total;
+    document.getElementById('skillLearned').textContent = learned;
+    document.getElementById('skillTotalUses').textContent = totalUses;
+    document.getElementById('skillAvgScore').textContent = avgScore;
+
+    const catLabels = { ha_control:'设备控制', daily:'日常场景', conversation:'对话模式', automation:'自动化', general:'通用' };
+    const qualityColor = (score) => {
+      if (score >= 8) return '#10b981';
+      if (score >= 5) return '#f59e0b';
+      return '#ef4444';
+    };
+
+    list.innerHTML = skillData.map(s => {
+      const score = s.quality_score || 5;
+      const triggers = (s.trigger_patterns || []).slice(0, 6);
+      return `<div class="skill-item">
+        <div class="skill-item-head">
+          <div class="skill-item-name">${s.name || '未命名'}</div>
+          <div class="skill-item-badges">
+            <span class="skill-badge ${s.auto_learned ? 'skill-badge-auto' : 'skill-badge-manual'}">${s.auto_learned ? '自动学习' : '手动注册'}</span>
+            <span class="skill-badge skill-badge-cat">${catLabels[s.category] || s.category || '通用'}</span>
+          </div>
+        </div>
+        <div class="skill-item-desc">${s.description || '无描述'}</div>
+        ${triggers.length > 0 ? `<div class="skill-item-triggers">${triggers.map(t => `<span class="skill-trigger-tag">${t}</span>`).join('')}</div>` : ''}
+        <div class="skill-item-stats">
+          使用 <span>${s.use_count || 0}</span> 次 ·
+          成功 <span>${s.success_count || 0}</span> 次 ·
+          质量 <span>${score}/10</span>
+        </div>
+        <div class="skill-quality-bar">
+          <div class="skill-quality-fill" style="width:${score * 10}%;background:${qualityColor(score)}"></div>
+        </div>
+        <div class="skill-item-actions">
+          <button class="skill-delete-btn" onclick="deleteSkill('${s.id}')">🗑️ 删除</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    console.error('loadSkills error:', e);
+    document.getElementById('skillList').innerHTML = '<div class="empty-tip">加载失败</div>';
+  }
+}
+
+async function deleteSkill(skillId) {
+  if (!confirm('确定删除此技能？')) return;
+  try {
+    await fetch(`/api/skills/${skillId}`, { method: 'DELETE' });
+    await loadSkills();
+  } catch (e) {
+    alert('删除失败: ' + e.message);
+  }
+}
+
+async function abstractSkills() {
+  try {
+    const btn = event.target;
+    btn.textContent = '🧬 抽象中…';
+    btn.disabled = true;
+    const r = await fetch('/api/skills/abstract', { method: 'POST' });
+    const d = await r.json();
+    btn.textContent = '🧠 抽象新技能';
+    btn.disabled = false;
+    await loadSkills();
+    alert(d.message || `分析完成`);
+  } catch (e) {
+    event.target.textContent = '🧠 抽象新技能';
+    event.target.disabled = false;
+    alert('抽象失败: ' + e.message);
+  }
+}
+
+function showAddSkillModal() {
+  document.getElementById('skillModal').classList.add('open');
+  document.getElementById('newSkillName').value = '';
+  document.getElementById('newSkillDesc').value = '';
+  document.getElementById('newSkillTriggers').value = '';
+  document.getElementById('newSkillCategory').value = 'general';
+}
+
+function closeSkillModal() {
+  document.getElementById('skillModal').classList.remove('open');
+}
+
+async function registerSkill() {
+  const name = document.getElementById('newSkillName').value.trim();
+  const description = document.getElementById('newSkillDesc').value.trim();
+  const triggersRaw = document.getElementById('newSkillTriggers').value.trim();
+  const category = document.getElementById('newSkillCategory').value;
+
+  if (!name) { alert('请输入技能名称'); return; }
+
+  const trigger_patterns = triggersRaw ? triggersRaw.split(/[,，]/).map(s => s.trim()).filter(Boolean) : [];
+
+  try {
+    const r = await fetch('/api/skills/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, description, trigger_patterns, category }),
+    });
+    const d = await r.json();
+    if (d.success || d.id) {
+      closeSkillModal();
+      await loadSkills();
+    } else {
+      alert(d.error || '注册失败');
+    }
+  } catch (e) {
+    alert('注册失败: ' + e.message);
+  }
+}
+
+// ====== Socket.IO 实时事件 ======
+(function initSocketIO() {
+  try {
+    const sio = io();
+    sio.on('chat_message', (data) => {
+      // 语音唤醒节点的对话自动显示
+      if (data.user_text && data.ai_response) {
+        appendMsg('user', `[${data.source}] ${data.user_text}`, data.source || '语音节点');
+        appendMsg('assistant', data.ai_response, '元芳 · 语音');
+        msgCount++;
+        document.getElementById('statMsgs').textContent = msgCount;
+        loadPersonality();
+        loadMemory();
+      }
+    });
+    sio.on('device_update', (data) => {
+      // 设备状态变化后自动刷新 HA 面板
+      const tabDevices = document.getElementById('tabDevices');
+      if (tabDevices && tabDevices.classList.contains('active')) {
+        loadHADevices();
+      }
+      // 同步更新顶部 HA 状态
+      fetch('/api/ha/ping').then(r => r.json()).then(d => {
+        if (d.connected) {
+          fetch('/api/ha/summary').then(r => r.json()).then(s => {
+            if (s && !s.error) {
+              const total = Object.values(s).reduce((a, v) => a + (v?.total || 0), 0);
+              document.getElementById('statHA').textContent = total;
+              document.getElementById('statHA').style.color = 'var(--green)';
+            }
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+    });
+    sio.on('node_online', (data) => {
+      refreshNodes();
+    });
+    sio.on('scene_update', (data) => {
+      loadMemory();
+    });
+    // KAIROS 实时事件
+    sio.on('kairos_notification', (data) => {
+      loadAnomalies();
+    });
+    sio.on('kairos_anomaly', (data) => {
+      loadAnomalies();
+      // 异常高亮闪烁
+      const badge = document.getElementById('anomalyBadge');
+      if (badge) {
+        badge.style.animation = 'blink 1s 3';
+        setTimeout(() => badge.style.animation = '', 3000);
+      }
+    });
+    sio.on('kairos_dream_complete', (data) => {
+      loadKairosStatus();
+      loadDreamInsights();
+    });
+    // M10: 规则引擎实时事件
+    sio.on('notification', (data) => {
+      loadNotifyHistory();
+    });
+    sio.on('notification_aggregated', (data) => {
+      // 聚合通知闪烁
+      const unreadEl = document.getElementById('notifyUnread');
+      if (unreadEl) {
+        unreadEl.style.animation = 'blink 1s 2';
+        setTimeout(() => unreadEl.style.animation = '', 2000);
+      }
+    });
+  } catch(e) {
+    // Socket.IO 不可用时静默降级
+    console.log('Socket.IO not available, using polling mode');
+  }
+})();
+
+// ====== M10: 规则引擎面板 ======
+let ruleData = [];
+
+async function loadRules() {
+  try {
+    const r = await fetch('/api/rules');
+    ruleData = await r.json();
+    const list = document.getElementById('ruleList');
+    document.getElementById('ruleTotal').textContent = ruleData.length;
+    document.getElementById('ruleEnabled').textContent = ruleData.filter(r => r.enabled).length;
+    document.getElementById('ruleTriggers').textContent = ruleData.reduce((a, r) => a + (r.trigger_count || 0), 0);
+    if (!ruleData.length) {
+      list.innerHTML = '<div class="empty-tip">暂无规则，点击"新增规则"创建</div>';
+      return;
+    }
+    const triggerLabels = { sensor_threshold:'传感器阈值', time_schedule:'定时触发', device_state:'设备状态', user_presence:'在/离家', emotion_alert:'情绪异常', scene_change:'场景切换' };
+    list.innerHTML = ruleData.map(r => `
+      <div class="skill-item" style="opacity:${r.enabled ? 1 : 0.5}">
+        <div class="skill-item-head">
+          <div class="skill-item-name">${r.name || '未命名'}</div>
+          <div class="skill-item-badges">
+            <span class="skill-badge" style="background:rgba(0,212,255,0.1);color:var(--accent);font-size:0.58rem">${triggerLabels[r.trigger_type] || r.trigger_type}</span>
+            <span class="skill-badge" style="background:${r.enabled ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};color:${r.enabled ? '#10b981' : '#ef4444'}">${r.enabled ? '启用' : '禁用'}</span>
+          </div>
+        </div>
+        <div class="skill-item-desc">${r.description || '无描述'}</div>
+        <div class="skill-item-stats">
+          优先级 <span>${r.priority || 5}</span> ·
+          触发 <span>${r.trigger_count || 0}</span> 次 ·
+          冷却 <span>${r.cooldown_minutes || 30}分钟</span>
+          ${r.last_triggered ? ` · 上次 <span>${r.last_triggered.slice(5,16)}</span>` : ''}
+        </div>
+        <div class="skill-item-actions">
+          <button class="skill-delete-btn" style="border-color:rgba(0,212,255,0.3);color:var(--accent);background:rgba(0,212,255,0.08)" onclick="toggleRule('${r.id}', ${!r.enabled})">${r.enabled ? '⏸ 禁用' : '▶ 启用'}</button>
+          <button class="skill-delete-btn" onclick="deleteRule('${r.id}')">🗑️ 删除</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    document.getElementById('ruleList').innerHTML = '<div class="empty-tip">加载失败</div>';
+  }
+}
+
+async function evaluateRules() {
+  try {
+    const r = await fetch('/api/rules/evaluate', { method: 'POST' });
+    const d = await r.json();
+    alert(`评估完成：${d.matched_count} 条规则匹配`);
+  } catch (e) {
+    alert('评估失败: ' + e.message);
+  }
+}
+
+async function toggleRule(ruleId, enabled) {
+  try {
+    await fetch(`/api/rules/${ruleId}/toggle`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ enabled }) });
+    await loadRules();
+  } catch (e) {
+    alert('操作失败: ' + e.message);
+  }
+}
+
+async function deleteRule(ruleId) {
+  if (!confirm('确定删除此规则？')) return;
+  try {
+    await fetch(`/api/rules/${ruleId}`, { method: 'DELETE' });
+    await loadRules();
+  } catch (e) {
+    alert('删除失败: ' + e.message);
+  }
+}
+
+function showAddRuleModal() {
+  document.getElementById('ruleModal').classList.add('open');
+  document.getElementById('newRuleName').value = '';
+  document.getElementById('newRuleDesc').value = '';
+  document.getElementById('newRuleCooldown').value = '30';
+  document.getElementById('newRulePriority').value = '5';
+  updateRuleTriggerUI();
+}
+function closeRuleModal() { document.getElementById('ruleModal').classList.remove('open'); }
+
+function updateRuleTriggerUI() {
+  const type = document.getElementById('newRuleTriggerType').value;
+  const configDiv = document.getElementById('ruleTriggerConfig');
+  if (type === 'sensor_threshold') {
+    configDiv.innerHTML = `
+      <div class="skill-form-group"><label>传感器类型</label>
+        <select class="skill-input" id="ruleSensorType"><option value="temperature">温度</option><option value="humidity">湿度</option><option value="battery">电量</option><option value="light">光照</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div class="skill-form-group"><label>运算符</label>
+          <select class="skill-input" id="ruleOperator"><option value=">">></option><option value="<"><</option><option value=">=">≥</option><option value="<=">≤</option></select>
+        </div>
+        <div class="skill-form-group"><label>阈值</label><input class="skill-input" id="ruleThreshold" type="number" value="30"></div>
+      </div>`;
+  } else if (type === 'time_schedule') {
+    configDiv.innerHTML = `<div class="skill-form-group"><label>触发时间 (HH:MM)</label><input class="skill-input" id="ruleTime" placeholder="22:30" value="22:00"></div>`;
+  } else if (type === 'user_presence') {
+    configDiv.innerHTML = `<div class="skill-form-group"><label>触发条件</label>
+      <select class="skill-input" id="rulePresence"><option value="true">用户在家时</option><option value="false">用户离家时</option></select></div>`;
+  } else if (type === 'emotion_alert') {
+    configDiv.innerHTML = `<div class="skill-form-group"><label>负面情绪阈值 (0-1)</label><input class="skill-input" id="ruleEmotionThreshold" type="number" step="0.1" value="0.3"></div>`;
+  } else {
+    configDiv.innerHTML = `<div class="empty-tip" style="padding:8px 0">该触发类型暂无额外配置</div>`;
+  }
+}
+
+async function addRule() {
+  const name = document.getElementById('newRuleName').value.trim();
+  if (!name) { alert('请输入规则名称'); return; }
+  const trigger_type = document.getElementById('newRuleTriggerType').value;
+  const trigger_config = {};
+  if (trigger_type === 'sensor_threshold') {
+    trigger_config.sensor_type = document.getElementById('ruleSensorType').value;
+    trigger_config.operator = document.getElementById('ruleOperator').value;
+    trigger_config.threshold = parseFloat(document.getElementById('ruleThreshold').value);
+  } else if (trigger_type === 'time_schedule') {
+    trigger_config.time = document.getElementById('ruleTime').value;
+  } else if (trigger_type === 'user_presence') {
+    trigger_config.home = document.getElementById('rulePresence').value === 'true';
+  } else if (trigger_type === 'emotion_alert') {
+    trigger_config.metric = 'negative_ratio';
+    trigger_config.operator = '>';
+    trigger_config.threshold = parseFloat(document.getElementById('ruleEmotionThreshold').value);
+  }
+  try {
+    const r = await fetch('/api/rules', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name,
+        description: document.getElementById('newRuleDesc').value.trim(),
+        trigger_type,
+        trigger_config,
+        cooldown_minutes: parseInt(document.getElementById('newRuleCooldown').value) || 30,
+        priority: parseInt(document.getElementById('newRulePriority').value) || 5,
+        actions: [{ type: 'notify', title: `规则: ${name}`, message: `自动化规则 "${name}" 已触发`, level: 'info' }],
+      }),
+    });
+    const d = await r.json();
+    if (d.success || d.rule_id) {
+      closeRuleModal();
+      await loadRules();
+    } else {
+      alert(d.error || '创建失败');
+    }
+  } catch (e) {
+    alert('创建失败: ' + e.message);
+  }
+}
+
+// ====== M10: 用户管理面板 ======
+let userData = [];
+
+async function loadUsers() {
+  try {
+    const r = await fetch('/api/users');
+    userData = await r.json();
+    const list = document.getElementById('userList');
+    if (!userData.length) {
+      list.innerHTML = '<div class="empty-tip">暂无用户</div>';
+      return;
+    }
+    list.innerHTML = userData.map(u => `
+      <div class="skill-item">
+        <div class="skill-item-head">
+          <div class="skill-item-name">${u.display_name || u.name} ${u.is_active ? '🟢' : ''}</div>
+          <div class="skill-item-badges">
+            <span class="skill-badge" style="background:${u.role === 'admin' ? 'rgba(239,68,68,0.15);color:#ef4444' : 'rgba(124,58,237,0.15);color:#7c3aed'}">${u.role === 'admin' ? '管理员' : '成员'}</span>
+          </div>
+        </div>
+        <div class="skill-item-desc">用户名: ${u.name} · 会话: ${u.session_count || 0}</div>
+        <div class="skill-item-stats">
+          注册 <span>${u.created_at ? u.created_at.slice(0,10) : '-'}</span>
+          ${u.last_active ? ` · 活跃 <span>${u.last_active.slice(5,16)}</span>` : ''}
+        </div>
+        ${u.name !== 'admin' ? `<div class="skill-item-actions"><button class="skill-delete-btn" onclick="deleteUser('${u.name}')">🗑️ 删除</button></div>` : ''}
+      </div>
+    `).join('');
+  } catch (e) {
+    document.getElementById('userList').innerHTML = '<div class="empty-tip">加载失败</div>';
+  }
+}
+
+async function deleteUser(name) {
+  if (!confirm(`确定删除用户 "${name}"？`)) return;
+  try {
+    const r = await fetch(`/api/users/${name}`, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.error) { alert(d.error); return; }
+    await loadUsers();
+  } catch (e) {
+    alert('删除失败: ' + e.message);
+  }
+}
+
+function showAddUserModal() {
+  document.getElementById('userModal').classList.add('open');
+  document.getElementById('newUserName').value = '';
+  document.getElementById('newUserDisplay').value = '';
+}
+function closeUserModal() { document.getElementById('userModal').classList.remove('open'); }
+
+async function addUser() {
+  const name = document.getElementById('newUserName').value.trim();
+  if (!name) { alert('请输入用户名'); return; }
+  try {
+    const r = await fetch('/api/users/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name,
+        display_name: document.getElementById('newUserDisplay').value.trim() || name,
+        role: document.getElementById('newUserRole').value,
+      }),
+    });
+    const d = await r.json();
+    if (d.success) {
+      closeUserModal();
+      const token = d.user?.token;
+      if (token) {
+        alert(`用户创建成功！\n\nToken: ${token}\n\n请妥善保存此 Token，用于认证登录。`);
+      }
+      await loadUsers();
+    } else {
+      alert(d.error || '创建失败');
+    }
+  } catch (e) {
+    alert('创建失败: ' + e.message);
+  }
+}
+
+// ====== M10: 通知中心面板 ======
+let notifyData = [];
+
+async function loadNotifyHistory() {
+  try {
+    const [histRes, reportRes, unreadRes] = await Promise.all([
+      fetch('/api/notify/history?n=30').then(r => r.json()).catch(() => []),
+      fetch('/api/notify/report').then(r => r.json()).catch(() => ({})),
+      fetch('/api/notify/unread').then(r => r.json()).catch(() => ({count: 0})),
+    ]);
+    notifyData = histRes;
+    document.getElementById('notifyTotal').textContent = reportRes.total_notifications || 0;
+    document.getElementById('notifyUnread').textContent = unreadRes.count || 0;
+    document.getElementById('notifyChannels').textContent = (reportRes.channels_enabled || []).length;
+    const list = document.getElementById('notifyHistoryList');
+    if (!notifyData.length) {
+      list.innerHTML = '<div class="empty-tip">暂无通知</div>';
+      return;
+    }
+    const levelColors = { info: 'var(--accent)', warning: 'var(--orange)', high: '#ef4444', critical: '#ef4444' };
+    list.innerHTML = notifyData.slice().reverse().map(n => `
+      <div class="skill-item" style="border-left:3px solid ${levelColors[n.level] || 'var(--border)'};${!n.acknowledged ? 'background:rgba(0,212,255,0.04);' : ''}">
+        <div class="skill-item-head">
+          <div class="skill-item-name">${n.title || '通知'}</div>
+          <div class="skill-item-badges">
+            <span class="skill-badge" style="background:rgba(255,255,255,0.06);color:var(--muted);font-size:0.58rem">${n.level || 'info'}</span>
+            ${!n.acknowledged ? '<span class="skill-badge" style="background:rgba(0,212,255,0.15);color:var(--accent)">未读</span>' : ''}
+            ${n.escalated ? '<span class="skill-badge" style="background:rgba(239,68,68,0.15);color:#ef4444">升级</span>' : ''}
+          </div>
+        </div>
+        <div class="skill-item-desc">${n.message || '无内容'}</div>
+        <div class="skill-item-stats">时间 <span>${n.timestamp ? n.timestamp.slice(5,16) : '-'}</span>
+          ${n.aggregated ? ` · 聚合 <span>${n.agg_count || 2}次</span>` : ''}
+          ${n.channels_sent?.length ? ` · 渠道 <span>${n.channels_sent.join(', ')}</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    document.getElementById('notifyHistoryList').innerHTML = '<div class="empty-tip">加载失败</div>';
+  }
+}
+
+async function markAllRead() {
+  try {
+    await fetch('/api/notify/acknowledge', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ all: true }) });
+    await loadNotifyHistory();
+  } catch (e) {}
+}
+
+function showSendNotifyModal() {
+  document.getElementById('notifyModal').classList.add('open');
+  document.getElementById('newNotifyTitle').value = '';
+  document.getElementById('newNotifyMessage').value = '';
+}
+function closeNotifyModal() { document.getElementById('notifyModal').classList.remove('open'); }
+
+async function sendNotification() {
+  const title = document.getElementById('newNotifyTitle').value.trim();
+  const message = document.getElementById('newNotifyMessage').value.trim();
+  if (!title || !message) { alert('请填写标题和内容'); return; }
+  try {
+    await fetch('/api/notify/send', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        title,
+        message,
+        level: document.getElementById('newNotifyLevel').value,
+      }),
+    });
+    closeNotifyModal();
+    await loadNotifyHistory();
+  } catch (e) {
+    alert('发送失败: ' + e.message);
+  }
+}
+
+// ====== M11: 底部导航 + PWA ======
+
+// 底部导航切换
+function navToTab(tab, btn) {
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  const tabMap = { chat:'tabChat', devices:'tabDevices', status:'tabStatus', skills:'tabSkills', rules:'tabRules', users:'tabUsers', notify:'tabNotify' };
+  const targetId = tabMap[tab];
+  if (targetId) { const el = document.getElementById(targetId); if (el) el.classList.add('active'); }
+  if (tab === 'devices') loadHADevices();
+  if (tab === 'skills') loadSkills();
+  if (tab === 'rules') loadRules();
+  if (tab === 'users') loadUsers();
+  if (tab === 'notify') loadNotifyHistory();
+  if (tab === 'status') { loadPersonality(); loadMemory(); checkHealth(); loadKairosStatus(); }
+}
+
+// 同步桌面 tab-bar 与底部导航
+const _origSwitchTab = switchTab;
+switchTab = function(tab, btn) {
+  _origSwitchTab(tab, btn);
+  const navMap = { chat:'chat', devices:'devices', skills:'skills', rules:'skills', users:'skills', notify:'notify' };
+  const navTab = navMap[tab];
+  document.querySelectorAll('.bottom-nav-item').forEach(b => { b.classList.toggle('active', b.dataset.tab === navTab); });
+};
+
+// 移动端状态面板 — 覆盖 loadPersonality 同步数据
+const _origLoadPersonality = loadPersonality;
+loadPersonality = async function() {
+  await _origLoadPersonality();
+  const moodEl = document.getElementById('moodTagMobile');
+  if (!moodEl) return;
+  try {
+    const r = await fetch('/api/personality/status');
+    const d = await r.json();
+    const moodMap = { calm:'平静', excited:'兴奋', tired:'疲惫', focused:'专注', curious:'好奇' };
+    const avatarMap = { calm:'😌', excited:'🤩', tired:'😴', focused:'🎯', curious:'🧐' };
+    moodEl.textContent = moodMap[d.mood] || d.mood;
+    moodEl.className = 'mood-tag mood-' + d.mood;
+    const avatarMobile = document.getElementById('personaAvatarMobile');
+    if (avatarMobile) avatarMobile.textContent = avatarMap[d.mood] || '🤖';
+    const energy = Math.round((d.energy ?? 0) * 100);
+    const stress = Math.round((d.stress ?? 0) * 100);
+    const eBar = document.getElementById('energyBarMobile');
+    const eVal = document.getElementById('energyValMobile');
+    const sBar = document.getElementById('stressBarMobile');
+    const sVal = document.getElementById('stressValMobile');
+    if (eBar) eBar.style.width = energy + '%';
+    if (eVal) eVal.textContent = energy + '%';
+    if (sBar) sBar.style.width = stress + '%';
+    if (sVal) sVal.textContent = stress + '%';
+    const traits = d.traits || {};
+    const mobileGrid = document.getElementById('traitGridMobile');
+    if (mobileGrid) {
+      const tNames = {curiosity:'好奇心',loyalty:'忠诚度',playfulness:'活泼度',caution:'谨慎度',initiative:'主动性'};
+      mobileGrid.innerHTML = Object.entries(traits).map(([k, v]) =>
+        '<div class="trait-item"><span class="trait-name">' + (tNames[k]||k) + '</span><span class="trait-val">' + Math.round(v*100) + '%</span></div>'
+      ).join('');
+    }
+  } catch {}
+};
+
+// 移动端记忆面板同步
+const _origLoadMemory = loadMemory;
+loadMemory = async function() {
+  await _origLoadMemory();
+  try {
+    const r = await fetch('/api/memory/report');
+    const d = await r.json();
+    const mE = document.getElementById('memEmotionalMobile');
+    const mS = document.getElementById('memSceneMobile');
+    const mC = document.getElementById('memSceneCurrentMobile');
+    const sceneMap = { morning:'早晨', evening:'傍晚', work:'工作', sleep:'睡眠' };
+    if (mE) mE.textContent = d.emotional?.total ?? 0;
+    if (mS) mS.textContent = d.scene?.total ?? 0;
+    if (mC) mC.textContent = sceneMap[d.scene?.predicted_current] || d.scene?.predicted_current || '-';
+  } catch {}
+};
+
+// KAIROS 状态同步到移动面板
+const _origLoadKairosStatus = loadKairosStatus;
+loadKairosStatus = async function() {
+  await _origLoadKairosStatus();
+  try {
+    const r = await fetch('/api/kairos/status');
+    const d = await r.json();
+    const daemon = d.daemon || {};
+    const isRunning = daemon.running || false;
+    const ktM = document.getElementById('kairosTicksMobile');
+    const koM = document.getElementById('kairosObsCountMobile');
+    const kaM = document.getElementById('kairosActivityMobile');
+    const ksM = document.getElementById('kairosSilenceMobile');
+    const kBtM = document.getElementById('kairosToggleBtnMobile');
+    if (ktM) ktM.textContent = daemon.tick_count || 0;
+    if (koM) koM.textContent = daemon.total_observations || 0;
+    if (kaM) kaM.textContent = (daemon.user_activity || {}).level || '-';
+    if (ksM) ksM.textContent = (daemon.user_activity || {}).silence_minutes != null ? (daemon.user_activity.silence_minutes + 'm') : '-';
+    if (kBtM) { kBtM.textContent = isRunning ? '⏹ 停止' : '▶ 启动'; kBtM.dataset.running = isRunning; }
+  } catch {}
+};
+
+// 健康检查同步到移动面板
+const _origCheckHealth = checkHealth;
+checkHealth = async function() {
+  await _origCheckHealth();
+  fetch('/api/ha/ping').then(r => r.json()).then(d => {
+    const el = document.getElementById('mapi-ha');
+    if (el) { el.textContent = d.connected ? '✓' : '✗'; el.className = d.connected ? 'api-status-ok' : 'api-status-err'; }
+  }).catch(() => {
+    const el = document.getElementById('mapi-ha');
+    if (el) { el.textContent = '✗'; el.className = 'api-status-err'; }
+  });
+};
+
+// 通知徽章
+function updateNotifyBadge(count) {
+  const badge = document.getElementById('notifyBadge');
+  if (!badge) return;
+  if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.classList.add('show'); }
+  else { badge.classList.remove('show'); }
+}
+
+const _origLoadNotifyHistory = loadNotifyHistory;
+loadNotifyHistory = async function() {
+  await _origLoadNotifyHistory();
+  try { const r = await fetch('/api/notify/unread'); const d = await r.json(); updateNotifyBadge(d.count || 0); } catch {}
+};
+
+// PWA Service Worker 注册
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/pwa/sw.js').then((reg) => {
+      console.log('[PWA] SW registered:', reg.scope);
+      reg.addEventListener('updatefound', () => { console.log('[PWA] 新版本可用'); });
+    }).catch((err) => { console.log('[PWA] SW failed:', err); });
+  });
+}
+
+// PWA 安装提示
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  setTimeout(() => {
+    const banner = document.getElementById('installBanner');
+    if (banner && !sessionStorage.getItem('installDismissed')) banner.classList.remove('dismissed');
+  }, 3000);
+});
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('installBanner')?.classList.add('dismissed'); });
+}
+function dismissInstall() {
+  sessionStorage.setItem('installDismissed', '1');
+  document.getElementById('installBanner')?.classList.add('dismissed');
+}
+
+// M11: 页面可见性 — 恢复时刷新
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) { checkHealth(); loadKairosStatus(); }
+});
+
+// M11: URL 参数快捷切换标签
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
+  if (tab && window.innerWidth <= 720) {
+    setTimeout(() => { const navItem = document.querySelector('.bottom-nav-item[data-tab="' + tab + '"]'); if (navItem) navToTab(tab, navItem); }, 100);
+  }
+})();
+
+// M11: 网络状态变化
+window.addEventListener('online', () => { checkHealth(); loadKairosStatus(); });
+window.addEventListener('offline', () => {
+  const hs = document.getElementById('healthStatus');
+  if (hs) { hs.textContent = '⚠️ 离线'; hs.style.color = 'var(--orange)'; }
+});
+</script>
+</body>
+</html>

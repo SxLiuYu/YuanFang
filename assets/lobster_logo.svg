@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B35"/>
+      <stop offset="100%" style="stop-color:#C41E3A"/>
+    </linearGradient>
+    <linearGradient id="clawGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E63946"/>
+      <stop offset="100%" style="stop-color:#9D0208"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#0D1B2A" stroke="#FF6B35" stroke-width="3"/>
+
+  <!-- Antenna -->
+  <path d="M75 65 Q65 35, 55 25" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M125 65 Q135 35, 145 25" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="55" cy="25" r="5" fill="#FF6B35"/>
+  <circle cx="145" cy="25" r="5" fill="#FF6B35"/>
+
+  <!-- Eye stalks -->
+  <ellipse cx="80" cy="72" rx="10" ry="12" fill="url(#bodyGrad)"/>
+  <ellipse cx="120" cy="72" rx="10" ry="12" fill="url(#bodyGrad)"/>
+  <circle cx="80" cy="68" r="5" fill="#0D1B2A"/>
+  <circle cx="120" cy="68" r="5" fill="#0D1B2A"/>
+  <circle cx="81" cy="67" r="2" fill="white"/>
+  <circle cx="121" cy="67" r="2" fill="white"/>
+
+  <!-- Body -->
+  <ellipse cx="100" cy="105" rx="45" ry="35" fill="url(#bodyGrad)"/>
+
+  <!-- Body segments -->
+  <path d="M70 95 Q100 90, 130 95" stroke="#9D0208" stroke-width="2" fill="none"/>
+  <path d="M68 105 Q100 100, 132 105" stroke="#9D0208" stroke-width="2" fill="none"/>
+  <path d="M70 115 Q100 110, 130 115" stroke="#9D0208" stroke-width="2" fill="none"/>
+
+  <!-- Left claw -->
+  <ellipse cx="48" cy="115" rx="22" ry="18" fill="url(#clawGrad)" transform="rotate(-20, 48, 115)"/>
+  <path d="M32 105 Q20 95, 18 100 Q15 105, 25 115" fill="url(#clawGrad)" stroke="#9D0208" stroke-width="1"/>
+  <path d="M32 125 Q20 135, 18 130 Q15 125, 25 115" fill="url(#clawGrad)" stroke="#9D0208" stroke-width="1"/>
+
+  <!-- Right claw -->
+  <ellipse cx="152" cy="115" rx="22" ry="18" fill="url(#clawGrad)" transform="rotate(20, 152, 115)"/>
+  <path d="M168 105 Q180 95, 182 100 Q185 105, 175 115" fill="url(#clawGrad)" stroke="#9D0208" stroke-width="1"/>
+  <path d="M168 125 Q180 135, 182 130 Q185 125, 175 115" fill="url(#clawGrad)" stroke="#9D0208" stroke-width="1"/>
+
+  <!-- Legs left -->
+  <path d="M65 125 Q50 140, 45 155" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M78 130 Q65 148, 62 160" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M90 133 Q80 152, 78 163" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Legs right -->
+  <path d="M135 133 Q145 152, 147 163" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M122 130 Q135 148, 138 160" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M110 125 Q120 140, 125 155" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Tail fan -->
+  <ellipse cx="100" cy="148" rx="25" ry="12" fill="url(#bodyGrad)" opacity="0.8"/>
+  <path d="M75 148 Q100 160, 125 148" stroke="#9D0208" stroke-width="2" fill="none"/>
+
+  <!-- Glowing effect for brain -->
+  <circle cx="100" cy="100" r="8" fill="#FF6B35" opacity="0.6" filter="url(#glow)"/>
+
+  <!-- Military rank indicator - 3 stars -->
+  <circle cx="100" cy="40" r="4" fill="#FFD700" filter="url(#glow)"/>
+  <circle cx="92" cy="45" r="3" fill="#FFD700" filter="url(#glow)"/>
+  <circle cx="108" cy="45" r="3" fill="#FFD700" filter="url(#glow)"/>
+</svg>

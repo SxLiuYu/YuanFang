@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+dist/
+build/
+*.egg
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Data directories (mounted as volumes)
+memory_store/
+chat_logs/
+daemon_logs/
+dream_insights/
+evolution_memory/
+skills_store/
+personality_state.json
+dream_state.json
+
+# Test
+tests/
+*.test.py
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
