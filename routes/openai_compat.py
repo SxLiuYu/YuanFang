@@ -9,6 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 openai_bp = Blueprint("openai", __name__, url_prefix="/api/v1")
+api_bp = openai_bp  # Alias for backward compatibility
 
 
 @openai_bp.route("/chat/completions", methods=["POST"])

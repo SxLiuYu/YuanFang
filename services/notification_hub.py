@@ -1,599 +1,119 @@
+# services/notification_hub.py
 """
-🔔 元芳通知中心 · NotificationHub
-统一告警管理与多渠道推送�?
-
-核心能力�?
-1. 告警聚合：同类型异常合并（N 分钟内相同异常只发一次）
-2. 告警升级：未处理告警超时自动升级严重级别
-3. 告警静默：用户设置免打扰时段
-4. 多渠道推送：
-   - WebSocket（已有，保持�?
-   - 微信推送（Server�?企业微信 Webhook�?
-   - 邮件通知（SMTP�?
-   - Webhook（通用�?
-5. 通知偏好：用户可配置接收渠道和最低严重级�?
+Notification Hub - 统一通知中心
+WebSocket / Telegram / Dashboard / Log 多通道推送
 """
-
-import os
-import json
 import datetime
-import threading
-import time
-import hashlib
 import logging
-from pathlib import Path
-from typing import Optional, Callable
+from typing import Optional
 
 logger = logging.getLogger(__name__)
-from urllib.request import Request, urlopen
-from urllib.parse import urlencode
-
-# 通知数据目录
-NOTIFY_DIR = Path(__file__).parent / "notifications"
-NOTIFY_DIR.mkdir(exist_ok=True)
-
-NOTIFY_HISTORY_FILE = NOTIFY_DIR / "history.json"
-NOTIFY_CONFIG_FILE = NOTIFY_DIR / "notify_config.json"
-
-# 默认聚合窗口（秒�?
-DEFAULT_AGGREGATION_WINDOW = 300  # 5 分钟
-# 告警升级阈值（秒）
-DEFAULT_ESCALATION_TIMEOUT = 3600  # 1 小时
 
 
 class NotificationHub:
     """
-    统一通知中心�?
+    统一通知中心
     
-    �?kairos_tools.KairosTools 的通知功能互补�?
-    - KairosTools: KAIROS 内部使用，简单推�?
-    - NotificationHub: 用户级通知管理，支持聚�?升级/静默/多渠�?
+    支持通道：
+    - WebSocket (dashboard / voice_nodes)
+    - Telegram Bot
+    - 系统日志
     """
 
-    def __init__(self, socketio=None):
+    def __init__(self, socketio=None, telegram_bot=None):
         self._socketio = socketio
-        self._lock = threading.Lock()
-
-        # 告警聚合缓存 {dedup_key: {last_sent, count, ...}}
-        self._agg_cache = {}
-        self._agg_window = DEFAULT_AGGREGATION_WINDOW
-
-        # 通知历史
-        self._history = []
-        self._max_history = 500
-
-        # 渠道配置
+        self._telegram = telegram_bot
+        self._queue = []
+        self._max_queue = 100
         self._channels = {
-            "websocket": {"enabled": True, "name": "WebSocket 推�?},
-            "wechat_work": {
-                "enabled": False,
-                "name": "企业微信机器�?,
-                "webhook_url": "",
-            },
-            "server_chan": {
-                "enabled": False,
-                "name": "Server�?,
-                "send_key": "",
-            },
-            "email": {
-                "enabled": False,
-                "name": "邮件通知",
-                "smtp_host": "",
-                "smtp_port": 587,
-                "smtp_user": "",
-                "smtp_pass": "",
-                "from_addr": "",
-                "to_addrs": [],
-            },
-            "webhook": {
-                "enabled": False,
-                "name": "通用 Webhook",
-                "url": "",
-                "method": "POST",
-                "headers": {},
-            },
+            "websocket": {"enabled": True, "name": "WebSocket"},
+            "telegram": {"enabled": telegram_bot is not None, "name": "Telegram"},
+            "log": {"enabled": True, "name": "System Log"},
         }
-
-        # 静默时段
-        self._silence_periods = []  # [{"start": "23:00", "end": "07:00", "days": [0,1,...6]}]
-
-        # 每用户通知偏好 {user_token: {channels, min_severity}}
-        self._user_prefs = {}
-
-        self._load_config()
-        self._load_history()
-
-    # ─────────── 配置管理 ───────────
-
-    def _load_config(self):
-        """加载通知配置"""
-        if NOTIFY_CONFIG_FILE.exists():
-            try:
-                data = json.loads(NOTIFY_CONFIG_FILE.read_text("utf-8"))
-                if "channels" in data:
-                    self._channels.update(data["channels"])
-                if "silence_periods" in data:
-                    self._silence_periods = data["silence_periods"]
-                if "user_prefs" in data:
-                    self._user_prefs = data["user_prefs"]
-                if "aggregation_window" in data:
-                    self._agg_window = data["aggregation_window"]
-            except Exception as e:
-                logger.error(f"配置加载失败: {e}")
-
-    def _save_config(self):
-        """保存通知配置"""
-        data = {
-            "channels": self._channels,
-            "silence_periods": self._silence_periods,
-            "user_prefs": self._user_prefs,
-            "aggregation_window": self._agg_window,
-        }
-        NOTIFY_CONFIG_FILE.write_text(
-            json.dumps(data, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-
-    def _load_history(self):
-        if NOTIFY_HISTORY_FILE.exists():
-            try:
-                self._history = json.loads(NOTIFY_HISTORY_FILE.read_text("utf-8"))
-            except Exception:
-                self._history = []
-
-    def _save_history(self):
-        data = self._history[-self._max_history:]
-        NOTIFY_HISTORY_FILE.write_text(
-            json.dumps(data, ensure_ascii=False, indent=1),
-            encoding="utf-8",
-        )
-
-    # ─────────── 渠道配置 API ───────────
-
-    def get_channel_config(self, channel: str = None) -> dict:
-        """获取渠道配置"""
-        if channel:
-            return self._channels.get(channel, {})
-        return self._channels
-
-    def update_channel_config(self, channel: str, config: dict) -> dict:
-        """更新渠道配置"""
-        if channel not in self._channels:
-            return {"error": f"未知渠道: {channel}"}
-        self._channels[channel].update(config)
-        self._save_config()
-        return {"success": True, "channel": channel}
-
-    # ─────────── 静默时段 ───────────
-
-    def is_silenced(self) -> bool:
-        """检查当前是否在静默时段"""
-        now = datetime.datetime.now()
-        current_time = now.strftime("%H:%M")
-        current_weekday = now.weekday()
-
-        for period in self._silence_periods:
-            start = period.get("start", "00:00")
-            end = period.get("end", "23:59")
-            days = period.get("days", [])  # �?= 全部
-
-            if days and current_weekday not in days:
-                continue
-
-            # 处理跨午夜的情况 (�?23:00 - 07:00)
-            if start <= end:
-                if start <= current_time <= end:
-                    return True
-            else:
-                if current_time >= start or current_time <= end:
-                    return True
-
-        return False
-
-    def set_silence_periods(self, periods: list) -> dict:
-        """设置静默时段"""
-        self._silence_periods = periods
-        self._save_config()
-        return {"success": True, "periods": periods}
-
-    def get_silence_periods(self) -> list:
-        return self._silence_periods
-
-    # ─────────── 用户偏好 ───────────
-
-    def get_user_prefs(self, user_token: str) -> dict:
-        return self._user_prefs.get(user_token, {
-            "channels": ["websocket"],
-            "min_severity": "info",
-        })
-
-    def set_user_prefs(self, user_token: str, prefs: dict) -> bool:
-        self._user_prefs[user_token] = prefs
-        self._save_config()
-        return True
-
-    # ─────────── 告警聚合 ───────────
-
-    def _make_dedup_key(self, title: str, level: str, category: str = "") -> str:
-        """生成去重 key（同标题+同级别在窗口期内合并�?""
-        raw = f"{title}:{level}:{category}"
-        return hashlib.md5(raw.encode("utf-8")).hexdigest()[:16]
-
-    def _should_aggregate(self, dedup_key: str) -> bool:
-        """检查是否应该聚合（窗口期内已发送过相同告警�?""
-        cached = self._agg_cache.get(dedup_key)
-        if not cached:
-            return False
-        elapsed = time.time() - cached.get("last_sent", 0)
-        return elapsed < self._agg_window
-
-    def _update_agg_cache(self, dedup_key: str, count: int = 1):
-        self._agg_cache[dedup_key] = {
-            "last_sent": time.time(),
-            "count": count,
-        }
-        # 清理过期缓存
-        expired = [k for k, v in self._agg_cache.items()
-                   if time.time() - v.get("last_sent", 0) > self._agg_window * 2]
-        for k in expired:
-            del self._agg_cache[k]
-
-    # ─────────── 告警升级 ───────────
-
-    def _check_escalation(self, title: str, level: str) -> str:
-        """
-        检查是否需要升级告警级别�?
-        同标题同级别的告警在 DEFAULT_ESCALATION_TIMEOUT 内再次触发则升级�?
-        """
-        if level in ("high", "critical"):
-            return level
-
-        # 查找历史中相同标题的未处理告�?
-        relevant = [
-            h for h in self._history
-            if h.get("title") == title
-            and h.get("level") == level
-            and not h.get("acknowledged", False)
-        ]
-        if not relevant:
-            return level
-
-        first = relevant[0]
-        try:
-            first_time = datetime.datetime.fromisoformat(first.get("timestamp", ""))
-            elapsed = (datetime.datetime.now() - first_time).total_seconds()
-            if elapsed > DEFAULT_ESCALATION_TIMEOUT:
-                # 升级
-                escalation_map = {"info": "warning", "warning": "high", "high": "critical"}
-                new_level = escalation_map.get(level, level)
-                return new_level
-        except Exception:
-            pass
-
-        return level
-
-    # ─────────── 核心发�?───────────
 
     def notify(self, title: str, message: str, level: str = "info",
-               category: str = "", user_token: str = None,
-               skip_aggregation: bool = False) -> dict:
+               target: str = "all") -> dict:
         """
-        发送通知（核心方法）�?
-
+        发送通知
+        
         Args:
             title: 通知标题
             message: 通知内容
-            level: info / warning / high / critical
-            category: 告警分类（用于聚合去重）
-            user_token: 指定接收用户（None=所有用户）
-            skip_aggregation: 跳过聚合检�?
-
+            level: info / warning / success / error
+            target: all / dashboard / voice_nodes / telegram
+        
         Returns:
-            {"success": True, "channels_sent": [...], "aggregated": bool, "escalated": bool}
+            {"success": bool, "channels": [sent, failed]}
         """
-        # 静默检�?
-        if self.is_silenced() and level not in ("high", "critical"):
-            return {"success": True, "skipped": True, "reason": "静默时段"}
-
-        # 聚合检�?
-        dedup_key = self._make_dedup_key(title, level, category)
-        aggregated = False
-        agg_count = 1
-
-        if not skip_aggregation and self._should_aggregate(dedup_key):
-            aggregated = True
-            agg_count = self._agg_cache[dedup_key].get("count", 1) + 1
-            self._update_agg_cache(dedup_key, agg_count)
-
-            # 聚合后仍然通过 WebSocket 更新计数
-            if self._socketio:
-                self._socketio.emit("notification_aggregated", {
-                    "title": title,
-                    "count": agg_count,
-                    "level": level,
-                    "timestamp": datetime.datetime.now().isoformat(),
-                })
-
-            # 更新历史记录
-            self._add_history(title, message, level, category, aggregated=True, agg_count=agg_count)
-            return {
-                "success": True,
-                "aggregated": True,
-                "agg_count": agg_count,
-                "channels_sent": [],
-            }
-
-        # 告警升级检�?
-        original_level = level
-        level = self._check_escalation(title, level)
-        escalated = level != original_level
-
-        if escalated:
-            message = f"[升级] {message}"
-
-        # 确定发送渠�?
-        channels_to_send = ["websocket"]  # WebSocket 始终发�?
-
-        if user_token:
-            user_prefs = self.get_user_prefs(user_token)
-            channels_to_send = user_prefs.get("channels", ["websocket"])
-            min_sev = user_prefs.get("min_severity", "info")
-            if not self._severity_gte(level, min_sev):
-                return {"success": True, "skipped": True, "reason": "低于用户最低严重级�?}
-        else:
-            # 对所有用户，合并渠道
-            for token, prefs in self._user_prefs.items():
-                if self._severity_gte(level, prefs.get("min_severity", "info")):
-                    for ch in prefs.get("channels", []):
-                        if ch not in channels_to_send:
-                            channels_to_send.append(ch)
-
-        # 发送到各渠�?
-        sent = []
-        errors = []
-
-        for ch in channels_to_send:
-            try:
-                result = self._send_to_channel(ch, title, message, level)
-                if result.get("success"):
-                    sent.append(ch)
-                else:
-                    errors.append(f"{ch}: {result.get('error', '?')}")
-            except Exception as e:
-                errors.append(f"{ch}: {e}")
-
-        # 更新聚合缓存
-        self._update_agg_cache(dedup_key, agg_count)
-
-        # 记录历史
-        self._add_history(title, message, level, category, channels_sent=sent, escalated=escalated)
-
-        return {
-            "success": len(sent) > 0,
-            "channels_sent": sent,
-            "errors": errors,
-            "aggregated": False,
-            "escalated": escalated,
-            "level": level,
-        }
-
-    def _send_to_channel(self, channel: str, title: str, message: str, level: str) -> dict:
-        """发送到指定渠道"""
-        if channel == "websocket":
-            return self._send_websocket(title, message, level)
-        elif channel == "wechat_work":
-            return self._send_wechat_work(title, message, level)
-        elif channel == "server_chan":
-            return self._send_server_chan(title, message, level)
-        elif channel == "email":
-            return self._send_email(title, message, level)
-        elif channel == "webhook":
-            return self._send_webhook(title, message, level)
-        else:
-            return {"success": False, "error": f"未知渠道: {channel}"}
-
-    def _send_websocket(self, title: str, message: str, level: str) -> dict:
-        if not self._socketio:
-            return {"success": False, "error": "WebSocket 未初始化"}
-
         notification = {
             "type": "notification",
             "title": title,
             "message": message,
             "level": level,
+            "target": target,
             "timestamp": datetime.datetime.now().isoformat(),
         }
-        self._socketio.emit("notification", notification)
-        return {"success": True}
 
-    def _send_wechat_work(self, title: str, message: str, level: str) -> dict:
-        """企业微信机器�?Webhook"""
-        config = self._channels["wechat_work"]
-        if not config.get("enabled") or not config.get("webhook_url"):
-            return {"success": False, "error": "企业微信 Webhook 未配�?}
+        self._queue.append(notification)
+        if len(self._queue) > self._max_queue:
+            self._queue = self._queue[-self._max_queue:]
 
-        level_emoji = {"info": "ℹ️", "warning": "⚠️", "high": "🔴", "critical": "🚨"}
-        payload = {
-            "msgtype": "markdown",
-            "markdown": {
-                "content": f"{level_emoji.get(level, '')} **{title}**\n\n{message}\n\n> 时间: {datetime.datetime.now().strftime('%H:%M:%S')}"
-            },
-        }
+        sent = []
+        failed = []
 
-        try:
-            req = Request(
-                config["webhook_url"],
-                data=json.dumps(payload).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urlopen(req, timeout=10) as resp:
-                result = json.loads(resp.read().decode("utf-8"))
-                if result.get("errcode") == 0:
-                    return {"success": True}
-                return {"success": False, "error": result.get("errmsg", "?")}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+        # WebSocket
+        if self._channels.get("websocket", {}).get("enabled"):
+            if target in ("all", "dashboard"):
+                try:
+                    if self._socketio:
+                        self._socketio.emit("notification", notification)
+                    sent.append("websocket")
+                except Exception as e:
+                    logger.warning(f"WebSocket send failed: {e}")
+                    failed.append("websocket")
 
-    def _send_server_chan(self, title: str, message: str, level: str) -> dict:
-        """Server酱推�?""
-        config = self._channels["server_chan"]
-        if not config.get("enabled") or not config.get("send_key"):
-            return {"success": False, "error": "Server酱未配置"}
+        # Telegram
+        if self._channels.get("telegram", {}).get("enabled"):
+            if target in ("all", "telegram"):
+                try:
+                    if self._telegram:
+                        self._telegram.send_message(f"[{level.upper()}] {title}\n{message}")
+                    sent.append("telegram")
+                except Exception as e:
+                    logger.warning(f"Telegram send failed: {e}")
+                    failed.append("telegram")
 
-        try:
-            params = urlencode({
-                "title": title,
-                "desp": message,
-            })
-            url = f"https://sctapi.ftqq.com/{config['send_key']}.send?{params}"
-            req = Request(url, method="GET")
-            with urlopen(req, timeout=10) as resp:
-                result = json.loads(resp.read().decode("utf-8"))
-                if result.get("code") == 0:
-                    return {"success": True}
-                return {"success": False, "error": result.get("message", "?")}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+        # Log
+        if self._channels.get("log", {}).get("enabled"):
+            log_fn = logger.info
+            if level == "warning":
+                log_fn = logger.warning
+            elif level == "error":
+                log_fn = logger.error
+            log_fn(f"[Notification] {title}: {message}")
+            sent.append("log")
 
-    def _send_email(self, title: str, message: str, level: str) -> dict:
-        """邮件通知"""
-        config = self._channels["email"]
-        if not config.get("enabled") or not config.get("smtp_host"):
-            return {"success": False, "error": "邮件未配�?}
+        return {"success": len(failed) == 0, "channels": {"sent": sent, "failed": failed}}
 
-        try:
-            import smtplib
-            from email.mime.text import MIMEText
+    def get_recent(self, n: int = 20) -> list:
+        """获取最近 n 条通知"""
+        return self._queue[-n:]
 
-            smtp = smtplib.SMTP(config["smtp_host"], config.get("smtp_port", 587))
-            smtp.starttls()
+    def clear(self):
+        """清空通知队列"""
+        self._queue.clear()
 
-            if config.get("smtp_user") and config.get("smtp_pass"):
-                smtp.login(config["smtp_user"], config["smtp_pass"])
-
-            from_addr = config.get("from_addr", config.get("smtp_user", ""))
-            to_addrs = config.get("to_addrs", [])
-            if not to_addrs:
-                return {"success": False, "error": "未配置收件人"}
-
-            msg = MIMEText(message, "plain", "utf-8")
-            msg["Subject"] = f"[元芳] {title}"
-            msg["From"] = from_addr
-            msg["To"] = ", ".join(to_addrs)
-            smtp.sendmail(from_addr, to_addrs, msg.as_string())
-            smtp.quit()
-            return {"success": True}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-
-    def _send_webhook(self, title: str, message: str, level: str) -> dict:
-        """通用 Webhook"""
-        config = self._channels["webhook"]
-        if not config.get("enabled") or not config.get("url"):
-            return {"success": False, "error": "Webhook 未配�?}
-
-        payload = json.dumps({
-            "title": title,
-            "message": message,
-            "level": level,
-            "timestamp": datetime.datetime.now().isoformat(),
-        }).encode("utf-8")
-
-        try:
-            headers = {"Content-Type": "application/json"}
-            headers.update(config.get("headers", {}))
-            req = Request(config["url"], data=payload, headers=headers, method=config.get("method", "POST"))
-            with urlopen(req, timeout=10) as resp:
-                return {"success": True}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-
-    # ─────────── 历史记录 ───────────
-
-    def _add_history(self, title, message, level, category, **kwargs):
-        entry = {
-            "title": title,
-            "message": message[:200],
-            "level": level,
-            "category": category,
-            "timestamp": datetime.datetime.now().isoformat(),
-            "acknowledged": False,
-            **kwargs,
-        }
-        self._history.append(entry)
-        if len(self._history) > self._max_history:
-            self._history = self._history[-self._max_history:]
-        self._save_history()
-
-    def get_history(self, n: int = 20, level: str = None, acknowledged: bool = None) -> list:
-        """获取通知历史"""
-        history = self._history
-        if level:
-            history = [h for h in history if h.get("level") == level]
-        if acknowledged is not None:
-            history = [h for h in history if h.get("acknowledged", False) == acknowledged]
-        return history[-n:]
-
-    def acknowledge(self, notification_id: int = None, acknowledge_all: bool = False) -> dict:
-        """标记通知为已�?""
-        count = 0
-        if acknowledge_all:
-            for h in self._history:
-                if not h.get("acknowledged"):
-                    h["acknowledged"] = True
-                    count += 1
-        elif notification_id is not None and 0 <= notification_id < len(self._history):
-            self._history[notification_id]["acknowledged"] = True
-            count = 1
-        self._save_history()
-        return {"success": True, "acknowledged": count}
-
-    def get_unread_count(self) -> int:
-        return sum(1 for h in self._history if not h.get("acknowledged", False))
-
-    # ─────────── 辅助方法 ───────────
-
-    @staticmethod
-    def _severity_gte(level: str, min_level: str) -> bool:
-        """检查严重级别是�?>= 最低级�?""
-        order = {"info": 0, "warning": 1, "high": 2, "critical": 3}
-        return order.get(level, 0) >= order.get(min_level, 0)
-
-    # ─────────── 统计报告 ───────────
-
-    def report(self) -> dict:
-        total = len(self._history)
-        unread = self.get_unread_count()
-        by_level = {}
-        for h in self._history:
-            lv = h.get("level", "info")
-            by_level[lv] = by_level.get(lv, 0) + 1
-
-        channels_enabled = [name for name, cfg in self._channels.items() if cfg.get("enabled")]
-        silenced = self.is_silenced()
-
-        return {
-            "total_notifications": total,
-            "unread": unread,
-            "by_level": by_level,
-            "channels_enabled": channels_enabled,
-            "is_silenced": silenced,
-            "silence_periods": self._silence_periods,
-            "aggregation_window": self._agg_window,
-            "recent": self.get_history(5),
-        }
+    def set_channel(self, channel: str, enabled: bool):
+        """启用/禁用某个通道"""
+        if channel in self._channels:
+            self._channels[channel]["enabled"] = enabled
 
 
-# ─────────── 全局单例 ───────────
-
-_hub: NotificationHub | None = None
+_notification_hub = None
 
 
-def get_notification_hub(socketio=None) -> NotificationHub:
-    """获取全局通知中心实例"""
-    global _hub
-    if _hub is None:
-        _hub = NotificationHub(socketio=socketio)
-    return _hub
-
+def get_notification_hub(socketio=None, telegram_bot=None) -> NotificationHub:
+    global _notification_hub
+    if _notification_hub is None:
+        _notification_hub = NotificationHub(socketio=socketio, telegram_bot=telegram_bot)
+    return _notification_hub

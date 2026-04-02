@@ -1,0 +1,270 @@
+{
+  "skills": {
+    "1e4f4bf4": {
+      "id": "1e4f4bf4",
+      "name": "晚安模式",
+      "description": "关闭所有灯光，空调调至睡眠温度",
+      "category": "ha_control",
+      "trigger_patterns": [
+        "晚安",
+        "睡觉",
+        "关灯睡觉",
+        "睡眠模式"
+      ],
+      "ha_commands": [
+        {
+          "entity_id": "scene.good_night",
+          "action": "activate_scene"
+        }
+      ],
+      "response_template": "晚安，已为你调整好睡眠环境",
+      "auto_learned": false,
+      "quality_score": 8.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {},
+      "created_at": "2026-04-02T21:03:17.373380",
+      "last_used": null
+    },
+    "31e3acbc": {
+      "id": "31e3acbc",
+      "name": "早安模式",
+      "description": "打开窗帘，开启客厅灯",
+      "category": "ha_control",
+      "trigger_patterns": [
+        "早安",
+        "早上好",
+        "起床",
+        "早上"
+      ],
+      "ha_commands": [
+        {
+          "entity_id": "scene.good_morning",
+          "action": "activate_scene"
+        }
+      ],
+      "response_template": "早安！已为你开启晨间模式",
+      "auto_learned": false,
+      "quality_score": 8.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {},
+      "created_at": "2026-04-02T21:03:17.373380",
+      "last_used": null
+    },
+    "c4658d99": {
+      "id": "c4658d99",
+      "name": "离家模式",
+      "description": "关闭所有设备，锁门",
+      "category": "ha_control",
+      "trigger_patterns": [
+        "出门",
+        "离家",
+        "走了",
+        "上班",
+        "外出"
+      ],
+      "ha_commands": [
+        {
+          "entity_id": "scene.leaving_home",
+          "action": "activate_scene"
+        }
+      ],
+      "response_template": "已切换离家模式，所有设备已关闭",
+      "auto_learned": false,
+      "quality_score": 8.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {},
+      "created_at": "2026-04-02T21:03:17.373380",
+      "last_used": null
+    },
+    "c02e0078": {
+      "id": "c02e0078",
+      "name": "回家模式",
+      "description": "打开客厅灯和空调",
+      "category": "ha_control",
+      "trigger_patterns": [
+        "回家",
+        "到家了",
+        "回来了",
+        "开灯开空调"
+      ],
+      "ha_commands": [
+        {
+          "entity_id": "scene.coming_home",
+          "action": "activate_scene"
+        }
+      ],
+      "response_template": "欢迎回家！已为你调整好环境",
+      "auto_learned": false,
+      "quality_score": 8.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {},
+      "created_at": "2026-04-02T21:03:17.373380",
+      "last_used": null
+    },
+    "6c743641": {
+      "id": "6c743641",
+      "name": "全屋关灯",
+      "description": "关闭所有灯光",
+      "category": "ha_control",
+      "trigger_patterns": [
+        "全屋关灯",
+        "关所有灯",
+        "全部关灯",
+        "把灯都关掉"
+      ],
+      "ha_commands": [
+        {
+          "entity_id": "scene.all_lights_off",
+          "action": "activate_scene"
+        }
+      ],
+      "response_template": "已关闭全屋灯光",
+      "auto_learned": false,
+      "quality_score": 9.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {},
+      "created_at": "2026-04-02T21:03:17.373380",
+      "last_used": null
+    },
+    "09fc60ea": {
+      "id": "09fc60ea",
+      "name": "环境报告",
+      "description": "播报当前室内温湿度和空气质量",
+      "category": "conversation",
+      "trigger_patterns": [
+        "环境",
+        "温湿度",
+        "空气质量",
+        "家里什么情况"
+      ],
+      "ha_commands": [],
+      "response_template": "当前室内温度{temp}度，湿度{humidity}%，空气质量{aqi}良好",
+      "auto_learned": false,
+      "quality_score": 7.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {},
+      "created_at": "2026-04-02T21:03:17.373380",
+      "last_used": null
+    },
+    "cb3efef7": {
+      "id": "cb3efef7",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-02T21:03:17.372847",
+      "last_used": null
+    },
+    "3fbb18c6": {
+      "id": "3fbb18c6",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-02T21:03:17.379300",
+      "last_used": null
+    },
+    "7cd3d89e": {
+      "id": "7cd3d89e",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-02T21:04:30.490392",
+      "last_used": null
+    },
+    "1b3941b0": {
+      "id": "1b3941b0",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-02T21:04:30.493133",
+      "last_used": null
+    }
+  },
+  "categories": {
+    "ha_control": [
+      "1e4f4bf4",
+      "31e3acbc",
+      "c4658d99",
+      "c02e0078",
+      "6c743641"
+    ],
+    "conversation": [
+      "09fc60ea",
+      "cb3efef7",
+      "3fbb18c6",
+      "7cd3d89e",
+      "1b3941b0"
+    ]
+  }
+}
