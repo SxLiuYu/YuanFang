@@ -3,6 +3,7 @@ core/llm_adapter.py
 FinnA API LiteLLM 封装 · LLMAdapter
 支持 DeepSeek / Kimi / Qwen3-VL / CosyVoice2 / GLM-4.6 / Qwen3-32b
 """
+from __future__ import annotations
 import os
 import json
 import logging
@@ -157,7 +158,7 @@ class LLMAdapter:
             with urllib.request.urlopen(req, timeout=120, context=ctx) as resp:
                 for line in resp:
                     line = line.decode("utf-8", errors="replace").strip()
-                    if not line or line.startswith("data: "):
+                    if not line:
                         continue
                     if line.startswith("data: "):
                         line = line[7:]

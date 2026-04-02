@@ -17,7 +17,7 @@ from flask import Flask, Response
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
 
-from core.app_logging import setup_logging
+from services.app_logging import setup_logging
 setup_logging()
 logger = logging.getLogger(__name__)
 
@@ -54,6 +54,16 @@ _kairos_daemon = None
 _kairos_tools = None
 _rule_engine = None
 _notification_hub = None
+
+
+# ==================== 加载 Superpowers 技能 ====================
+
+try:
+    from skills.yuanfang_adapter import load_superpowers_skills
+    _loaded_skills = load_superpowers_skills()
+    logger.info(f"Superpowers skills loaded: {len(_loaded_skills)}")
+except Exception as e:
+    logger.warning(f"Superpowers skills load failed: {e}")
 
 
 # ==================== 注册 Blueprint 路由 ====================

@@ -11,10 +11,10 @@ if str(root) not in sys.path:
 import pytest
 
 exit_code = pytest.main([
-    "tests/personality",
-    "tests/memory",
+    "tests/personality_tests",
+    "tests/memory_tests",
+    "tests/hyper_tests",
     "-v",
     "--tb=short",
-    "-p", "no:cacheprovider"
 ])
 sys.exit(exit_code)

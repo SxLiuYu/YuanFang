@@ -1,4 +1,5 @@
 # adapters/ha_adapter.py
+from __future__ import annotations
 """
 HomeAssistant 适配器 · HA Adapter
 与 HomeAssistant REST API 交互

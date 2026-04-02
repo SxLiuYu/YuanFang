@@ -9,6 +9,7 @@ import uuid
 import datetime
 import logging
 from pathlib import Path
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ class EvolutionaryMemory:
         retrieved.sort(key=lambda x: x.get("match_score", 0), reverse=True)
         return retrieved[:top_k]
 
-    def get_context(self, query: str) -> str | None:
+    def get_context(self, query: str) -> Optional[str]:
         strategies = self.retrieve(query)
         if not strategies:
             return None

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 core/rule_engine.py
 规则引擎 · RuleEngine
