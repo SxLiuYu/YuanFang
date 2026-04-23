@@ -1,0 +1,18 @@
+{
+  "id": "51b02409",
+  "task_summary": "解释什么是微服务架构，它相比单体架构有哪些优缺点",
+  "quality_score": 5,
+  "improvement_strategy": "保持现有方式",
+  "domain_hint": "general",
+  "tags": [
+    "general"
+  ],
+  "strengths": [
+    "部分完成"
+  ],
+  "weaknesses": [
+    "解析异常"
+  ],
+  "created_at": "2026-04-03T09:19:13.324114",
+  "use_count": 0
+}

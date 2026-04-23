@@ -10,6 +10,7 @@ from routes.skills import skills_bp
 from routes.kairos import kairos_bp, init_kairos
 from routes.hyper import hyper_bp
 from routes.agent import agent_bp, init_agent
+from routes.voice_pipeline import voice_bp
 
 
 def register_all_blueprints(app: Flask):
@@ -29,6 +30,7 @@ __all__ = [
     "kairos_bp",
     "hyper_bp",
     "agent_bp",
+    "voice_bp",
     "register_all_blueprints",
     "init_kairos",
     "init_agent",

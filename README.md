@@ -50,39 +50,124 @@
 
 ## 🚀 快速启动
 
-### 环境要求
-- Python 3.11+
-- Windows / Linux / WSL
-- Docker (Qdrant + Redis，可选)
+### 📋 环境要求
+- Python 3.9+
+- Windows / Linux / macOS / WSL
+- Docker & Docker Compose (容器化部署可选)
 
-### 安装依赖
+---
 
-```bash
-pip install flask flask-socketio python-dotenv requests websocket-client
+## 部署方式
 
-# 或一键安装
-pip install -r requirements.txt
-```
-
-### 配置
+### 方式一：直接部署（开发测试推荐）
 
 ```bash
+# 1. 克隆代码
+git clone https://github.com/SxLiuYu/YuanFang.git
+cd YuanFang
+
+# 2. 创建配置文件
 cp .env.example .env
-# 编辑 .env 填写你的 API Key 和其他配置
-```
+# 编辑 .env 填入你的 API Key（只需填写 FINNA_API_KEY 即可运行）
 
-### 启动服务
+# 3. 安装依赖
+pip install -r requirements.txt
 
-```bash
-# 启动可选依赖服务 (Docker)
-docker run -d --name lobster-qdrant -p 127.0.0.1:6333:6333 qdrant/qdrant:v1.7.0
-docker run -d --name lobster-redis -p 127.0.0.1:6379:6379 redis:7-alpine
+# 4. 启动可选依赖服务（Qdrant + Redis 用于记忆系统，可跳过）
+docker run -d --name yuanfang-qdrant -p 127.0.0.1:6333:6333 qdrant/qdrant:v1.12.0
+docker run -d --name yuanfang-redis -p 127.0.0.1:6379:6379 redis:7-alpine
 
-# 启动元芳
-python main.py
+# 5. 启动元芳
+python run_server.py
 ```
 
 打开浏览器访问: **http://localhost:8000** → Dashboard 控制台
+
+---
+
+### 方式二：Docker Compose 部署（生产推荐）
+
+一键启动完整服务（元芳 + Qdrant + Redis）：
+
+```bash
+# 1. 克隆代码
+git clone https://github.com/SxLiuYu/YuanFang.git
+cd YuanFang
+
+# 2. 创建配置文件
+cp .env.example .env
+# 编辑 .env 填入你的 API Key
+
+# 3. 一键启动（自动构建镜像）
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f yuanfang
+```
+
+服务端口：
+- 元芳: `http://localhost:8000`
+- Qdrant: `localhost:6333`
+- Redis: `localhost:6379`
+
+数据持久化：
+- Qdrant 数据 → `qdrant-data` volume
+- Redis 数据 → `redis-data` volume
+- 元芳数据 → `./data` 目录（本地挂载）
+
+---
+
+### 方式三：纯 Docker 部署（无 Qdrant/Redis，最小化运行）
+
+适合仅贾维斯语音控制场景：
+
+```bash
+# 1. 克隆代码
+git clone https://github.com/SxLiuYu/YuanFang.git
+cd YuanFang
+
+# 2. 创建配置
+cp .env.example .env
+# 编辑 .env 填入你的 API Key
+
+# 3. 构建镜像
+docker build -t yuanfang .
+
+# 4. 运行容器
+docker run -d \
+  --name yuanfang \
+  -p 8000:8000 \
+  --env-file .env \
+  -v ./data:/app/data \
+  --restart unless-stopped \
+  yuanfang
+
+# 查看日志
+docker logs -f yuanfang
+```
+
+---
+
+## 📱 节点部署
+
+### Termux 传感器/语音节点（Android 手机）
+
+将你的 Android 手机变成智能触手：支持麦克风、红外遥控、传感器数据上报。
+
+```bash
+# 在 Termux 中安装依赖
+pkg update && pkg install python termux-api curl
+pip install websocket-client requests
+
+# 启动语音客户端（连接你的元芳服务器）
+python jarvis_phone.py --server http://<服务器IP>:8000
+```
+
+详细说明参见 [docs/termux-node.md](docs/termux-node.md)
+
+### 🔮 离线语音唤醒
+
+支持 Porcupine 离线唤醒词检测，自定义唤醒词 "元芳"。配置参见文档。
 
 ## 📁 目录结构
 

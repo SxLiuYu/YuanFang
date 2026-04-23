@@ -249,6 +249,1518 @@
       },
       "created_at": "2026-04-02T21:04:30.493133",
       "last_used": null
+    },
+    "b3299b0c": {
+      "id": "b3299b0c",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:19:33.805849",
+      "last_used": null
+    },
+    "dc9f8e2b": {
+      "id": "dc9f8e2b",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:19:33.806710",
+      "last_used": null
+    },
+    "e914d7fd": {
+      "id": "e914d7fd",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:19:33.807042",
+      "last_used": null
+    },
+    "f35828db": {
+      "id": "f35828db",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:20:06.296841",
+      "last_used": null
+    },
+    "351ff5ca": {
+      "id": "351ff5ca",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:20:06.297423",
+      "last_used": null
+    },
+    "0e2a0281": {
+      "id": "0e2a0281",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:20:06.297681",
+      "last_used": null
+    },
+    "2860fada": {
+      "id": "2860fada",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:41:14.138853",
+      "last_used": null
+    },
+    "b812745a": {
+      "id": "b812745a",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:41:14.139920",
+      "last_used": null
+    },
+    "5a23a66f": {
+      "id": "5a23a66f",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:41:14.140252",
+      "last_used": null
+    },
+    "8bb36eda": {
+      "id": "8bb36eda",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:49:33.638864",
+      "last_used": null
+    },
+    "cda7776c": {
+      "id": "cda7776c",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:49:33.639768",
+      "last_used": null
+    },
+    "7119575f": {
+      "id": "7119575f",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:49:33.640105",
+      "last_used": null
+    },
+    "7bb1489b": {
+      "id": "7bb1489b",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:55:02.723543",
+      "last_used": null
+    },
+    "6528480e": {
+      "id": "6528480e",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:55:02.724131",
+      "last_used": null
+    },
+    "10f9e877": {
+      "id": "10f9e877",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T00:55:02.724393",
+      "last_used": null
+    },
+    "8b994258": {
+      "id": "8b994258",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T01:05:33.344763",
+      "last_used": null
+    },
+    "e16af848": {
+      "id": "e16af848",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T01:05:33.346130",
+      "last_used": null
+    },
+    "3eecb5cc": {
+      "id": "3eecb5cc",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T01:05:33.347185",
+      "last_used": null
+    },
+    "80054c91": {
+      "id": "80054c91",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:13.474617",
+      "last_used": null
+    },
+    "e94d5823": {
+      "id": "e94d5823",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:13.475880",
+      "last_used": null
+    },
+    "b0f9ecaa": {
+      "id": "b0f9ecaa",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:13.476227",
+      "last_used": null
+    },
+    "7a44b50d": {
+      "id": "7a44b50d",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:32.475110",
+      "last_used": null
+    },
+    "703bb5f8": {
+      "id": "703bb5f8",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:32.475779",
+      "last_used": null
+    },
+    "379c6747": {
+      "id": "379c6747",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:32.476058",
+      "last_used": null
+    },
+    "7ed5c986": {
+      "id": "7ed5c986",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:51.980437",
+      "last_used": null
+    },
+    "f0929714": {
+      "id": "f0929714",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:51.981112",
+      "last_used": null
+    },
+    "eca9862f": {
+      "id": "eca9862f",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T06:53:51.981409",
+      "last_used": null
+    },
+    "cae2328e": {
+      "id": "cae2328e",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:02:04.526268",
+      "last_used": null
+    },
+    "e2a4a96d": {
+      "id": "e2a4a96d",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:02:04.527546",
+      "last_used": null
+    },
+    "332a6023": {
+      "id": "332a6023",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:02:04.528433",
+      "last_used": null
+    },
+    "c6123ba9": {
+      "id": "c6123ba9",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:02:22.180236",
+      "last_used": null
+    },
+    "a41121d2": {
+      "id": "a41121d2",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:02:22.180926",
+      "last_used": null
+    },
+    "5087f65b": {
+      "id": "5087f65b",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:02:22.181241",
+      "last_used": null
+    },
+    "8d914d50": {
+      "id": "8d914d50",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:06:08.862529",
+      "last_used": null
+    },
+    "fd4bffd8": {
+      "id": "fd4bffd8",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:06:08.863275",
+      "last_used": null
+    },
+    "cd16c620": {
+      "id": "cd16c620",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:06:08.863593",
+      "last_used": null
+    },
+    "eba4259b": {
+      "id": "eba4259b",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:06:31.508571",
+      "last_used": null
+    },
+    "2b4f6cf6": {
+      "id": "2b4f6cf6",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:06:31.509342",
+      "last_used": null
+    },
+    "bc344dd0": {
+      "id": "bc344dd0",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T07:06:31.509674",
+      "last_used": null
+    },
+    "383c8f79": {
+      "id": "383c8f79",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:40:29.041739",
+      "last_used": null
+    },
+    "a52db7b6": {
+      "id": "a52db7b6",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:40:29.043451",
+      "last_used": null
+    },
+    "05e6eb61": {
+      "id": "05e6eb61",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:40:29.044192",
+      "last_used": null
+    },
+    "36cae6ae": {
+      "id": "36cae6ae",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:40:59.393875",
+      "last_used": null
+    },
+    "e5cb370f": {
+      "id": "e5cb370f",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:40:59.395163",
+      "last_used": null
+    },
+    "ce1a6d54": {
+      "id": "ce1a6d54",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:40:59.395928",
+      "last_used": null
+    },
+    "5df0d034": {
+      "id": "5df0d034",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:41:17.857853",
+      "last_used": null
+    },
+    "dceb9288": {
+      "id": "dceb9288",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:41:17.859177",
+      "last_used": null
+    },
+    "8db5498f": {
+      "id": "8db5498f",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T12:41:17.859993",
+      "last_used": null
+    },
+    "13ae1d32": {
+      "id": "13ae1d32",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:08:54.719100",
+      "last_used": null
+    },
+    "89851252": {
+      "id": "89851252",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:08:54.721561",
+      "last_used": null
+    },
+    "ada4af83": {
+      "id": "ada4af83",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:08:54.722742",
+      "last_used": null
+    },
+    "e7c80dd0": {
+      "id": "e7c80dd0",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:24:21.891539",
+      "last_used": null
+    },
+    "7b86665e": {
+      "id": "7b86665e",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:24:21.892964",
+      "last_used": null
+    },
+    "a1fc673f": {
+      "id": "a1fc673f",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:24:21.893827",
+      "last_used": null
+    },
+    "5f725550": {
+      "id": "5f725550",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:31:43.485688",
+      "last_used": null
+    },
+    "bad314ea": {
+      "id": "bad314ea",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:31:43.487975",
+      "last_used": null
+    },
+    "3d9d08b6": {
+      "id": "3d9d08b6",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:31:43.488927",
+      "last_used": null
+    },
+    "c80ed4e5": {
+      "id": "c80ed4e5",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:32:36.337404",
+      "last_used": null
+    },
+    "d37ee65d": {
+      "id": "d37ee65d",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:32:36.338990",
+      "last_used": null
+    },
+    "dc7ef7d0": {
+      "id": "dc7ef7d0",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:32:36.339928",
+      "last_used": null
+    },
+    "6a256cc1": {
+      "id": "6a256cc1",
+      "name": "MLX Voice 触手",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "mlx_voice.py",
+          "__init__.py",
+          "mlx_api.py",
+          "routes.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:34:17.581723",
+      "last_used": null
+    },
+    "d156bea7": {
+      "id": "d156bea7",
+      "name": "Home Control Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "执行成功后用中文描述结果",
+        "失败时说明原因并提供建议"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "home_control.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:34:17.583258",
+      "last_used": null
+    },
+    "9e73ba4e": {
+      "id": "9e73ba4e",
+      "name": "Environment Report Skill",
+      "description": "",
+      "category": "conversation",
+      "trigger_patterns": [
+        "温度：数值 + 舒适度评价",
+        "湿度：数值 + 评价",
+        "空气质量：AQI + 等级",
+        "温度>28°C：建议开空调",
+        "湿度>70%：建议开除湿"
+      ],
+      "ha_commands": [],
+      "response_template": "",
+      "auto_learned": false,
+      "quality_score": 5.0,
+      "use_count": 0,
+      "success_count": 0,
+      "metadata": {
+        "references": [
+          "environment_report.py"
+        ]
+      },
+      "created_at": "2026-04-23T14:34:17.584244",
+      "last_used": null
     }
   },
   "categories": {
@@ -264,7 +1776,70 @@
       "cb3efef7",
       "3fbb18c6",
       "7cd3d89e",
-      "1b3941b0"
+      "1b3941b0",
+      "b3299b0c",
+      "dc9f8e2b",
+      "e914d7fd",
+      "f35828db",
+      "351ff5ca",
+      "0e2a0281",
+      "2860fada",
+      "b812745a",
+      "5a23a66f",
+      "8bb36eda",
+      "cda7776c",
+      "7119575f",
+      "7bb1489b",
+      "6528480e",
+      "10f9e877",
+      "8b994258",
+      "e16af848",
+      "3eecb5cc",
+      "80054c91",
+      "e94d5823",
+      "b0f9ecaa",
+      "7a44b50d",
+      "703bb5f8",
+      "379c6747",
+      "7ed5c986",
+      "f0929714",
+      "eca9862f",
+      "cae2328e",
+      "e2a4a96d",
+      "332a6023",
+      "c6123ba9",
+      "a41121d2",
+      "5087f65b",
+      "8d914d50",
+      "fd4bffd8",
+      "cd16c620",
+      "eba4259b",
+      "2b4f6cf6",
+      "bc344dd0",
+      "383c8f79",
+      "a52db7b6",
+      "05e6eb61",
+      "36cae6ae",
+      "e5cb370f",
+      "ce1a6d54",
+      "5df0d034",
+      "dceb9288",
+      "8db5498f",
+      "13ae1d32",
+      "89851252",
+      "ada4af83",
+      "e7c80dd0",
+      "7b86665e",
+      "a1fc673f",
+      "5f725550",
+      "bad314ea",
+      "3d9d08b6",
+      "c80ed4e5",
+      "d37ee65d",
+      "dc7ef7d0",
+      "6a256cc1",
+      "d156bea7",
+      "9e73ba4e"
     ]
   }
 }

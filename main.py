@@ -86,6 +86,12 @@ app.register_blueprint(sys_bp)
 from routes.ws_events import register_handlers
 register_handlers(socketio)
 
+# 注册语音 Pipeline 路由
+from routes.voice_pipeline import voice_bp, init_voice_routes
+app.register_blueprint(voice_bp)
+
+from routes.agent import init_agent
+
 
 # ==================== 静态页面 ====================
 

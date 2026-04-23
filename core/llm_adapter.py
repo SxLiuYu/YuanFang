@@ -40,10 +40,11 @@ class LLMAdapter:
     def __init__(self):
         self.api_base = os.getenv("FINNA_API_BASE", "https://www.finna.com.cn/v1").rstrip("/")
         self.api_key = os.getenv("FINNA_API_KEY", "")
-        self.default_model = "Pro/deepseek-ai/DeepSeek-V3.1-Terminus"
+        self.default_model = os.getenv("DEFAULT_MODEL", "Pro/kimi-loong/moonshot-kimi-k2-8b")
         self.extra_backends = {}  # name -> base_url
         self._load_extra_backends()
         logger.info(f"[LLMAdapter] API base: {self.api_base}")
+        logger.info(f"[LLMAdapter] Default model: {self.default_model}")
 
     def _load_extra_backends(self):
         """加载额外后端配置"""
@@ -57,11 +58,9 @@ class LLMAdapter:
             self.extra_backends[name.strip()] = url.strip().rstrip("/")
         logger.info(f"[LLMAdapter] Extra backends: {self.extra_backends}")
 
-    def _build_url(self, model: str) -> str:
-        """根据模型名构建完整 URL"""
-        if "/" in model:
-            return f"{self.api_base}/{model}"
-        return f"{self.api_base}/{model}"
+    def _build_url(self, model: str = None) -> str:
+        """构建 chat completions URL"""
+        return f"{self.api_base}/chat/completions"
 
     def _do_request(self, url: str, payload: dict, timeout: int = 60) -> dict:
         """发送 HTTP 请求到 LLM API"""
@@ -77,8 +76,8 @@ class LLMAdapter:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             body = e.read().decode("utf-8", errors="replace")
-            logger.error(f"[LLMAdapter] HTTP {e.code}: {body[:200]}")
-            raise RuntimeError(f"LLM API error {e.code}: {body[:200]}")
+            logger.error(f"[LLMAdapter] HTTP {e.code}: {body[:500]}")
+            raise RuntimeError(f"LLM API error {e.code}: {body[:500]}")
         except Exception as e:
             logger.error(f"[LLMAdapter] Request failed: {e}")
             raise
@@ -155,7 +154,7 @@ class LLMAdapter:
         req = urllib.request.Request(url, data=data, headers=headers, method="POST")
         ctx = ssl.create_default_context()
         try:
-            with urllib.request.urlopen(req, timeout=120, context=ctx) as resp:
+            with urllib.request.urlopen(req, timeout=60, context=ctx) as resp:
                 for line in resp:
                     line = line.decode("utf-8", errors="replace").strip()
                     if not line:
@@ -190,7 +189,7 @@ class LLMAdapter:
         """列出可用模型"""
         return [
             "Pro/deepseek-ai/DeepSeek-V3.1-Terminus",
-            "Pro/kimi-lo혼/moonshot-v1-8k",
+            "Pro/kimi-loong/moonshot-kimi-k2-8b",
             "Pro/qwen/Qwen3-VL-32B-Instruct",
             "Pro/cosyvoice/cosyvoice2-1",
             "Pro/zai/glm-4.6",
