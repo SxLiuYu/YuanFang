@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#2196F3" />
+    <animation
+        android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+        android:duration="1000"
+        android:repeatCount="infinite"
+        android:propertyName="alpha"
+        android:valueFrom="1.0"
+        android:valueTo="0.3"
+        android:valueType="floatType" />
+</shape>

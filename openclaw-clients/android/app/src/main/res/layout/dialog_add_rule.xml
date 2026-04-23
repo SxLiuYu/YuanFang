@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="规则名称"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="例如：早晨提醒"
+            android:maxLines="1"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="触发器类型"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
+
+        <Spinner
+            android:id="@+id/spinnerType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/trigger_types"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="触发时间 (HH:MM)"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/etTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="07:00"
+            android:inputType="time"
+            android:maxLines="1"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="电量阈值 (%)"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/etBatteryLevel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="20"
+            android:inputType="number"
+            android:maxLines="1"/>
+
+    </LinearLayout>
+</ScrollView>

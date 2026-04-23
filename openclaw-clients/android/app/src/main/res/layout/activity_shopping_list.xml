@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 标题 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🛒 智能购物清单"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 语音添加按钮 -->
+        <Button
+            android:id="@+id/btn_voice_add"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎤 语音添加"
+            android:backgroundTint="#9C27B0"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 智能补货建议 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 智能补货建议"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/txt_restock_suggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="牛奶（7 天未购买）\n鸡蛋（5 天未购买）"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:padding="12dp"
+            android:background="#FFF3E0"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 添加物品按钮 -->
+        <Button
+            android:id="@+id/btn_add_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+ 添加物品"
+            android:backgroundTint="#4CAF50"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 购物清单 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📝 待购清单"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_shopping_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 清空已购按钮 -->
+        <Button
+            android:id="@+id/btn_clear_purchased"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🗑️ 清空已购"
+            android:backgroundTint="#757575"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 价格对比入口 -->
+        <Button
+            android:id="@+id/btn_price_compare"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💰 价格对比"
+            android:backgroundTint="#2196F3"/>
+
+    </LinearLayout>
+</ScrollView>

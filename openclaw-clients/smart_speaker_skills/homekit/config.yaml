@@ -1,0 +1,51 @@
+# Apple HomeKit / Siri 配置
+# 文档：https://developer.apple.com/homekit/
+
+homekit:
+  # 桥接器配置
+  bridge:
+    name: "OpenClaw Home"
+    username: "CC:22:3D:E3:CE:30"  # 格式：XX:XX:XX:XX:XX:XX
+    pin: "031-45-154"  # 配对码（格式：XXX-XX-XXX）
+    port: 51826
+    
+  # 配件配置
+  accessories:
+    - type: "lightbulb"
+      name: "客厅灯"
+      service: "Lightbulb"
+      characteristics:
+        - "On"
+        - "Brightness"
+        
+    - type: "thermostat"
+      name: "空调"
+      service: "Thermostat"
+      characteristics:
+        - "CurrentTemperature"
+        - "TargetTemperature"
+        - "CurrentHeatingCoolingState"
+        
+    - type: "switch"
+      name: "窗帘"
+      service: "Switch"
+      
+  # Siri 快捷指令
+  siri_shortcuts:
+    - name: "查账单"
+      phrase: "Hey Siri, 查账单"
+      action: "query_account"
+      
+    - name: "购物清单"
+      phrase: "Hey Siri, 添加到购物清单"
+      action: "add_to_shopping_list"
+      
+    - name: "任务提醒"
+      phrase: "Hey Siri, 提醒我"
+      action: "add_task"
+
+# 发布配置
+# HomeKit 不需要传统发布，但需要 Apple 开发者账号进行认证
+publish:
+  requires_mfi: true  # 需要 MFi 认证
+  developer_account: ""

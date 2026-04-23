@@ -1,0 +1,85 @@
+<UserControl x:Class="OpenClaw.Desktop.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             x:Name="Root">
+    <ScrollViewer Margin="16">
+        <StackPanel>
+            <TextBlock Text="General Settings" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Application" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,8">
+                        <CheckBox Content="Launch at startup" IsChecked="{Binding LaunchAtStartup}"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,8">
+                        <CheckBox Content="Minimize to tray on close" IsChecked="{Binding MinimizeToTray}"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,8">
+                        <CheckBox Content="Show notifications" IsChecked="{Binding ShowNotifications}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Hotkey" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <TextBlock Text="Global hotkey: Ctrl+Shift+O" Style="{DynamicResource MaterialDesignCaptionTextBlock}"/>
+                    <TextBlock Text="Press the hotkey to show/hide the application window" 
+                              Style="{DynamicResource MaterialDesignCaptionTextBlock}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="API Settings" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    
+                    <TextBox ToolTip="API Base URL" 
+                            Text="{Binding ServerUrl, UpdateSourceTrigger=PropertyChanged}"
+                            Style="{DynamicResource MaterialDesignOutlinedTextBox}"
+                            Margin="0,8"/>
+                    
+                    <PasswordBox x:Name="ApiTokenBox" ToolTip="API Key" 
+                                Style="{DynamicResource MaterialDesignOutlinedPasswordBox}"
+                                Margin="0,8"
+                                PasswordChanged="ApiTokenBox_PasswordChanged"/>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Test Connection" Command="{Binding TestConnectionCommand}"
+                               Style="{DynamicResource MaterialDesignFlatButton}" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding ConnectionStatus}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Theme" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    
+                    <RadioButton Content="Light" GroupName="Theme" 
+                                IsChecked="{Binding IsLightTheme}" Margin="0,8"/>
+                    <RadioButton Content="Dark" GroupName="Theme" 
+                                IsChecked="{Binding IsDarkTheme}" Margin="0,8"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="Data" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    
+                    <Button Content="Clear Cache" Command="{Binding ClearCacheCommand}"
+                           Style="{DynamicResource MaterialDesignFlatButton}"
+                           HorizontalAlignment="Left" Margin="0,8"/>
+                    
+                    <Button Content="Export Data" Command="{Binding ExportDataCommand}"
+                           Style="{DynamicResource MaterialDesignFlatButton}"
+                           HorizontalAlignment="Left" Margin="0,8"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

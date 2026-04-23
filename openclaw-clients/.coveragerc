@@ -1,0 +1,23 @@
+[run]
+source = backend/services
+omit = 
+    */test_*.py
+    */__pycache__/*
+    */venv/*
+    */.venv/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    pass
+fail_under = 30
+skip_covered = True
+
+[html]
+directory = htmlcov
+title = OpenClaw Coverage Report
+
+[xml]
+output = coverage.xml

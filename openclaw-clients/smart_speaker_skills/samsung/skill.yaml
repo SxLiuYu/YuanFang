@@ -1,0 +1,37 @@
+# 三星 Bixby 技能配置
+# 文档：https://developer.bixby.com/
+
+skill:
+  name: "OpenClaw Home Assistant"
+  version: "1.0.0"
+  description: "Smart home control, family account, task management, voice chat"
+  
+  # Bixby Developer Studio 配置
+  package_name: "com.openclaw.bixby"
+  client_id: ""
+  client_secret: ""
+  
+  # Bixby Capsules
+  capsules:
+    - name: "HomeControl"
+      locales:
+        - en-US
+        - zh-CN
+      intents:
+        - "ControlLightIntent"
+        - "ControlThermostatIntent"
+        - "QueryAccountIntent"
+        - "AddTaskIntent"
+
+  # 回调配置
+  webhook:
+    url: "https://your-server.com/api/v1/smart-speaker/samsung"
+    timeout: 3000
+
+# 发布配置
+publish:
+  category: "Lifestyle"
+  keywords:
+    - "smart home"
+    - "family assistant"
+    - "voice control"

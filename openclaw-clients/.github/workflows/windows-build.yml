@@ -1,0 +1,42 @@
+name: Windows Desktop Build
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'windows-desktop/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'windows-desktop/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0'
+    
+    - name: Restore dependencies
+      working-directory: windows-desktop/OpenClaw.Desktop
+      run: dotnet restore
+    
+    - name: Build
+      working-directory: windows-desktop/OpenClaw.Desktop
+      run: dotnet build --configuration Release --no-restore
+    
+    - name: Publish
+      working-directory: windows-desktop/OpenClaw.Desktop
+      run: dotnet publish -c Release -r win-x64 --self-contained true -o ./publish
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: OpenClaw-Windows-x64
+        path: windows-desktop/OpenClaw.Desktop/publish/

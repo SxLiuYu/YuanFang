@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@android:drawable/ic_lock_lock"
+        android:layout_marginBottom="24dp"
+        android:contentDescription="设备确认" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="设备登录确认"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="请查看飞书消息获取 6 位确认码"
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:layout_marginBottom="24dp"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/textTempId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="临时 ID: "
+        android:textSize="12sp"
+        android:textColor="#999999"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/inputConfirmCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="输入 6 位确认码"
+        android:inputType="textCapCharacters"
+        android:maxLength="6"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"
+        android:letterSpacing="0.3" />
+
+    <Button
+        android:id="@+id/btnConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="确认登录"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnResend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="重新发送确认码"
+        android:textSize="14sp"
+        style="?android:attr/borderlessButtonStyle"
+        android:textColor="#666666" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="确认码 30 分钟后过期"
+        android:textSize="12sp"
+        android:textColor="#999999"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>

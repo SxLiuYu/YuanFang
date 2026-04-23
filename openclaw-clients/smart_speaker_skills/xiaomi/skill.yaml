@@ -1,0 +1,64 @@
+# 小爱同学技能配置
+# 文档：https://developers.xiaoai.mi.com/
+
+skill:
+  name: "OpenClaw 家庭助手"
+  version: "1.0.0"
+  description: "智能家居控制、家庭账本、任务管理、语音对话"
+  
+  # 技能 ID（创建技能后填写）
+  skill_id: ""
+  skill_secret: ""
+  
+  # 唤醒词（可选，需要特殊申请）
+  # wake_words:
+  #   - "小助手"
+  
+  # 意图定义
+  intents:
+    - name: "chat"
+      samples:
+        - "你好"
+        - "聊天"
+        - "陪我聊聊"
+        
+    - name: "smart_home_control"
+      samples:
+        - "打开客厅的灯"
+        - "关闭空调"
+        - "调节温度"
+        
+    - name: "account_query"
+      samples:
+        - "查账单"
+        - "今天花了多少钱"
+        
+    - name: "task_management"
+      samples:
+        - "添加任务"
+        - "提醒我"
+        
+    - name: "shopping_list"
+      samples:
+        - "买东西"
+        - "购物清单"
+
+  # 回调配置
+  webhook:
+    url: "https://your-server.com/api/v1/smart-speaker/xiaomi"
+    timeout: 3000
+    
+  # 技能入口（小爱技能大厅展示）
+  entry:
+    icon_url: ""
+    banner_url: ""
+    detail_page: ""
+
+# 发布配置
+publish:
+  category: "效率工具"
+  sub_category: "智能家居"
+  keywords:
+    - "智能家居"
+    - "家庭管理"
+    - "语音助手"

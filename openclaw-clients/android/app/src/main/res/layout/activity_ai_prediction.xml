@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#F5F5F5">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 标题 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🤖 AI 用电预测"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 训练模型按钮 -->
+        <Button
+            android:id="@+id/btn_train_model"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔄 重新训练 AI 模型"
+            android:backgroundTint="#9C27B0"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 加载进度 -->
+        <ProgressBar
+            android:id="@+id/progress_loading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 7 天预测卡片 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_prediction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📅 未来 7 天预测"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#3F51B5"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/text_prediction_summary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="加载中..."
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:layout_marginBottom="12dp" />
+
+                <ListView
+                    android:id="@+id/list_predictions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="#E0E0E0"
+                    android:dividerHeight="1dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 月度预测卡片 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_monthly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="💰 月度电费预测"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#E91E63"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/text_monthly_forecast"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="加载中..."
+                    android:textSize="14sp"
+                    android:textColor="#666666" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 异常检测卡片 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_anomaly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="⚡ 异常用电检测"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#FF9800"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/text_anomaly_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="加载中..."
+                    android:textSize="14sp"
+                    android:textColor="#666666" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- AI 建议卡片 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_suggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="💡 AI 智能节能建议"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50"
+                    android:layout_marginBottom="8dp" />
+
+                <ListView
+                    android:id="@+id/list_suggestions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="#E0E0E0"
+                    android:dividerHeight="1dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 提示 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 提示：AI 模型基于历史数据训练，数据越多预测越准确。建议每周重新训练一次。"
+            android:textSize="12sp"
+            android:textColor="#999999"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp" />
+
+    </LinearLayout>
+</ScrollView>

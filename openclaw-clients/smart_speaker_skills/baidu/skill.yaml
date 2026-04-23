@@ -1,0 +1,40 @@
+# 小度音箱技能配置
+# 文档：https://duer.baidu.com/doc
+
+skill:
+  name: "OpenClaw 家庭助手"
+  version: "1.0.0"
+  description: "智能家居控制、家庭账本、任务管理、语音对话"
+  
+  # 技能 ID（创建技能后填写）
+  skill_id: ""
+  skill_secret: ""
+  
+  # 意图定义
+  intents:
+    - name: "chat"
+      samples:
+        - "你好"
+        - "聊天"
+        
+    - name: "smart_home_control"
+      samples:
+        - "打开灯"
+        - "关闭电器"
+        
+    - name: "account_query"
+      samples:
+        - "查账单"
+        - "花了多少钱"
+
+  # 回调配置
+  webhook:
+    url: "https://your-server.com/api/v1/smart-speaker/baidu"
+    timeout: 3000
+
+# 发布配置
+publish:
+  category: "生活服务"
+  keywords:
+    - "智能家居"
+    - "家庭助手"

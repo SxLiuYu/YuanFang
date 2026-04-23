@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenClaw Home Assistant</string>
+    <string name="widget_name">快捷启动</string>
+    <string name="widget_description">显示今日步数、待办事项，提供快速记账和打开应用功能</string>
+</resources>

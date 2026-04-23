@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#f5f5f5">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#2196F3"
+        android:elevation="4dp"
+        app:title="跨设备协同"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <!-- 连接状态栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#E3F2FD"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/txt_connection_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="○ 未连接"
+            android:textColor="#F44336"
+            android:textSize="14sp"
+            android:drawableStart="@android:drawable/ic_menu_manage"
+            android:drawablePadding="8dp"
+            android:clickable="true"
+            android:background="?attr/selectableItemBackground" />
+
+        <TextView
+            android:id="@+id/txt_device_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="本机: ..."
+            android:textColor="#1976D2"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- 同步状态 -->
+    <LinearLayout
+        android:id="@+id/layout_sync_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="同步状态: "
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:tag="conversation"
+            android:text="对话 ○"
+            android:textSize="12sp"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:tag="tasks"
+            android:text="任务 ○"
+            android:textSize="12sp"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:tag="health"
+            android:text="健康 ○"
+            android:textSize="12sp"
+            android:padding="4dp" />
+
+    </LinearLayout>
+
+    <!-- 操作按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btn_sync_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="同步全部"
+            android:backgroundTint="#4CAF50"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btn_send_command"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送命令"
+            android:backgroundTint="#FF9800" />
+    </LinearLayout>
+
+    <!-- 设备列表 -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_devices"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:clipToPadding="false" />
+
+            <TextView
+                android:id="@+id/txt_empty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="暂无在线设备\n连接服务器后可查看其他设备"
+                android:textColor="#999"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:drawableTop="@android:drawable/ic_menu_share"
+                android:drawablePadding="8dp" />
+
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+</LinearLayout>

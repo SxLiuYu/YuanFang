@@ -1,0 +1,110 @@
+<Window x:Class="OpenClaw.Desktop.Views.DeviceConfirmWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="设备登录确认" Height="450" Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{materialDesign:MaterialDesignFont}">
+    
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- 标题 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,24">
+            <TextBlock Text="🔐" FontSize="32" VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <TextBlock Text="设备登录确认" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+        </StackPanel>
+        
+        <!-- 设备信息 -->
+        <Border Grid.Row="1" Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="设备信息" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="设备名称：" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DeviceName}"/>
+                    
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="临时 ID：" Foreground="{DynamicResource MaterialDesignBodyLight}" Margin="0,4,0,0"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TempId}" TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+        
+        <!-- 确认码输入 -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,16">
+            <TextBlock Text="请输入飞书消息中的 6 位确认码" 
+                      Style="{DynamicResource MaterialDesignBody2TextBlock}"
+                      Margin="0,0,0,8"/>
+            
+            <TextBox x:Name="ConfirmCodeBox"
+                    Text="{Binding ConfirmCode, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                    Style="{DynamicResource MaterialDesignOutlinedTextBox}"
+                    materialDesign:TextFieldAssist.CharacterCounterVisibility="Hidden"
+                    MaxLength="6"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    TextAlignment="Center"
+                    CharacterCasing="Upper"
+                    Padding="8"/>
+        </StackPanel>
+        
+        <!-- 状态信息 -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,16">
+            <TextBlock Text="⏱️" FontSize="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+            <TextBlock Text="确认码有效期：" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding RemainingSeconds, StringFormat={}{0}秒}" 
+                      VerticalAlignment="Center" FontWeight="Bold"/>
+        </StackPanel>
+        
+        <!-- 按钮 -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="确认登录" 
+                   Command="{Binding ConfirmCommand}"
+                   IsEnabled="{Binding CanConfirm}"
+                   Style="{DynamicResource MaterialDesignRaisedButton}"
+                   Width="100" Margin="0,0,8,0"/>
+            
+            <Button Content="重新发送" 
+                   Command="{Binding ResendCommand}"
+                   Style="{DynamicResource MaterialDesignOutlinedButton}"
+                   Width="100" Margin="8,0,0,0"/>
+            
+            <Button Content="取消" 
+                   Command="{Binding CancelCommand}"
+                   Style="{DynamicResource MaterialDesignFlatButton}"
+                   Width="80" Margin="8,0,0,0"/>
+        </StackPanel>
+        
+        <!-- 状态消息 -->
+        <Border Grid.Row="5" Style="{StaticResource MaterialDesignElevationDepth1}" Padding="12" 
+                VerticalAlignment="Bottom">
+            <TextBlock Text="{Binding StatusMessage}" 
+                      TextWrapping="Wrap"
+                      HorizontalAlignment="Center"
+                      Style="{DynamicResource MaterialDesignCaptionTextBlock}"/>
+        </Border>
+        
+        <!-- 加载指示器 -->
+        <ProgressBar Grid.Row="4" Grid.RowSpan="2"
+                     IsIndeterminate="{Binding IsConfirming}"
+                     Visibility="{Binding IsConfirming, Converter={StaticResource BoolToVisibilityConverter}}"
+                     VerticalAlignment="Bottom" Height="4"/>
+    </Grid>
+</Window>

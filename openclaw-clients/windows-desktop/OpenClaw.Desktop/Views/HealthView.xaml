@@ -1,0 +1,108 @@
+<UserControl x:Class="OpenClaw.Desktop.Views.HealthView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <Button Command="{Binding RefreshCommand}" Style="{DynamicResource MaterialDesignFlatButton}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🔄" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Refresh"/>
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding AddRecordCommand}" Style="{DynamicResource MaterialDesignRaisedButton}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="➕" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Add Record"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="0,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="Avg Steps" Style="{DynamicResource MaterialDesignCaptionTextBlock}"/>
+                    <TextBlock Text="{Binding Summary.AverageSteps, StringFormat={}{0:N0}}" 
+                              FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="8,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="Avg Heart Rate" Style="{DynamicResource MaterialDesignCaptionTextBlock}"/>
+                    <TextBlock Text="{Binding Summary.AverageHeartRate, StringFormat={}{0:N0} bpm}" 
+                              FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="8,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="Total Distance" Style="{DynamicResource MaterialDesignCaptionTextBlock}"/>
+                    <TextBlock Text="{Binding Summary.TotalDistance, StringFormat={}{0:N1} km}" 
+                              FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Padding="16" Margin="8,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="Avg Sleep" Style="{DynamicResource MaterialDesignCaptionTextBlock}"/>
+                    <TextBlock Text="{Binding Summary.AverageSleep, StringFormat={}{0:N1} hrs}" 
+                              FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Column="0" Margin="0,0,8,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Steps Trend" FontSize="18" Margin="16"/>
+                    <lvc:CartesianChart Grid.Row="1" Series="{Binding StepSeries}" 
+                                       XAxes="{Binding XAxes}" YAxes="{Binding YAxes}"
+                                       Background="Transparent"/>
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Column="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Recent Records" FontSize="18" Margin="16"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding HealthRecords}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Date, StringFormat={}{0:MM/dd}}"/>
+                                        <TextBlock Text="{Binding Steps, StringFormat={}{0:N0} steps}" 
+                                                  Style="{DynamicResource MaterialDesignCaptionTextBlock}"/>
+                                    </StackPanel>
+                                    <materialDesign:Chip Grid.Column="1" Content="{Binding HeartRate}"
+                                                        ToolTip="Heart Rate"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 标题 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⚡ 家庭能源管理"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 今日用电概览 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#E3F2FD"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_today_usage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="今日用电：--"
+                    android:textSize="16sp"
+                    android:textColor="#1976D2" />
+
+                <TextView
+                    android:id="@+id/text_today_cost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="今日电费：--"
+                    android:textSize="16sp"
+                    android:textColor="#1976D2"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="end">
+
+                <TextView
+                    android:id="@+id/text_monthly_usage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="本月累计：--"
+                    android:textSize="14sp"
+                    android:textColor="#424242" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 记录用电 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📝 记录用电"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#F5F5F5"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- 设备选择 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="设备"
+                android:textSize="14sp"
+                android:textColor="#666666" />
+
+            <Spinner
+                android:id="@+id/spinner_device"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp" />
+
+            <!-- 使用时长 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="使用时长（小时）"
+                android:textSize="14sp"
+                android:textColor="#666666" />
+
+            <EditText
+                android:id="@+id/edit_hours"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="例如：2.5"
+                android:inputType="numberDecimal"
+                android:layout_marginBottom="12dp" />
+
+            <!-- 功率 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="功率（瓦特）"
+                android:textSize="14sp"
+                android:textColor="#666666" />
+
+            <EditText
+                android:id="@+id/edit_power"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="自动填充"
+                android:inputType="number"
+                android:layout_marginBottom="12dp" />
+
+            <!-- 记录按钮 -->
+            <Button
+                android:id="@+id/btn_record"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ 记录用电"
+                android:backgroundTint="#4CAF50" />
+        </LinearLayout>
+
+        <!-- 快捷操作 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔧 快捷操作"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btn_view_report"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📊 用电报告"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored" />
+
+            <Button
+                android:id="@+id/btn_suggestions"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="💡 节能建议"
+                android:layout_marginStart="8dp"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_set_goal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎯 设置节能目标"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored" />
+
+        <!-- 设备用电明细 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📋 设备用电明细"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <ListView
+            android:id="@+id/list_devices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:divider="#E0E0E0"
+            android:dividerHeight="1dp" />
+
+        <!-- 节能建议 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 节能建议"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <ListView
+            android:id="@+id/list_suggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="#E0E0E0"
+            android:dividerHeight="1dp" />
+
+        <!-- 底部提示 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 提示：电价按 0.4887 元/度计算（北京居民电价）"
+            android:textSize="12sp"
+            android:textColor="#999999"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.wear.widget.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:padding="@dimen/box_inset_layout_padding">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_boxedEdges="all">
+
+        <!-- 状态栏 -->
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击说话"
+            android:textColor="@color/status_text"
+            android:textSize="@dimen/status_text_size"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 响应区域 -->
+        <TextView
+            android:id="@+id/tvResponse"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="你好！\n点击麦克风\n对我说话"
+            android:textColor="@color/response_text"
+            android:textSize="@dimen/response_text_size"
+            android:textAlignment="center"
+            android:lineSpacingExtra="4dp"
+            android:padding="8dp" />
+
+        <!-- 语音按钮 -->
+        <Button
+            android:id="@+id/btnVoice"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="🎤"
+            android:textSize="32sp"
+            android:background="@drawable/btn_circle"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+</androidx.wear.widget.BoxInsetLayout>

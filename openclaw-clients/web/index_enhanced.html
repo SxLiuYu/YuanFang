@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 家庭助手 - 增强版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 24px; }
+        .header-actions { display: flex; gap: 10px; }
+        .header-actions button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .message-area {
+            flex: 1;
+            background: #f9f9f9;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .message.assistant {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .message.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .message .timestamp {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+        .controls {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+        .controls button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-voice {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-voice.listening {
+            background: #f44336;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .btn-tts { background: #4CAF50; color: white; }
+        .btn-history { background: #2196F3; color: white; }
+        .input-area {
+            padding: 0 20px 20px;
+            background: white;
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+        }
+        input[type="text"]:focus { border-color: #667eea; }
+        .send-btn {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { color: #333; }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+        }
+        .history-item:hover { background: #f5f5f5; }
+        .history-item .date { font-size: 12px; color: #666; }
+        .history-item .preview { font-size: 14px; margin-top: 5px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .tts-controls {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .tts-controls button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 OpenClaw 家庭助手</h1>
+            <div class="header-actions">
+                <button onclick="showHistory()">📜 历史</button>
+                <button onclick="showSettings()">⚙️ 设置</button>
+            </div>
+        </div>
+        
+        <div class="message-area" id="messageArea"></div>
+        
+        <div class="controls">
+            <button class="btn-voice" id="voiceBtn" onclick="toggleVoice()">🎤 语音输入</button>
+            <button class="btn-tts" onclick="toggleTTS()">🔊 TTS: <span id="ttsStatus">关</span></button>
+            <button class="btn-history" onclick="clearChat()">🗑️ 清空</button>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="textInput" placeholder="输入消息... (Ctrl+Enter 发送)" />
+            <button class="send-btn" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+    
+    <!-- 历史记录模态框 -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📜 对话历史</h2>
+                <button class="close-btn" onclick="hideHistory()">×</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+    
+    <!-- 设置模态框 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ 设置</h2>
+                <button class="close-btn" onclick="hideSettings()">×</button>
+            </div>
+            <div class="form-group">
+                <label>DashScope API Key:</label>
+                <input type="password" id="apiKey" placeholder="输入 API 密钥" />
+            </div>
+            <div class="form-group">
+                <label>对话上下文长度:</label>
+                <select id="contextLength">
+                    <option value="5">最近 5 条</option>
+                    <option value="10" selected>最近 10 条</option>
+                    <option value="20">最近 20 条</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>TTS 语音:</label>
+                <select id="ttsVoice">
+                    <option value="zh-CN">中文</option>
+                    <option value="en-US">English</option>
+                </select>
+            </div>
+            <button class="send-btn" style="width:100%" onclick="saveSettings()">保存设置</button>
+        </div>
+    </div>
+
+    <script>
+        // 状态管理
+        const state = {
+            apiKey: localStorage.getItem('dashscope_api_key') || '',
+            contextLength: parseInt(localStorage.getItem('context_length') || '10'),
+            ttsEnabled: localStorage.getItem('tts_enabled') === 'true',
+            ttsVoice: localStorage.getItem('tts_voice') || 'zh-CN',
+            messages: JSON.parse(localStorage.getItem('chat_history') || '[]'),
+            conversationHistory: [],
+            isListening: false,
+            recognition: null,
+            synth: window.speechSynthesis
+        };
+
+        // 初始化
+        function init() {
+            document.getElementById('apiKey').value = state.apiKey;
+            document.getElementById('contextLength').value = state.contextLength;
+            document.getElementById('ttsVoice').value = state.ttsVoice;
+            updateTTSStatus();
+            setupSpeechRecognition();
+            loadMessages();
+            
+            // 键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F2' && !e.ctrlKey) {
+                    e.preventDefault();
+                    toggleVoice();
+                }
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        // 语音识别
+        function setupSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                state.recognition = new SpeechRecognition();
+                state.recognition.lang = 'zh-CN';
+                state.recognition.continuous = false;
+                
+                state.recognition.onstart = () => {
+                    state.isListening = true;
+                    document.getElementById('voiceBtn').textContent = '⏹️ 停止录音';
+                    document.getElementById('voiceBtn').classList.add('listening');
+                };
+                
+                state.recognition.onend = () => {
+                    state.isListening = false;
+                    document.getElementById('voiceBtn').textContent = '🎤 语音输入';
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                };
+                
+                state.recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    sendMessage(transcript);
+                };
+                
+                state.recognition.onerror = (event) => {
+                    addMessage('语音识别错误：' + event.error, 'error');
+                };
+            }
+        }
+
+        function toggleVoice() {
+            if (!state.recognition) {
+                addMessage('您的浏览器不支持语音识别', 'error');
+                return;
+            }
+            if (state.isListening) {
+                state.recognition.stop();
+            } else {
+                state.recognition.start();
+            }
+        }
+
+        // 发送消息（带多轮对话上下文）
+        function sendMessage(text) {
+            const input = document.getElementById('textInput');
+            const message = text || input.value.trim();
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // 更新对话历史
+            state.conversationHistory.push({ role: 'user', content: message });
+            if (state.conversationHistory.length > state.contextLength * 2) {
+                state.conversationHistory = state.conversationHistory.slice(-state.contextLength * 2);
+            }
+            
+            callDashScopeAPI(message);
+        }
+
+        // 调用 API（带上下文）
+        async function callDashScopeAPI(userMessage) {
+            if (!state.apiKey) {
+                addMessage('请先在设置中配置 API 密钥', 'error');
+                return;
+            }
+            
+            const loadingId = addMessage('思考中...', 'assistant');
+            
+            try {
+                const messages = [
+                    { role: 'system', content: '你是一个家庭助手，请理解用户的语音指令并提供相应的帮助。保持对话连贯性。' },
+                    ...state.conversationHistory
+                ];
+                
+                const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${state.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen-max',
+                        input: { messages },
+                        parameters: {
+                            temperature: 0.7,
+                            top_p: 0.8,
+                            max_tokens: 500
+                        }
+                    })
+                });
+                
+                removeMessage(loadingId);
+                const data = await response.json();
+                
+                if (response.ok && data.output && data.output.choices && data.output.choices[0]) {
+                    const content = data.output.choices[0].message.content;
+                    addMessage(content, 'assistant');
+                    
+                    // 更新对话历史
+                    state.conversationHistory.push({ role: 'assistant', content });
+                    
+                    // TTS 朗读
+                    if (state.ttsEnabled) {
+                        speak(content);
+                    }
+                } else {
+                    addMessage('API 错误：' + (data.message || '未知错误'), 'error');
+                }
+            } catch (e) {
+                removeMessage(loadingId);
+                addMessage('请求失败：' + e.message, 'error');
+            }
+            
+            saveMessages();
+        }
+
+        // TTS 语音合成
+        function speak(text) {
+            if (!state.synth) return;
+            
+            state.synth.cancel(); // 停止当前朗读
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = state.ttsVoice;
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            state.synth.speak(utterance);
+        }
+
+        function toggleTTS() {
+            state.ttsEnabled = !state.ttsEnabled;
+            localStorage.setItem('tts_enabled', state.ttsEnabled);
+            updateTTSStatus();
+        }
+
+        function updateTTSStatus() {
+            document.getElementById('ttsStatus').textContent = state.ttsEnabled ? '开' : '关';
+        }
+
+        // 消息管理
+        function addMessage(content, type) {
+            const id = 'msg-' + Date.now();
+            const msg = {
+                id,
+                content,
+                type,
+                timestamp: new Date().toISOString()
+            };
+            state.messages.push(msg);
+            renderMessage(msg);
+            saveMessages();
+            return id;
+        }
+
+        function removeMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function renderMessage(msg) {
+            const area = document.getElementById('messageArea');
+            const div = document.createElement('div');
+            div.className = `message ${msg.type}`;
+            div.id = msg.id;
+            div.innerHTML = `
+                ${msg.content}
+                <div class="timestamp">${new Date(msg.timestamp).toLocaleString('zh-CN')}</div>
+            `;
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function loadMessages() {
+            const area = document.getElementById('messageArea');
+            area.innerHTML = '';
+            if (state.messages.length === 0) {
+                addMessage('你好！我是你的家庭助手。支持语音输入、TTS 朗读、多轮对话和历史记录。按 F2 开始语音输入。', 'assistant');
+            } else {
+                state.messages.forEach(renderMessage);
+            }
+        }
+
+        function saveMessages() {
+            localStorage.setItem('chat_history', JSON.stringify(state.messages));
+        }
+
+        function clearChat() {
+            if (confirm('确定清空对话历史？')) {
+                state.messages = [];
+                state.conversationHistory = [];
+                saveMessages();
+                loadMessages();
+            }
+        }
+
+        // 历史记录
+        function showHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+            
+            // 按日期分组
+            const grouped = {};
+            state.messages.forEach(msg => {
+                const date = new Date(msg.timestamp).toLocaleDateString('zh-CN');
+                if (!grouped[date]) grouped[date] = [];
+                grouped[date].push(msg);
+            });
+            
+            Object.keys(grouped).reverse().forEach(date => {
+                const dateDiv = document.createElement('div');
+                dateDiv.style.fontWeight = 'bold';
+                dateDiv.style.margin = '10px 0 5px';
+                dateDiv.textContent = date;
+                list.appendChild(dateDiv);
+                
+                grouped[date].forEach(msg => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <div class="date">${new Date(msg.timestamp).toLocaleTimeString('zh-CN')} - ${msg.type === 'user' ? '👤' : '🤖'}</div>
+                        <div class="preview">${msg.content.substring(0, 50)}${msg.content.length > 50 ? '...' : ''}</div>
+                    `;
+                    list.appendChild(item);
+                });
+            });
+            
+            document.getElementById('historyModal').classList.add('show');
+        }
+
+        function hideHistory() {
+            document.getElementById('historyModal').classList.remove('show');
+        }
+
+        // 设置
+        function showSettings() {
+            document.getElementById('settingsModal').classList.add('show');
+        }
+
+        function hideSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        function saveSettings() {
+            state.apiKey = document.getElementById('apiKey').value.trim();
+            state.contextLength = parseInt(document.getElementById('contextLength').value);
+            state.ttsVoice = document.getElementById('ttsVoice').value;
+            
+            localStorage.setItem('dashscope_api_key', state.apiKey);
+            localStorage.setItem('context_length', state.contextLength);
+            localStorage.setItem('tts_voice', state.ttsVoice);
+            
+            hideSettings();
+            addMessage('设置已保存', 'assistant');
+        }
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>

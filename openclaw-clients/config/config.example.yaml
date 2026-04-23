@@ -1,0 +1,167 @@
+# ═══════════════════════════════════════════════════════════════
+# OpenClaw Clients 配置文件
+# ═══════════════════════════════════════════════════════════════
+# 复制此文件为 config.yaml 并填入你的 API Key
+# 
+# 快速开始：只需配置 api_key 即可启用所有功能
+# 获取 API Key: https://dashscope.console.aliyun.com/
+# ═══════════════════════════════════════════════════════════════
+
+# ==================== 全局设置 ====================
+enabled: true
+debug: false
+log_level: INFO
+
+# ==================== 功能模块开关 ====================
+# 按需启用/禁用功能模块
+features:
+  smart_home: true       # 智能家居控制
+  finance: true          # 家庭财务
+  task: true             # 任务管理
+  shopping: true         # 购物清单
+  recipe: true           # 做菜助手
+  health: true           # 健康档案
+  calendar: true         # 日程管理
+  photo: false           # 家庭相册（需要额外存储配置）
+  education: true        # 儿童教育
+  pet: true              # 宠物照顾
+  vehicle: true          # 车辆管理
+  home: true             # 房屋维护
+  medication: true       # 用药提醒
+  service: true          # 生活服务
+  entertainment: true    # 家庭娱乐
+  security: true         # 安全监控
+  communication: true    # 家庭通讯
+  report: true           # 数据报表
+
+# ==================== 🎤 语音识别 (STT) ====================
+# 将语音转换为文字
+speech_to_text:
+  enabled: true
+  provider: aliyun  # aliyun | baidu | google | azure | local
+  
+  aliyun:
+    api_key: "${DASHSCOPE_API_KEY}"  # 推荐：使用环境变量
+    # api_key: "sk-xxxxxxxxxxxx"     # 或直接填写
+    model: paraformer-realtime
+
+# ==================== 🔊 语音合成 (TTS) ====================
+# 将文字转换为语音
+text_to_speech:
+  enabled: true
+  provider: aliyun
+  voice: "longxiaochun"  # 音色：longxiaochun | sambert-zhina-v1 | ...
+  
+  aliyun:
+    api_key: "${DASHSCOPE_API_KEY}"
+    model: sambert-zhina-v1
+
+# ==================== 🤖 AI 对话 ====================
+# 大语言模型对话
+ai_chat:
+  enabled: true
+  provider: aliyun
+  model: "qwen-max"  # qwen-max | qwen-plus | qwen-turbo
+  
+  aliyun:
+    api_key: "${DASHSCOPE_API_KEY}"
+
+# ==================== 📹 视频理解 (可选) ====================
+# 分析视频内容
+video_understanding:
+  enabled: false  # 默认关闭，需要时开启
+  provider: aliyun
+  
+  aliyun:
+    api_key: "${DASHSCOPE_API_KEY}"
+    model: qwen-vl-max
+
+# ==================== 📱 平台配置 ====================
+platforms:
+  android:
+    enabled: true
+    
+  ios:
+    enabled: true
+    
+  web:
+    enabled: true
+    
+  windows:
+    enabled: true
+    
+  macos:
+    enabled: true
+    
+  watchos:
+    enabled: false  # 手表端默认关闭（性能考虑）
+
+# ==================== 🔌 智能音箱技能 (可选) ====================
+# 集成所有主流智能音箱平台
+smart_speaker_skills:
+  tmall:  # 天猫精灵（阿里）
+    enabled: false
+    skill_id: ""
+    skill_secret: ""
+    
+  xiaomi:  # 小爱同学（小米）
+    enabled: false
+    skill_id: ""
+    skill_secret: ""
+    
+  baidu:  # 小度音箱
+    enabled: false
+    skill_id: ""
+    skill_secret: ""
+    
+  huawei:  # 华为小艺
+    enabled: false
+    skill_id: ""
+    app_id: ""
+    app_secret: ""
+    
+  jd:  # 京东叮咚
+    enabled: false
+    skill_id: ""
+    skill_token: ""
+    
+  samsung:  # 三星 Bixby
+    enabled: false
+    client_id: ""
+    client_secret: ""
+    
+  homekit:  # Apple HomeKit/Siri
+    enabled: false
+    bridge_name: "OpenClaw Home"
+    pin: "031-45-154"
+
+# ==================== 💾 数据存储 ====================
+storage:
+  type: sqlite  # sqlite | redis | postgresql
+  path: "./data/openclaw.db"
+  
+  # Redis 配置（可选）
+  # redis:
+  #   host: localhost
+  #   port: 6379
+  #   db: 0
+
+# ==================== 🔐 安全设置 ====================
+security:
+  # API 访问令牌（可选，启用后客户端需要提供 token）
+  require_token: false
+  api_token: "${OPENCLAW_API_TOKEN}"
+  
+  # CORS 允许的来源
+  cors_origins:
+    - "*"
+
+# ═══════════════════════════════════════════════════════════════
+# 环境变量说明：
+# ${DASHSCOPE_API_KEY} - 阿里云 DashScope API Key
+# ${OPENCLAW_API_TOKEN} - 自定义 API 访问令牌
+#
+# 设置方法：
+# 1. export DASHSCOPE_API_KEY="sk-xxx"
+# 2. 或在 .env 文件中配置
+# ═══════════════════════════════════════════════════════════════

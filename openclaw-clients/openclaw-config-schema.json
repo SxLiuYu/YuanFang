@@ -1,0 +1,236 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openclaw.ai/config-schema.json",
+  "title": "OpenClaw 统一配置文件",
+  "description": "跨平台客户端配置格式规范 v1.0",
+  "type": "object",
+  "required": ["version", "core"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "配置文件格式版本"
+    },
+    "profile_name": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "配置配置文件名"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "创建时间 (ISO 8601)"
+    },
+    "core": {
+      "type": "object",
+      "required": ["api_key"],
+      "properties": {
+        "api_key": {
+          "type": "string",
+          "pattern": "^sk-[a-zA-Z0-9_-]+$",
+          "description": "DashScope API Key"
+        },
+        "api_provider": {
+          "type": "string",
+          "enum": ["dashscope", "openai", "azure"],
+          "default": "dashscope"
+        },
+        "model": {
+          "type": "string",
+          "default": "qwen-max"
+        },
+        "websocket_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^wss?://"
+        },
+        "context_length": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 20
+        }
+      }
+    },
+    "tts": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "voice": {
+          "type": "string"
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.0,
+          "default": 1.0
+        },
+        "volume": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.8
+        }
+      }
+    },
+    "automation": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/automationRule"
+          }
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "theme": {
+          "type": "string",
+          "enum": ["light", "dark", "auto"],
+          "default": "auto"
+        },
+        "language": {
+          "type": "string",
+          "default": "zh-CN"
+        },
+        "font_size": {
+          "type": "string",
+          "enum": ["small", "medium", "large"],
+          "default": "medium"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "automationRule": {
+      "type": "object",
+      "required": ["id", "name", "triggers", "actions"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {"$ref": "#/definitions/timeTrigger"},
+              {"$ref": "#/definitions/batteryTrigger"},
+              {"$ref": "#/definitions/powerTrigger"},
+              {"$ref": "#/definitions/locationTrigger"},
+              {"$ref": "#/definitions/networkTrigger"}
+            ]
+          },
+          "minItems": 1
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {"$ref": "#/definitions/speakAction"},
+              {"$ref": "#/definitions/notifyAction"},
+              {"$ref": "#/definitions/launchAction"}
+            ]
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "timeTrigger": {
+      "type": "object",
+      "required": ["type", "time"],
+      "properties": {
+        "type": {"const": "time"},
+        "time": {"type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"},
+        "days": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0, "maximum": 6},
+          "description": "星期几 (0=周日)"
+        }
+      }
+    },
+    "batteryTrigger": {
+      "type": "object",
+      "required": ["type", "level_below"],
+      "properties": {
+        "type": {"const": "battery"},
+        "level_below": {"type": "integer", "minimum": 1, "maximum": 100}
+      }
+    },
+    "powerTrigger": {
+      "type": "object",
+      "required": ["type", "state"],
+      "properties": {
+        "type": {"const": "power"},
+        "state": {"enum": ["plugged", "unplugged"]}
+      }
+    },
+    "locationTrigger": {
+      "type": "object",
+      "required": ["type", "location"],
+      "properties": {
+        "type": {"const": "location"},
+        "location": {"enum": ["home", "work", "custom"]},
+        "latitude": {"type": "number"},
+        "longitude": {"type": "number"},
+        "radius": {"type": "number", "default": 100},
+        "entering": {"type": "boolean"},
+        "leaving": {"type": "boolean"}
+      }
+    },
+    "networkTrigger": {
+      "type": "object",
+      "required": ["type", "state"],
+      "properties": {
+        "type": {"const": "network"},
+        "state": {"enum": ["wifi_connected", "wifi_disconnected", "mobile_data"]}
+      }
+    },
+    "speakAction": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"const": "speak"},
+        "text": {"type": "string"},
+        "template": {"type": "string", "enum": ["weather_commute", "tomorrow_weather", "news_brief"]}
+      }
+    },
+    "notifyAction": {
+      "type": "object",
+      "required": ["type", "title"],
+      "properties": {
+        "type": {"const": "notify"},
+        "title": {"type": "string"},
+        "message": {"type": "string"},
+        "data": {"type": "string"}
+      }
+    },
+    "launchAction": {
+      "type": "object",
+      "required": ["type", "package"],
+      "properties": {
+        "type": {"const": "launch"},
+        "package": {"type": "string"},
+        "action": {"type": "string"}
+      }
+    }
+  }
+}

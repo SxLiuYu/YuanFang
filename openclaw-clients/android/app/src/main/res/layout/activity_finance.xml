@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 标题 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💰 家庭账本"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 语音记账按钮 -->
+        <Button
+            android:id="@+id/btn_voice_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎤 语音记账"
+            android:backgroundTint="#2196F3"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 本月概览 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/txt_month_income"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="收入\n¥0"
+                android:textSize="16sp"
+                android:textColor="#4CAF50"
+                android:gravity="center"
+                android:padding="16dp"
+                android:background="#FFFFFF"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:id="@+id/txt_month_expense"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="支出\n¥0"
+                android:textSize="16sp"
+                android:textColor="#F44336"
+                android:gravity="center"
+                android:padding="16dp"
+                android:background="#FFFFFF"/>
+        </LinearLayout>
+
+        <!-- 添加记账按钮 -->
+        <Button
+            android:id="@+id/btn_add_transaction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+ 记一笔"
+            android:backgroundTint="#4CAF50"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 分类统计 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📊 分类统计"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/txt_category_stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="餐饮：¥0\n交通：¥0\n购物：¥0"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:padding="12dp"
+            android:background="#FFFFFF"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 交易记录列表 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📝 交易记录"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_transactions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,32 @@
+<UserControl x:Class="OpenClaw.Desktop.Views.TasksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBox ToolTip="New Task" Width="300" 
+                     Text="{Binding NewTaskText, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{DynamicResource MaterialDesignOutlinedTextBox}"/>
+            <Button Command="{Binding AddTaskCommand}"
+                    Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" Margin="8,0,0,0">
+                <TextBlock Text="➕" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            </Button>
+        </StackPanel>
+
+        <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Row="1">
+            <ListView ItemsSource="{Binding Tasks}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding Title}" 
+                                  IsChecked="{Binding IsCompleted, Mode=TwoWay}"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+    </Grid>
+</UserControl>

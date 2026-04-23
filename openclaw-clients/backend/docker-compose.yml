@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # OpenClaw 后端服务
+  openclaw-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openclaw-backend
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    volumes:
+      # 持久化数据库
+      - backend-data:/app/services/data
+      # 可选：挂载日志目录
+      - backend-logs:/app/services/logs
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - PYTHONPATH=/app/services
+    networks:
+      - openclaw-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8082/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on: []
+
+  # 可选：Redis 缓存服务（如需）
+  redis:
+    image: redis:7-alpine
+    container_name: openclaw-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - openclaw-network
+    command: redis-server --appendonly yes
+    profiles:
+      - with-redis
+
+  # 可选：PostgreSQL 数据库（如需）
+  postgres:
+    image: postgres:15-alpine
+    container_name: openclaw-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: openclaw
+      POSTGRES_USER: openclaw
+      POSTGRES_PASSWORD: openclaw_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - openclaw-network
+    profiles:
+      - with-postgres
+
+volumes:
+  backend-data:
+    driver: local
+  backend-logs:
+    driver: local
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+
+networks:
+  openclaw-network:
+    driver: bridge

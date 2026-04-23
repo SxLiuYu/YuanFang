@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenClaw 家庭助手</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <!-- 认证页面 -->
+  <div class="auth-page" id="authPage">
+    <div class="auth-card">
+      <h1>🦞 OpenClaw</h1>
+      <p id="authMessage">正在连接服务器...</p>
+
+      <div id="pendingView" style="display: none;">
+        <p>请在 Dashboard 确认此设备</p>
+        <div class="temp-id" id="tempIdDisplay">------</div>
+        <p style="font-size: 12px; color: #666;">
+          打开 <a href="http://123.57.107.21:8081" target="_blank">Dashboard</a> 查看待确认设备
+        </p>
+        <p style="margin-top: 16px;">或输入确认码：</p>
+        <div class="confirm-input">
+          <input type="text" maxlength="1" id="code1">
+          <input type="text" maxlength="1" id="code2">
+          <input type="text" maxlength="1" id="code3">
+          <input type="text" maxlength="1" id="code4">
+          <input type="text" maxlength="1" id="code5">
+          <input type="text" maxlength="1" id="code6">
+        </div>
+        <button class="btn btn-primary" id="confirmBtn">确认</button>
+      </div>
+
+      <div id="loadingView">
+        <div class="loading"></div>
+        <p style="margin-top: 16px;">正在注册设备...</p>
+      </div>
+
+      <div id="errorView" style="display: none;">
+        <p id="errorMessage" style="color: #F44336;"></p>
+        <button class="btn btn-primary" id="retryBtn" style="margin-top: 16px;">重试</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主应用 -->
+  <div class="main-app" id="mainApp">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>🦞 OpenClaw</h1>
+        <p>家庭助手</p>
+      </div>
+
+      <nav>
+        <div class="nav-item active" data-page="chat">
+          <span>💬 AI 对话</span>
+        </div>
+        <div class="nav-item" data-page="info">
+          <span>📱 设备信息</span>
+        </div>
+        <div class="nav-item" data-page="settings">
+          <span>⚙️ 设置</span>
+        </div>
+      </nav>
+      
+      <div style="margin-top: auto; padding: 16px;">
+        <div class="ws-status" id="wsStatus">
+          <span class="dot"></span>
+          <span>实时同步</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main">
+      <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+      
+      <!-- 聊天页面 -->
+      <div class="page chat-page active" id="page-chat">
+        <div class="chat-messages" id="chatMessages">
+          <div class="message assistant">
+            你好！我是 OpenClaw 家庭助手。我可以帮助你管理家庭、回答问题。
+            <br><br>
+            按 F2 开始语音输入。
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input type="text" class="chat-input" id="chatInput" placeholder="输入消息... (Enter 发送)">
+          <button class="btn btn-primary" id="voiceBtn">🎤</button>
+          <button class="btn btn-primary" id="sendBtn">发送</button>
+        </div>
+      </div>
+
+      <!-- 设备信息页面 -->
+      <div class="page" id="page-info">
+        <div class="page-header">
+          <h2>📱 设备信息</h2>
+          <p>查看当前设备认证状态</p>
+        </div>
+        <div class="card">
+          <div class="device-info">
+            <div class="label">设备 ID</div>
+            <div class="value" id="infoDeviceId">-</div>
+          </div>
+          <div class="device-info">
+            <div class="label">认证状态</div>
+            <div class="value" style="color: #4CAF50;">✓ 已认证</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 设置页面 -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <h2>⚙️ 设置</h2>
+          <p>配置应用程序</p>
+        </div>
+        <div class="card">
+          <h3>快捷键</h3>
+          <p style="font-size: 14px; color: var(--text-light);">
+            Ctrl+Shift+O - 显示/隐藏窗口<br>
+            Ctrl+Shift+V - 语音输入<br>
+            F2 - 语音输入<br>
+            Enter - 发送消息
+          </p>
+        </div>
+        <div class="card">
+          <h3>关于</h3>
+          <p style="font-size: 14px; color: var(--text-light);">
+            OpenClaw 家庭助手 桌面客户端 v1.0.0<br>
+            设备服务: http://123.57.107.21:8081<br>
+            聊天服务: http://123.57.107.21:10352
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/app.js"></script>
+</body>
+</html>

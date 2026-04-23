@@ -1,0 +1,170 @@
+<UserControl x:Class="OpenClaw.Desktop.Views.HardwareView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/x2009/xaml"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900">
+
+    <Grid Background="{DynamicResource MaterialDesignPaper}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧：设备列表 -->
+        <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Column="0" Margin="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="设备管理" 
+                          Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                          Margin="16"/>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="16,0,16,16">
+                    <Button Content="刷新" Command="{Binding LoadDevicesCommand}"
+                           Style="{StaticResource MaterialDesignRaisedButton}" Margin="0,0,8,0"/>
+                    <Button Content="扫描蓝牙" Command="{Binding ScanBluetoothCommand}"
+                           Style="{StaticResource MaterialDesignOutlinedButton}"/>
+                </StackPanel>
+
+                <ListView Grid.Row="2" ItemsSource="{Binding Devices}"
+                         SelectedItem="{Binding SelectedDevice}" Margin="8">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Margin="4">
+                                <Grid Margin="12,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBlock Text="⌚" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                        <TextBlock Text="{Binding Name}" 
+                                                  Style="{StaticResource MaterialDesignSubtitle2TextBlock}"/>
+                                        <TextBlock Text="{Binding Type}"
+                                                  Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <TextBlock Text="状态: " FontSize="11"/>
+                                            <TextBlock Text="{Binding Status}" FontSize="11"
+                                                      Foreground="{Binding Status, Converter={StaticResource DeviceStatusToColorConverter}}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Border>
+
+        <!-- 右侧：设备详情和健康数据 -->
+        <Grid Grid.Column="1" Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 设备详情 -->
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Row="0" Margin="0,0,0,8">
+                <StackPanel Margin="16" Orientation="Horizontal">
+                    <TextBlock Text="ℹ️" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding SelectedDevice.Name, TargetNullValue='选择设备查看详情'}"
+                                  Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
+                        <TextBlock Text="{Binding SelectedDevice.Brand, StringFormat='品牌: {0}'}"
+                                  Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                  Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 健康数据仪表盘 -->
+            <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Row="1">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="健康数据" Style="{StaticResource MaterialDesignSubtitle1TextBlock}"/>
+                        <Button Content="刷新" Command="{Binding RefreshHealthCommand}"
+                               Style="{StaticResource MaterialDesignFlatButton}" Margin="16,0,0,0"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 心率 -->
+                        <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Column="0" Margin="4">
+                            <StackPanel Margin="16" HorizontalAlignment="Center">
+                                <TextBlock Text="❤️" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="心率" Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                          HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding HealthSummary.AvgHeartRate, StringFormat={}{0:F0} bpm}"
+                                          Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 步数 -->
+                        <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Column="1" Margin="4">
+                            <StackPanel Margin="16" HorizontalAlignment="Center">
+                                <TextBlock Text="🚶" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="步数" Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                          HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding HealthSummary.TotalSteps, StringFormat={}{0}}"
+                                          Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 睡眠 -->
+                        <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Column="2" Margin="4">
+                            <StackPanel Margin="16" HorizontalAlignment="Center">
+                                <TextBlock Text="😴" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="睡眠" Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                          HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding HealthSummary.AvgSleep, StringFormat={}{0:F1}h}"
+                                          Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 卡路里 -->
+                        <Border Style="{StaticResource MaterialDesignElevationDepth1}" Grid.Column="3" Margin="4">
+                            <StackPanel Margin="16" HorizontalAlignment="Center">
+                                <TextBlock Text="🔥" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="卡路里" Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                          HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding HealthSummary.TotalCalories, StringFormat={}{0} kcal}"
+                                          Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 加载指示器 -->
+        <ProgressBar Grid.Column="0" Grid.ColumnSpan="2"
+                    IsIndeterminate="{Binding IsLoading}"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                    VerticalAlignment="Top" Height="4"/>
+    </Grid>
+</UserControl>

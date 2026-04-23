@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 标题 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📊 能源图表"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 周期切换 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <ToggleButton
+                android:id="@+id/toggle_daily"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textOn="每日"
+                android:textOff="每日"
+                android:checked="true"
+                android:layout_marginEnd="8dp" />
+
+            <ToggleButton
+                android:id="@+id/toggle_weekly"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textOn="每周"
+                android:textOff="每周"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <ToggleButton
+                android:id="@+id/toggle_monthly"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textOn="每月"
+                android:textOff="每月"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- 统计概览 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#E3F2FD"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/text_total_kwh"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="总用电：--"
+                android:textSize="14sp"
+                android:textColor="#1976D2" />
+
+            <TextView
+                android:id="@+id/text_total_cost"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="总电费：--"
+                android:textSize="14sp"
+                android:textColor="#1976D2"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/text_peak_hour"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="高峰：--"
+                android:textSize="14sp"
+                android:textColor="#1976D2"
+                android:gravity="end" />
+        </LinearLayout>
+
+        <!-- 用电趋势图 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📈 用电趋势"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_trend"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginBottom="16dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp" />
+
+        <!-- 设备分布饼图 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🥧 设备占比"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pie_chart_distribution"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginBottom="16dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp" />
+
+        <!-- 电费对比柱状图 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📊 电费对比"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/bar_chart_cost"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginBottom="16dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp" />
+
+        <!-- 日均用电 -->
+        <TextView
+            android:id="@+id/text_avg_daily"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="日均用电：--"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 提示 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 提示：点击图表可查看详细信息，双指缩放可调整视图"
+            android:textSize="12sp"
+            android:textColor="#999999"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+    </LinearLayout>
+</ScrollView>

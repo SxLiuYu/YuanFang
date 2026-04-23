@@ -1,0 +1,24 @@
+{
+  "name": "openclaw-web",
+  "version": "1.0.0",
+  "description": "OpenClaw Web Client - 家庭助手网页客户端",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 8080 -o",
+    "lint": "npx eslint *.html",
+    "format": "npx prettier --write *.html"
+  },
+  "keywords": [
+    "openclaw",
+    "home-assistant",
+    "ai",
+    "voice-assistant"
+  ],
+  "author": "OpenClaw Team",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.0",
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="trigger_types">
+        <item>时间触发</item>
+        <item>电量触发</item>
+    </string-array>
+</resources>

@@ -1,0 +1,375 @@
+# OpenClaw 后端 API 路由定义
+# 所有功能模块的统一 API 接口
+
+base_url: /api/v1
+
+# ═══════════════════════════════════════════════════════════════
+# 1. 智能家居控制
+# ═══════════════════════════════════════════════════════════════
+smart_home:
+  prefix: /smart-home
+  
+  device:
+    control: { method: POST, path: /device/control, desc: "控制设备" }
+    status: { method: GET, path: /device/status, desc: "查询状态" }
+    list: { method: GET, path: /device/list, desc: "设备列表" }
+    
+  scene:
+    activate: { method: POST, path: /scene/activate, desc: "激活场景" }
+    list: { method: GET, path: /scene/list, desc: "场景列表" }
+    create: { method: POST, path: /scene/create, desc: "创建场景" }
+    
+  schedule:
+    create: { method: POST, path: /schedule/create, desc: "创建定时" }
+    list: { method: GET, path: /schedule/list, desc: "定时列表" }
+    delete: { method: DELETE, path: /schedule/delete, desc: "删除定时" }
+    
+  energy:
+    report: { method: GET, path: /energy/report, desc: "能耗报告" }
+    realtime: { method: GET, path: /energy/realtime, desc: "实时能耗" }
+
+# ═══════════════════════════════════════════════════════════════
+# 2. 家庭财务
+# ═══════════════════════════════════════════════════════════════
+finance:
+  prefix: /finance
+  
+  transaction:
+    add: { method: POST, path: /transaction/add, desc: "添加交易" }
+    query: { method: GET, path: /transaction/query, desc: "查询交易" }
+    delete: { method: DELETE, path: /transaction/delete, desc: "删除交易" }
+    update: { method: PUT, path: /transaction/update, desc: "更新交易" }
+    
+  report:
+    daily: { method: GET, path: /report/daily, desc: "日报" }
+    weekly: { method: GET, path: /report/weekly, desc: "周报" }
+    monthly: { method: GET, path: /report/monthly, desc: "月报" }
+    yearly: { method: GET, path: /report/yearly, desc: "年报" }
+    
+  budget:
+    status: { method: GET, path: /budget/status, desc: "预算状态" }
+    set: { method: POST, path: /budget/set, desc: "设置预算" }
+    
+  asset:
+    summary: { method: GET, path: /asset/summary, desc: "资产汇总" }
+    detail: { method: GET, path: /asset/detail, desc: "资产详情" }
+
+# ═══════════════════════════════════════════════════════════════
+# 3. 任务管理
+# ═══════════════════════════════════════════════════════════════
+task:
+  prefix: /task
+  
+  create: { method: POST, path: /task/create, desc: "创建任务" }
+  assign: { method: POST, path: /task/assign, desc: "分配任务" }
+  list: { method: GET, path: /task/list, desc: "任务列表" }
+  complete: { method: PUT, path: /task/complete, desc: "完成任务" }
+  delete: { method: DELETE, path: /task/delete, desc: "删除任务" }
+  update: { method: PUT, path: /task/update, desc: "更新任务" }
+  
+  stats:
+    completion: { method: GET, path: /stats/completion, desc: "完成率" }
+    ranking: { method: GET, path: /stats/ranking, desc: "排行榜" }
+    points: { method: GET, path: /stats/points, desc: "积分" }
+
+# ═══════════════════════════════════════════════════════════════
+# 4. 购物清单
+# ═══════════════════════════════════════════════════════════════
+shopping:
+  prefix: /shopping
+  
+  item:
+    add: { method: POST, path: /item/add, desc: "添加物品" }
+    check: { method: PUT, path: /item/check, desc: "勾选物品" }
+    remove: { method: DELETE, path: /item/remove, desc: "删除物品" }
+    
+  list: { method: GET, path: /list, desc: "购物清单" }
+  
+  inventory:
+    query: { method: GET, path: /inventory/query, desc: "库存查询" }
+    update: { method: PUT, path: /inventory/update, desc: "库存更新" }
+    
+  price:
+    compare: { method: GET, path: /price/compare, desc: "价格对比" }
+
+# ═══════════════════════════════════════════════════════════════
+# 5. 做菜助手
+# ═══════════════════════════════════════════════════════════════
+recipe:
+  prefix: /recipe
+  
+  recommend: { method: GET, path: /recommend, desc: "推荐菜谱" }
+  search: { method: GET, path: /search, desc: "搜索菜谱" }
+  detail: { method: GET, path: /detail, desc: "菜谱详情" }
+  favorite: { method: POST, path: /favorite, desc: "收藏菜谱" }
+  
+  timer:
+    start: { method: POST, path: /timer/start, desc: "开始计时" }
+    stop: { method: POST, path: /timer/stop, desc: "停止计时" }
+    list: { method: GET, path: /timer/list, desc: "计时器列表" }
+    
+  nutrition:
+    analyze: { method: GET, path: /nutrition/analyze, desc: "营养分析" }
+
+# ═══════════════════════════════════════════════════════════════
+# 6. 健康档案
+# ═══════════════════════════════════════════════════════════════
+health:
+  prefix: /health
+  
+  metrics:
+    record: { method: POST, path: /metrics/record, desc: "记录指标" }
+    history: { method: GET, path: /metrics/history, desc: "历史记录" }
+    
+  exercise:
+    record: { method: POST, path: /exercise/record, desc: "运动记录" }
+    stats: { method: GET, path: /exercise/stats, desc: "运动统计" }
+    
+  sleep:
+    record: { method: POST, path: /sleep/record, desc: "睡眠记录" }
+    analysis: { method: GET, path: /sleep/analysis, desc: "睡眠分析" }
+    
+  report:
+    generate: { method: POST, path: /report/generate, desc: "生成报告" }
+
+# ═══════════════════════════════════════════════════════════════
+# 7. 日程管理
+# ═══════════════════════════════════════════════════════════════
+calendar:
+  prefix: /calendar
+  
+  event:
+    create: { method: POST, path: /event/create, desc: "创建事件" }
+    list: { method: GET, path: /event/list, desc: "事件列表" }
+    delete: { method: DELETE, path: /event/delete, desc: "删除事件" }
+    update: { method: PUT, path: /event/update, desc: "更新事件" }
+    
+  today: { method: GET, path: /today, desc: "今日日程" }
+  countdown: { method: GET, path: /countdown, desc: "倒计时" }
+
+# ═══════════════════════════════════════════════════════════════
+# 8. 家庭相册
+# ═══════════════════════════════════════════════════════════════
+photo:
+  prefix: /photo
+  
+  upload: { method: POST, path: /upload, desc: "上传照片" }
+  album:
+    list: { method: GET, path: /album/list, desc: "相册列表" }
+    create: { method: POST, path: /album/create, desc: "创建相册" }
+  search: { method: GET, path: /search, desc: "搜索照片" }
+  share: { method: POST, path: /share, desc: "分享照片" }
+  memory:
+    today: { method: GET, path: /memory/today, desc: "那年今日" }
+
+# ═══════════════════════════════════════════════════════════════
+# 9. 儿童教育
+# ═══════════════════════════════════════════════════════════════
+education:
+  prefix: /education
+  
+  homework:
+    add: { method: POST, path: /homework/add, desc: "添加作业" }
+    list: { method: GET, path: /homework/list, desc: "作业列表" }
+    
+  schedule: { method: GET, path: /schedule, desc: "课程表" }
+  
+  score:
+    record: { method: POST, path: /score/record, desc: "成绩记录" }
+    history: { method: GET, path: /score/history, desc: "成绩历史" }
+    
+  report:
+    generate: { method: POST, path: /report/generate, desc: "学习报告" }
+
+# ═══════════════════════════════════════════════════════════════
+# 10. 宠物照顾
+# ═══════════════════════════════════════════════════════════════
+pet:
+  prefix: /pet
+  
+  feeding:
+    record: { method: POST, path: /feeding/record, desc: "喂食记录" }
+    schedule: { method: GET, path: /feeding/schedule, desc: "喂食计划" }
+    
+  health:
+    status: { method: GET, path: /health/status, desc: "健康状态" }
+    record: { method: POST, path: /health/record, desc: "健康记录" }
+    
+  walk:
+    record: { method: POST, path: /walk/record, desc: "散步记录" }
+    
+  supply:
+    inventory: { method: GET, path: /supply/inventory, desc: "用品库存" }
+
+# ═══════════════════════════════════════════════════════════════
+# 11. 车辆管理
+# ═══════════════════════════════════════════════════════════════
+vehicle:
+  prefix: /vehicle
+  
+  maintenance:
+    record: { method: POST, path: /maintenance/record, desc: "保养记录" }
+    schedule: { method: GET, path: /maintenance/schedule, desc: "保养计划" }
+    
+  fuel:
+    record: { method: POST, path: /fuel/record, desc: "加油记录" }
+    stats: { method: GET, path: /fuel/stats, desc: "油耗统计" }
+    
+  cost:
+    report: { method: GET, path: /cost/report, desc: "费用报告" }
+    
+  reminder:
+    list: { method: GET, path: /reminder/list, desc: "提醒列表" }
+
+# ═══════════════════════════════════════════════════════════════
+# 12. 房屋维护
+# ═══════════════════════════════════════════════════════════════
+home:
+  prefix: /home
+  
+  bill:
+    record: { method: POST, path: /bill/record, desc: "账单记录" }
+    reminder: { method: GET, path: /bill/reminder, desc: "账单提醒" }
+    
+  maintenance:
+    record: { method: POST, path: /maintenance/record, desc: "维修记录" }
+    
+  warranty:
+    check: { method: GET, path: /warranty/check, desc: "保修查询" }
+
+# ═══════════════════════════════════════════════════════════════
+# 13. 用药提醒
+# ═══════════════════════════════════════════════════════════════
+medication:
+  prefix: /medication
+  
+  schedule:
+    create: { method: POST, path: /schedule/create, desc: "创建用药计划" }
+    list: { method: GET, path: /schedule/list, desc: "用药计划" }
+    
+  reminder:
+    list: { method: GET, path: /reminder/list, desc: "提醒列表" }
+    
+  take:
+    record: { method: POST, path: /take/record, desc: "服药记录" }
+    
+  inventory:
+    check: { method: GET, path: /inventory/check, desc: "药品库存" }
+
+# ═══════════════════════════════════════════════════════════════
+# 14. 生活服务
+# ═══════════════════════════════════════════════════════════════
+service:
+  prefix: /service
+  
+  weather: { method: GET, path: /weather, desc: "天气" }
+  air_quality: { method: GET, path: /air-quality, desc: "空气质量" }
+  
+  package:
+    track: { method: GET, path: /package/track, desc: "快递查询" }
+    
+  news:
+    daily: { method: GET, path: /news/daily, desc: "每日新闻" }
+
+# ═══════════════════════════════════════════════════════════════
+# 15. 家庭娱乐
+# ═══════════════════════════════════════════════════════════════
+entertainment:
+  prefix: /entertainment
+  
+  movie:
+    recommend: { method: GET, path: /movie/recommend, desc: "电影推荐" }
+    search: { method: GET, path: /movie/search, desc: "搜索电影" }
+    
+  music:
+    play: { method: POST, path: /music/play, desc: "播放音乐" }
+    
+  book:
+    recommend: { method: GET, path: /book/recommend, desc: "书籍推荐" }
+    
+  activity:
+    suggest: { method: GET, path: /activity/suggest, desc: "活动推荐" }
+
+# ═══════════════════════════════════════════════════════════════
+# 16. 安全监控
+# ═══════════════════════════════════════════════════════════════
+security:
+  prefix: /security
+  
+  door:
+    status: { method: GET, path: /door/status, desc: "门锁状态" }
+    unlock: { method: POST, path: /door/unlock, desc: "远程开锁" }
+    record: { method: GET, path: /door/record, desc: "开门记录" }
+    
+  camera:
+    stream: { method: GET, path: /camera/stream, desc: "摄像头直播" }
+    playback: { method: GET, path: /camera/playback, desc: "录像回放" }
+    
+  alarm:
+    status: { method: GET, path: /alarm/status, desc: "警报状态" }
+    history: { method: GET, path: /alarm/history, desc: "警报历史" }
+
+# ═══════════════════════════════════════════════════════════════
+# 17. 家庭通讯
+# ═══════════════════════════════════════════════════════════════
+communication:
+  prefix: /communication
+  
+  message:
+    send: { method: POST, path: /message/send, desc: "发送消息" }
+    list: { method: GET, path: /message/list, desc: "消息列表" }
+    
+  voice_note:
+    send: { method: POST, path: /voice-note/send, desc: "语音留言" }
+    list: { method: GET, path: /voice-note/list, desc: "留言列表" }
+    
+  location:
+    get: { method: GET, path: /location, desc: "获取位置" }
+    share: { method: POST, path: /location/share, desc: "分享位置" }
+    
+  sos:
+    send: { method: POST, path: /sos/send, desc: "SOS 求救" }
+
+# ═══════════════════════════════════════════════════════════════
+# 18. 数据报表
+# ═══════════════════════════════════════════════════════════════
+report:
+  prefix: /report
+  
+  finance:
+    monthly: { method: GET, path: /finance/monthly, desc: "财务报告" }
+    
+  health:
+    weekly: { method: GET, path: /health/weekly, desc: "健康报告" }
+    
+  task:
+    completion: { method: GET, path: /task/completion, desc: "任务报告" }
+    
+  export: { method: GET, path: /export, desc: "导出数据" }
+
+# ═══════════════════════════════════════════════════════════════
+# 通用接口
+# ═══════════════════════════════════════════════════════════════
+common:
+  # 语音处理
+  voice:
+    input: { method: POST, path: /voice/input, desc: "语音输入" }
+    output: { method: POST, path: /voice/output, desc: "语音输出" }
+    
+  # 视频处理
+  video:
+    input: { method: POST, path: /video/input, desc: "视频输入" }
+    
+  # AI 对话
+  agent:
+    chat: { method: POST, path: /agent/chat, desc: "AI 对话" }
+    
+  # 智能音箱回调
+  smart_speaker:
+    tmall: { method: POST, path: /smart-speaker/tmall, desc: "天猫精灵" }
+    xiaomi: { method: POST, path: /smart-speaker/xiaomi, desc: "小爱同学" }
+    baidu: { method: POST, path: /smart-speaker/baidu, desc: "小度" }
+    huawei: { method: POST, path: /smart-speaker/huawei, desc: "华为小艺" }
+    jd: { method: POST, path: /smart-speaker/jd, desc: "京东叮咚" }
+    samsung: { method: POST, path: /smart-speaker/samsung, desc: "三星 Bixby" }
+    homekit: { method: POST, path: /smart-speaker/homekit, desc: "Apple HomeKit" }

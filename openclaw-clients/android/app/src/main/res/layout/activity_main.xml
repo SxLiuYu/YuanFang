@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5F5">
+
+    <!-- 对话历史 -->
+    <ScrollView
+        android:id="@+id/scrollConversation"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp"
+        android:overScrollMode="always">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvConversation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🤖 你好！我是你的家庭助手。\n\n直接告诉我你需要什么，我会尽力帮你！\n\n💡 我可以：\n• 聊天解闷\n• 查询天气、资讯\n• 设置提醒\n• 控制智能家居\n• 解答问题\n\n试试说：今天天气怎么样？"
+                android:textSize="16sp"
+                android:lineSpacingExtra="6dp"
+                android:textColor="#333333" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 输入区 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/etInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="告诉我你需要什么..."
+            android:padding="14dp"
+            android:background="@drawable/input_background"
+            android:inputType="textMultiLine"
+            android:imeOptions="actionSend"
+            android:maxLines="4"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/btnSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="发送"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+</LinearLayout>
