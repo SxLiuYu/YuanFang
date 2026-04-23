@@ -445,6 +445,141 @@ def pipeline():
                     "source": "quick_tools",
                 })
 
+        # 检查是否是计算/单位转换功能
+        if assistant_text is None:
+            from jarvis.calculator_unit import calculator_handler
+            calc_result = calculator_handler(user_text)
+            if calc_result is not None:
+                assistant_text = calc_result
+                logger.info(f"[Voice] 计算器: {assistant_text[:40]}")
+                tts_path = tempfile.mktemp(suffix=".wav")
+                tts_say(assistant_text, tts_path)
+                with open(tts_path, "rb") as f:
+                    audio_data = f.read()
+                audio_b64 = base64.b64encode(audio_data).decode()
+                os.unlink(tts_path)
+                return jsonify({
+                    "success": True,
+                    "text": user_text,
+                    "response": assistant_text,
+                    "audio_data": audio_b64,
+                    "source": "calculator",
+                })
+
+        # 检查是否是古诗词/成语查询
+        if assistant_text is None:
+            from jarvis.poetry_idiom import poetry_handler
+            poetry_result = poetry_handler(user_text)
+            if poetry_result is not None:
+                assistant_text = poetry_result
+                logger.info(f"[Voice] 古诗词成语: {assistant_text[:40]}")
+                tts_path = tempfile.mktemp(suffix=".wav")
+                tts_say(assistant_text, tts_path)
+                with open(tts_path, "rb") as f:
+                    audio_data = f.read()
+                audio_b64 = base64.b64encode(audio_data).decode()
+                os.unlink(tts_path)
+                return jsonify({
+                    "success": True,
+                    "text": user_text,
+                    "response": assistant_text,
+                    "audio_data": audio_b64,
+                    "source": "poetry",
+                })
+
+        # 检查是否匹配动态工具（元芳自动生成的工具）
+        if assistant_text is None:
+            from jarvis.dynamic_tool_generator import (
+                dynamic_tool_handler, 
+                generate_and_validate_with_retry, 
+                save_dynamic_tool, 
+                DynamicTool, 
+                snake_case_name, 
+                validate_tool_code,
+                search_similar_tools,
+                MAX_RETRIES
+            )
+            from datetime import datetime
+            
+            # 首先检查：用户是否要求创建新工具？
+            create_keywords = ["添加功能", "新增工具", "创建工具", "生成工具", "帮我做一个", "帮我添加", "我需要一个", "能不能做一个", "给我加一个", "创建一个"]
+            if any(kw in user_text for kw in create_keywords):
+                # 提取需求
+                demand = user_text
+                for kw in create_keywords:
+                    demand = demand.replace(kw, "")
+                demand = demand.strip()
+                if not demand:
+                    assistant_text = "请告诉我需要做什么功能，我会生成对应的工具代码。"
+                else:
+                    logger.info(f"[DynamicTool] 开始生成工具: {demand}")
+                    
+                    # 搜索相似工具，避免重复创建
+                    similar_tools = search_similar_tools(demand)
+                    if similar_tools:
+                        similar = similar_tools[0]
+                        assistant_text = f"已经存在相似功能工具了：「{similar.name}」\n功能：{similar.description}\n直接使用即可，不需要重复创建。"
+                        logger.info(f"[DynamicTool] 找到相似工具: {similar.name}，跳过创建")
+                    else:
+                        # 使用LLM生成代码，带自动重试修复
+                        success, code, error_msg = generate_and_validate_with_retry(demand)
+                        if not success:
+                            assistant_text = f"生成工具失败，经过 {MAX_RETRIES} 次尝试仍然有错误: {error_msg}\n需求: {demand}"
+                            logger.error(f"[DynamicTool] 生成失败: {error_msg}")
+                        else:
+                            name = snake_case_name(demand)
+                            handler_name = f"{name}_handler"
+                            # 创建工具对象保存
+                            tool = DynamicTool(
+                                name=name,
+                                description=demand,
+                                handler_function=handler_name,
+                                requirements="",
+                                code=code,
+                                created_at=datetime.now().isoformat(),
+                                usage_example=user_text
+                            )
+                            saved = save_dynamic_tool(tool)
+                            if saved:
+                                assistant_text = f"已成功生成并保存动态工具「{name}」\n功能: {demand}\n经过自动验证，语法正确 ✓\n现在可以直接使用了！"
+                                logger.info(f"[DynamicTool] 工具创建成功: {name}")
+                            else:
+                                assistant_text = f"生成工具「{name}」成功，但保存失败。"
+                
+                tts_path = tempfile.mktemp(suffix=".wav")
+                tts_say(assistant_text, tts_path)
+                with open(tts_path, "rb") as f:
+                    audio_data = f.read()
+                audio_b64 = base64.b64encode(audio_data).decode()
+                os.unlink(tts_path)
+                return jsonify({
+                    "success": True,
+                    "text": user_text,
+                    "response": assistant_text,
+                    "audio_data": audio_b64,
+                    "source": "dynamic_tool_create",
+                })
+            
+            # 如果不是创建，尝试调用已有的动态工具
+            else:
+                dynamic_result = dynamic_tool_handler(user_text)
+                if dynamic_result is not None:
+                    assistant_text = dynamic_result
+                    logger.info(f"[Voice] 动态工具: {assistant_text[:40]}")
+                    tts_path = tempfile.mktemp(suffix=".wav")
+                    tts_say(assistant_text, tts_path)
+                    with open(tts_path, "rb") as f:
+                        audio_data = f.read()
+                    audio_b64 = base64.b64encode(audio_data).decode()
+                    os.unlink(tts_path)
+                    return jsonify({
+                        "success": True,
+                        "text": user_text,
+                        "response": assistant_text,
+                        "audio_data": audio_b64,
+                        "source": "dynamic_tool",
+                    })
+
         # Step 2: 检查是否是智能家居控制意图
         from jarvis.smart_home_intent import _parse_smart_home_command
         result = _parse_smart_home_command(user_text)
@@ -864,6 +999,62 @@ def mlx_voice_pipeline():
                         "text": user_text,
                         "response": assistant_text,
                         "source": "quick_tools",
+                    })
+
+        # 检查是否是计算/单位转换功能
+        if assistant_text is None:
+            from jarvis.calculator_unit import calculator_handler
+            calc_result = calculator_handler(user_text)
+            if calc_result is not None:
+                assistant_text = calc_result
+                logger.info(f"[Voice MLP] 计算器: {assistant_text[:40]}")
+                if use_tts:
+                    tts_path = tempfile.mktemp(suffix=".wav")
+                    tts_say(assistant_text, tts_path)
+                    with open(tts_path, "rb") as f:
+                        audio_b64 = base64.b64encode(f.read()).decode()
+                    os.unlink(tts_path)
+                    return jsonify({
+                        "success": True,
+                        "text": user_text,
+                        "response": assistant_text,
+                        "audio_data": audio_b64,
+                        "source": "calculator",
+                    })
+                else:
+                    return jsonify({
+                        "success": True,
+                        "text": user_text,
+                        "response": assistant_text,
+                        "source": "calculator",
+                    })
+
+        # 检查是否是古诗词/成语查询
+        if assistant_text is None:
+            from jarvis.poetry_idiom import poetry_handler
+            poetry_result = poetry_handler(user_text)
+            if poetry_result is not None:
+                assistant_text = poetry_result
+                logger.info(f"[Voice MLP] 古诗词成语: {assistant_text[:40]}")
+                if use_tts:
+                    tts_path = tempfile.mktemp(suffix=".wav")
+                    tts_say(assistant_text, tts_path)
+                    with open(tts_path, "rb") as f:
+                        audio_b64 = base64.b64encode(f.read()).decode()
+                    os.unlink(tts_path)
+                    return jsonify({
+                        "success": True,
+                        "text": user_text,
+                        "response": assistant_text,
+                        "audio_data": audio_b64,
+                        "source": "poetry",
+                    })
+                else:
+                    return jsonify({
+                        "success": True,
+                        "text": user_text,
+                        "response": assistant_text,
+                        "source": "poetry",
                     })
 
         # ===== 智能家居意图检测 =====
@@ -1472,6 +1663,22 @@ def vision_voice_pipeline():
             if quick_result is not None:
                 assistant_text = quick_result
                 logger.info(f"[Vision+Voice] 快速工具: {assistant_text[:40]}")
+
+        # 检查是否是计算/单位转换功能
+        if assistant_text is None:
+            from jarvis.calculator_unit import calculator_handler
+            calc_result = calculator_handler(user_text)
+            if calc_result is not None:
+                assistant_text = calc_result
+                logger.info(f"[Vision+Voice] 计算器: {assistant_text[:40]}")
+
+        # 检查是否是古诗词/成语查询
+        if assistant_text is None:
+            from jarvis.poetry_idiom import poetry_handler
+            poetry_result = poetry_handler(user_text)
+            if poetry_result is not None:
+                assistant_text = poetry_result
+                logger.info(f"[Vision+Voice] 古诗词成语: {assistant_text[:40]}")
 
         # Step 3: 如果未匹配到直接控制，走LLM + 工具调用
         if assistant_text is None:
