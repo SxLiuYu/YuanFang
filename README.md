@@ -350,6 +350,42 @@ WAKE_WORD_SENSITIVITY=0.5
 RECORD_SECONDS=5
 ```
 
+## 🐳 Docker 部署
+
+### 使用 Docker Compose（推荐）
+
+```bash
+# 复制环境变量模板
+cp .env.example .env
+# 编辑 .env 填写你的 API Key 和配置
+
+# 启动服务
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+### 手动 Docker 构建
+
+```bash
+# 构建镜像
+docker build -t yuanfang:latest .
+
+# 运行容器
+docker run -d \
+  -p 8000:8000 \
+  --name yuanfang \
+  --env-file .env \
+  -v $(pwd)/data:/app/data \
+  yuanfang:latest
+```
+
+**数据持久化：** `data/` 目录通过 volume 挂载，保存记忆、日志等持久化数据。
+
 ## 🔧 配置说明
 
 复制 `.env.example` 为 `.env` 并填写：
