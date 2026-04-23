@@ -333,9 +333,10 @@ def search_similar_tools(query: str, threshold: float = 0.75) -> List[DynamicToo
     """
     try:
         from memory.vector import VectorMemory
-        from services.tools import llm_chat
+        from core.llm_adapter import get_llm
         
         # 获取embedding函数
+        llm = get_llm()
         def get_embedding(text):
             # 使用现有LLM生成嵌入（简化方案）
             return None
