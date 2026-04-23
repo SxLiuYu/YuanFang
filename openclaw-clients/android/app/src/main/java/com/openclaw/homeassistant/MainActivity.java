@@ -424,7 +424,29 @@ public class MainActivity extends AppCompatActivity {
             default: return "未知错误";
         }
     }
-    
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_ai_chat) {
+            startActivity(new Intent(this, OpenClawChatActivity.class));
+            return true;
+        } else if (id == R.id.action_video_chat) {
+            startActivity(new Intent(this, VideoChatActivity.class));
+            return true;
+        } else if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onDestroy() {
         if (speechRecognizer != null) {

@@ -62,6 +62,11 @@ public class OpenClawApiClient {
         void onError(String error);
     }
 
+    public interface VideoChatCallback {
+        void onSuccess(String text, byte[] ttsAudio);
+        void onError(String error);
+    }
+
     public OpenClawApiClient(Context context) {
         // 从 SharedPreferences 读取配置
         SharedPreferences prefs = context.getSharedPreferences("openclaw_config", Context.MODE_PRIVATE);
@@ -309,6 +314,55 @@ public class OpenClawApiClient {
                 try {
                     String weather = response.body().string();
                     callback.onSuccess(weather);
+                } catch (Exception e) {
+                    callback.onError("解析错误：" + e.getMessage());
+                }
+            }
+        });
+    }
+
+    /**
+     * 视频对话：上传语音音频 + 当前画面 JPEG，返回文字回答 + TTS 音频
+     * 完整 pipeline: STT → VLM+LLM → TTS
+     */
+    public void videoChat(File audioFile, byte[] imageBytes, VideoChatCallback callback) {
+        MediaType MEDIA_TYPE_WAV = MediaType.parse("audio/wav");
+        MediaType MEDIA_TYPE_JPEG = MediaType.parse("image/jpeg");
+
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("audio", "audio.wav",
+                        RequestBody.create(audioFile, MEDIA_TYPE_WAV))
+                .addFormDataPart("image", "frame.jpg",
+                        RequestBody.create(imageBytes, MEDIA_TYPE_JPEG));
+
+        RequestBody requestBody = builder.build();
+        Request request = new Request.Builder()
+                .url(baseUrl + "/api/video/chat")
+                .addHeader("Authorization", "Bearer " + apiKey)
+                .post(requestBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError("网络错误：" + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                try {
+                    if (!response.isSuccessful()) {
+                        callback.onError("服务器错误：" + response.code());
+                        return;
+                    }
+                    // Response is JSON with text + base64 encoded TTS audio
+                    String bodyStr = response.body().string();
+                    JSONObject result = new JSONObject(bodyStr);
+                    String text = result.getString("text");
+                    String audioBase64 = result.getString("audio_data");
+                    byte[] ttsAudio = android.util.Base64.decode(audioBase64, android.util.Base64.DEFAULT);
+                    callback.onSuccess(text, ttsAudio);
                 } catch (Exception e) {
                     callback.onError("解析错误：" + e.getMessage());
                 }

@@ -82,10 +82,17 @@
         <!-- OpenClaw AI 对话界面 -->
         <activity
             android:name=".OpenClawChatActivity"
-            android:label="AI 助手"
+            android:label="AI 对话"
             android:theme="@style/Theme.OpenClawHomeAssistant"
             android:exported="false" />
-        
+
+        <!-- 视频对话界面 -->
+        <activity
+            android:name=".VideoChatActivity"
+            android:label="视频对话"
+            android:theme="@style/Theme.OpenClawHomeAssistant"
+            android:exported="false" />
+
         <!-- 设备确认界面 -->
         <activity
             android:name=".DeviceConfirmActivity"
