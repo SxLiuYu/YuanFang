@@ -234,7 +234,8 @@ public class OpenClawChatActivity extends AppCompatActivity {
 
     private void startVoiceRecordingInternal() {
         isListening = true;
-        voiceButton.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.holo_red_dark));
+        // 录音时变为红色
+        voiceButton.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
         addMessage("🎤 正在倾听...", false);
 
         voiceRecorder.startRecording(new VoiceRecorder.VoiceRecorderCallback() {
@@ -268,7 +269,8 @@ public class OpenClawChatActivity extends AppCompatActivity {
     private void stopVoiceRecording() {
         voiceRecorder.stopRecording();
         isListening = false;
-        voiceButton.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.holo_green_dark));
+        // 恢复绿色
+        voiceButton.setBackgroundResource(R.drawable.bg_voice_button);
     }
 
     /**
@@ -345,27 +347,28 @@ public class OpenClawChatActivity extends AppCompatActivity {
     private void addMessageToView(String message, boolean isUserMessage, boolean animate) {
         TextView messageView = new TextView(this);
         messageView.setText(message);
-        messageView.setTextSize(16);
-        messageView.setPadding(32, 24, 32, 24);
-        int maxWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.8f);
+        messageView.setTextSize(15);
+        messageView.setLineSpacing(4, 1.1f);
+        messageView.setPadding(20, 14, 20, 14);
+        int maxWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.78f);
         messageView.setMaxWidth(maxWidth);
 
-        // 设置样式
+        // 设置样式 - 豆包简约风格
         if (isUserMessage) {
             messageView.setBackgroundResource(R.drawable.bg_message_user);
-            messageView.setTextColor(getResources().getColor(android.R.color.white));
+            messageView.setTextColor(getResources().getColor(R.color.white));
         } else {
             messageView.setBackgroundResource(R.drawable.bg_message_ai);
-            messageView.setTextColor(getResources().getColor(android.R.color.black));
+            messageView.setTextColor(getResources().getColor(R.color.text_primary));
         }
 
-        // 设置对齐
+        // 设置对齐 - 豆包风格：用户右对齐，AI左对齐
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         params.gravity = isUserMessage ? android.view.Gravity.END : android.view.Gravity.START;
-        params.setMargins(0, 8, 0, 8);
+        params.setMargins(4, 6, 4, 6);
         messageView.setLayoutParams(params);
 
         chatContainer.addView(messageView);
@@ -376,7 +379,7 @@ public class OpenClawChatActivity extends AppCompatActivity {
         // 动画效果
         if (animate) {
             messageView.setAlpha(0f);
-            messageView.animate().alpha(1f).setDuration(200).start();
+            messageView.animate().alpha(1f).setDuration(150).start();
         }
     }
 

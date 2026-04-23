@@ -43,11 +43,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     
     // UI 组件
+    private androidx.appcompat.widget.Toolbar toolbar;
     private TextView tvConversation;
-    private ScrollView scrollConversation;
+    private android.core.widget.NestedScrollView scrollConversation;
     private EditText etInput;
     private Button btnSend;
-    
+
     // 服务
     private SpeechRecognizer speechRecognizer;
     private TextToSpeech textToSpeech;
@@ -101,6 +102,13 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void initViews() {
+        toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayShowTitleEnabled(false);
+            }
+        }
         tvConversation = findViewById(R.id.tvConversation);
         scrollConversation = findViewById(R.id.scrollConversation);
         etInput = findViewById(R.id.etInput);
