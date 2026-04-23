@@ -14,7 +14,8 @@
 - 💾 **记忆系统** — 情感记忆 + 场景记忆，越聊越懂你
 - 🤖 **多 Agent 协作** — 指挥官/研究员/执行者/哨兵/进化官
 - 🧬 **自进化** — HyperAgent 自我反思、策略进化
-- 🏠 **智能家居** — Home Assistant 设备控制
+- **🧬 Jarvis 动态自进化** — AI自动生成新工具，语音说一声就能添加新功能
+- 🏠 **智能家居** — Home Assistant 设备控制 + 手机红外直连（无需网关）
 - 📱 **手机节点** — Termux 传感器实时推送
 - 💬 **Web 控制台** — 深海科技风 Dashboard
 - 🎤 **语音交互** — 语音识别 + 语音合成
@@ -148,6 +149,29 @@ docker logs -f yuanfang
 
 ---
 
+## 🧬 Jarvis 贾维斯语音智能家居
+
+贾维斯是元芳框架下的全语音智能家居助手应用，核心特性是**AI动态自进化**。
+
+### 🚀 AI 动态自进化
+
+你只需要语音说一声，贾维斯就能自动生成新工具：
+
+```
+用户说: "帮我添加一个火车票查询功能"
+贾维斯: LLM生成完整Python代码 → 验证语法 → 自动修复错误 → 保存 → 索引 → 即可使用
+```
+
+**触发关键词：** `添加功能`/`新增工具`/`创建工具`/`生成工具`/`帮我做一个`/`我需要一个`
+
+**生成流程：**
+1. 提取用户需求
+2. 搜索相似工具避免重复创建
+3. LLM 生成 Python 代码
+4. 语法验证，失败自动重试修复（最多 3 次）
+5. 保存代码到 `dynamic_tools/` 并更新索引
+6. 生成完成立即可以使用，无需重启服务
+
 ## 📱 节点部署
 
 ### Termux 传感器/语音节点（Android 手机）
@@ -184,6 +208,19 @@ yuanfang/
 ├── adapters/                # 外部系统适配器
 │   ├── __init__.py
 │   └── homeassistant.py     # Home Assistant 适配器
+├── jarvis/                  # 贾维斯语音智能家居助手
+│   ├── calculator_unit.py   # 计算器/单位转换/BMI计算
+│   ├── poetry_idiom.py      # 古诗词/成语查询
+│   ├── dynamic_tool_generator.py  # 动态工具生成器（AI自进化）
+│   ├── quick_tools.py       # 快速工具（找手机/购物清单/天气穿搭/菜谱推荐等）
+│   ├── scene_mode.py        # 场景模式
+│   ├── smart_home_intent.py # 智能家居意图识别
+│   └── ...                 # 其他功能模块
+├── dynamic_tools/           # AI自动生成的动态工具（自动创建）
+├── routes/                  # API 路由
+│   ├── voice_pipeline.py    # 语音处理管线
+│   ├── vision.py            # 视觉处理（图片描述）
+│   └── ...                 # 其他API
 ├── termux_sensor_client.py  # Termux 传感器客户端 v3（HTTP/WS）
 ├── wake_word.py             # 唤醒词引擎（Porcupine 封装）
 ├── wake_client.py           # 跨平台唤醒守护进程（手机/PC）
