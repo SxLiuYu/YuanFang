@@ -1,0 +1,45 @@
+{
+  "name": "元芳 · 智能家居",
+  "short_name": "元芳",
+  "description": "AI 驱动的智能家居控制平台 — 对话/设备/自动化/通知",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "categories": ["lifestyle", "utilities"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "对话",
+      "short_name": "对话",
+      "description": "打开 AI 对话",
+      "url": "/?tab=chat",
+      "icons": [{"src": "icons/icon-192.svg", "sizes": "192x192"}]
+    },
+    {
+      "name": "设备控制",
+      "short_name": "设备",
+      "description": "控制智能设备",
+      "url": "/?tab=devices",
+      "icons": [{"src": "icons/icon-192.svg", "sizes": "192x192"}]
+    }
+  ]
+}

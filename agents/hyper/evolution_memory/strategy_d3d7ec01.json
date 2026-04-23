@@ -1,0 +1,24 @@
+{
+  "id": "d3d7ec01",
+  "task_summary": "解释一下什么是 RESTful API，设计原则有哪些",
+  "quality_score": 8,
+  "improvement_strategy": "在解释架构风格时，应完整覆盖Roy Fielding论文中的6个约束条件（包括HATEOAS）。每个设计原则需补充实际HTTP请求报文示例（如展示GET请求的完整Header）。使用对比式错误示例（如展示违反无状态性的代码片段），增加安全设计注意事项（如敏感数据避免GET请求）。",
+  "domain_hint": "Web开发/API设计",
+  "tags": [
+    "RESTful",
+    "接口设计",
+    "架构原则",
+    "Web服务"
+  ],
+  "strengths": [
+    "结构清晰，使用分点+符号图标增强可读性",
+    "通过智能家居类比帮助理解抽象概念"
+  ],
+  "weaknesses": [
+    "未提及HATEOAS（超媒体驱动）这一REST核心约束",
+    "缓存友好部分缺少具体Header示例（如ETag/Last-Modified）",
+    "状态码示例未覆盖常见但重要的304/401/403等"
+  ],
+  "created_at": "2026-04-03T19:47:57.064815",
+  "use_count": 0
+}
