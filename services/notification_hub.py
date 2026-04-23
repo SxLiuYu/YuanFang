@@ -108,6 +108,20 @@ class NotificationHub:
         if channel in self._channels:
             self._channels[channel]["enabled"] = enabled
 
+    def broadcast(self, event: str, data: dict):
+        """广播消息给所有WebSocket连接（包括Termux语音节点）"""
+        if self._socketio is None:
+            logger.warning("No socketio instance, broadcast skipped")
+            return {"success": False, "error": "no socketio"}
+        
+        try:
+            self._socketio.emit(event, data)
+            logger.info(f"[Broadcast] {event} → all connections")
+            return {"success": True}
+        except Exception as e:
+            logger.warning(f"Broadcast failed: {e}")
+            return {"success": False, "error": str(e)}
+
 
 _notification_hub = None
 
