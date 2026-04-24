@@ -23,17 +23,17 @@ jobs:
         distribution: 'temurin'
 
     - name: Grant execute permission for gradlew
-      run: chmod +x android/gradlew
-      working-directory: android
+      run: chmod +x openclaw-clients/android/gradlew
+      working-directory: openclaw-clients/android
 
     - name: Build with Gradle
       run: ./gradlew assembleRelease
-      working-directory: android
+      working-directory: openclaw-clients/android
 
     - name: Rename APK with timestamp
       run: |
         TIMESTAMP=$(date +%Y%m%d_%H%M)
-        cp android/app/build/outputs/apk/release/app-release.apk OpenClawHomeAssistant_${TIMESTAMP}.apk
+        cp openclaw-clients/android/app/build/outputs/apk/release/app-release.apk OpenClawHomeAssistant_${TIMESTAMP}.apk
         ls -la *.apk
 
     - name: Upload APK
