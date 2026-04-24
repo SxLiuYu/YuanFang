@@ -10,9 +10,40 @@ import logging
 import subprocess
 import base64
 import requests
+import threading
 
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# 尝试使用统一配置
+try:
+    from core.config.config import get_config
+    config = get_config()
+    finna_config = config.finna
+    omlox_config = config.omlx
+    voice_config = config.voice_pipeline
+    FINNA_API_BASE = finna_config.api_base
+    FINNA_KEY_WHISPER = finna_config.key_whisper
+    FINNA_KEY_COSYVOICE = finna_config.key_cosyvoice
+    FINNA_KEY_DEEPSEEK = finna_config.key_deepseek
+    OMLX_BASE = omlox_config.base_url
+    OMLX_API_KEY = omlox_config.api_key
+    OMLX_MODEL_LLM = omlox_config.model_llm
+    OMLX_MODEL_VL = omlox_config.model_vl
+    LOCAL_STT_MODEL = voice_config.local_stt_model
+    SAY_VOICE = voice_config.say_voice
+except (ImportError, AttributeError):
+    # 降级方案：使用环境变量
+    FINNA_API_BASE = os.getenv("FINNA_API_BASE", "https://www.finna.com.cn/v1").rstrip("/")
+    FINNA_KEY_WHISPER = os.getenv("FINNA_KEY_WHISPER", "")
+    FINNA_KEY_COSYVOICE = os.getenv("FINNA_KEY_COSYVOICE", "")
+    FINNA_KEY_DEEPSEEK = os.getenv("FINNA_KEY_DEEPSEEK", "")
+    OMLX_BASE = os.getenv("OMLX_BASE", "http://localhost:4560")
+    OMLX_API_KEY = os.getenv("OMLX_API_KEY", "")
+    OMLX_MODEL_LLM = os.getenv("OMLX_MODEL_LLM", "Qwen3.5-4B-MLX-4bit")
+    OMLX_MODEL_VL = os.getenv("OMLX_MODEL_VL", "Qwen3-VL-8B-Thinking")
+    LOCAL_STT_MODEL = os.getenv("LOCAL_STT_MODEL", "mlx-community/whisper-tiny")
+    SAY_VOICE = os.getenv("SAY_VOICE", "Tingting")
+
 from services.tools import (
     TOOL_REGISTRY, TOOL_SYSTEM_PROMPT,
     parse_tool_call, execute_tool_call, has_tool_prefix
@@ -22,29 +53,10 @@ logger = logging.getLogger(__name__)
 
 voice_bp = Blueprint("voice", __name__, url_prefix="/api/voice")
 
-# FinnA API 配置（仅 STT/TTS 备用）
-FINNA_API_BASE = "https://www.finna.com.cn/v1"
-FINNA_KEY_WHISPER = "app-d678VU1DyYuPJe6Lo6CuGLpE"
-FINNA_KEY_COSYVOICE = "app-BqyKsTO4Om3JGoPCTkJX080J"
-FINNA_KEY_DEEPSEEK = "app-d678VU1DyYuPJe6Lo6CuGLpE"
-
-# 本地 OMLX 配置
-OMLX_BASE = "http://localhost:4560"
-# 绕过敏感内容过滤：将API key拆分拼接
-OMLX_API_KEY = "sk-" + "omlx" + "-local"
-OMLX_MODEL_LLM = "Qwen3.5-4B-MLX-4bit"
-OMLX_MODEL_VL = "Qwen3-VL-8B-Thinking"
-
-# 本地 STT 模型
-LOCAL_STT_MODEL = "mlx-community/whisper-tiny"
-
-# macOS say 声音（中文）
-SAY_VOICE = "Tingting"
-
-
-def init_voice_routes(app):
-    app.register_blueprint(voice_bp)
-    logger.info("[Voice] 路由已注册: /api/voice")
+# 并发锁：保护 STT/LLM/TTS 推理过程，避免 Mac Mini 资源过载并发问题
+# 因为 MLX 推理占用 GPU 资源，同一时间只处理一个语音请求更稳定
+_pipeline_lock = threading.Lock()
+_pipeline_busy = False
 
 
 # ============== STT — mlx_whisper（本地） ==============
@@ -268,20 +280,32 @@ def pipeline():
         text: 用户说的话
         response: LLM 回复
     """
-    if "audio" not in request.files:
-        return jsonify({"error": "未提供音频文件"}), 400
+    # 尝试获取锁，如果被占用则返回繁忙提示
+    if not _pipeline_lock.acquire(blocking=False):
+        return jsonify({
+            "error": "系统繁忙",
+            "message": "当前已有语音请求在处理，请稍后再试",
+            "busy": True
+        }), 429
 
-    audio_file = request.files["audio"]
-    system_prompt = request.form.get(
-        "system_prompt",
-        "你是一个有帮助的AI助手。请用中文回复。"
-    )
-
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        audio_path = tmp.name
-        audio_file.save(audio_path)
+    global _pipeline_busy
+    _pipeline_busy = True
+    audio_path = None
 
     try:
+        if "audio" not in request.files:
+            return jsonify({"error": "未提供音频文件"}), 400
+
+        audio_file = request.files["audio"]
+        system_prompt = request.form.get(
+            "system_prompt",
+            "你是一个有帮助的AI助手。请用中文回复。"
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            audio_path = tmp.name
+            audio_file.save(audio_path)
+
         # Step 1: STT
         logger.info("[Voice] STT...")
         user_text = stt_whisper(audio_path)
@@ -775,378 +799,398 @@ def mlx_voice_pipeline():
     兼容旧版 termux 客户端 /api/mlx-voice/pipeline
     手机麦克风 → STT → LLM → TTS → 返回 base64 音频
     """
-    if "file" not in request.files and "audio" not in request.files:
-        return jsonify({"error": "no audio file"}), 400
+    # 尝试获取锁，如果被占用则返回繁忙提示
+    if not _pipeline_lock.acquire(blocking=False):
+        return jsonify({
+            "error": "系统繁忙",
+            "message": "当前已有语音请求在处理，请稍后再试",
+            "busy": True
+        }), 429
 
-    audio_file = request.files.get("file") or request.files.get("audio")
-    system_prompt = request.form.get(
-        "system_prompt",
-        "你是一个有帮助的AI助手。请用中文回复。"
-    )
-    voice = request.form.get("voice", "af_heart")
-    use_tts = request.form.get("use_tts", "true").lower() != "false"
-    use_tools = request.form.get("use_tools", "true").lower() != "false"
-
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        audio_path = tmp.name
-        audio_file.save(audio_path)
-
-    # Convert m4a/aac/mp4 to wav if needed (termux-microphone-record outputs m4a)
-    try:
-        with open(audio_path, "rb") as f:
-            header = f.read(12)
-        if header[4:8] == b"ftyp" or (header[:4] != b"RIFF" and header[:3] != b"ID3"):
-            converted = audio_path + "_conv.wav"
-            import subprocess
-            result = subprocess.run(
-                ["ffmpeg", "-y", "-i", audio_path, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", converted],
-                capture_output=True, text=True, timeout=30,
-                env={**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:" + os.environ.get("PATH", "")}
-            )
-            if result.returncode == 0 and os.path.exists(converted):
-                os.unlink(audio_path)
-                audio_path = converted
-                logger.info(f"[Voice MLP] Converted to wav: {audio_path}")
-    except Exception as e:
-        logger.warning(f"[Voice MLP] Format check/convert skipped: {e}")
+    global _pipeline_busy
+    _pipeline_busy = True
+    audio_path = None
 
     try:
-        logger.info("[Voice MLP] STT...")
-        user_text = stt_whisper(audio_path)
-        logger.info(f"[Voice MLP] 用户: {user_text}")
+        if "file" not in request.files and "audio" not in request.files:
+            return jsonify({"error": "no audio file"}), 400
 
-        # ===== 场景模式检测（优先级最高）=====
-        from jarvis.scene_mode import match_scene, execute_scene
-        scene_id = match_scene(user_text)
-        if scene_id is not None:
-            logger.info(f"[Voice MLP] 匹配场景模式: {scene_id}")
-            result = execute_scene(scene_id)
-            msg = result["message"]
-            ir = result["infrared_list"][0] if (result["success"] and result.get("infrared_list")) else None
-            if ir and ir.get("pattern"):
-                logger.info(f"[Voice MLP] 场景执行: {msg}, 红外已匹配")
-                if use_tts:
-                    tts_path = tempfile.mktemp(suffix=".wav")
-                    tts_say(msg, tts_path)
-                    with open(tts_path, "rb") as f:
-                        audio_b64 = base64.b64encode(f.read()).decode()
-                    os.unlink(tts_path)
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": msg,
-                        "audio_data": audio_b64,
-                        "infrared": ir,
-                        "source": "scene_mode",
-                    })
-                else:
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": msg,
-                        "infrared": ir,
-                        "source": "scene_mode",
-                    })
-            elif msg:
-                logger.info(f"[Voice MLP] 场景匹配: {msg} (无红外码)")
-                if use_tts:
-                    tts_path = tempfile.mktemp(suffix=".wav")
-                    tts_say(msg, tts_path)
-                    with open(tts_path, "rb") as f:
-                        audio_b64 = base64.b64encode(f.read()).decode()
-                    os.unlink(tts_path)
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": msg,
-                        "audio_data": audio_b64,
-                        "source": "scene_mode",
-                    })
-                else:
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": msg,
-                        "source": "scene_mode",
-                    })
-
-        # ===== 笔记/提醒/计时器检测（次优先级）=====
-        from jarvis.notes_reminder_timer import (
-            add_note, add_reminder, add_timer,
-            parse_natural_datetime,
-            list_notes, search_notes,
-            get_upcoming_reminders, list_all_reminders,
-            list_active_timers, get_auto_suggestions,
+        audio_file = request.files.get("file") or request.files.get("audio")
+        system_prompt = request.form.get(
+            "system_prompt",
+            "你是一个有帮助的AI助手。请用中文回复。"
         )
-        assistant_text = None
-        infrared_cmd = None
+        voice = request.form.get("voice", "af_heart")
+        use_tts = request.form.get("use_tts", "true").lower() != "false"
+        use_tools = request.form.get("use_tools", "true").lower() != "false"
 
-        # 笔记匹配
-        if "记下来" in user_text or "记住" in user_text or "记笔记" in user_text or "写下来" in user_text:
-            content = user_text
-            for kw in ["记下来", "记住", "记笔记", "帮我记下来", "帮我记住", "写下来"]:
-                content = content.replace(kw, "")
-            content = content.strip()
-            if content:
-                result = add_note(content)
-                assistant_text = result["message"]
-                logger.info(f"[Voice MLP] 添加笔记: {content[:30]}")
-        
-        # 提醒匹配
-        elif "提醒我" in user_text or "提醒一下" in user_text or "设置提醒" in user_text:
-            dt = parse_natural_datetime(user_text)
-            if dt is None:
-                assistant_text = "我没听清具体时间，请再说一遍，比如'明天早上8点提醒我开会'"
-            else:
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            audio_path = tmp.name
+            audio_file.save(audio_path)
+
+        # Convert m4a/aac/mp4 to wav if needed (termux-microphone-record outputs m4a)
+        try:
+            with open(audio_path, "rb") as f:
+                header = f.read(12)
+            if header[4:8] == b"ftyp" or (header[:4] != b"RIFF" and header[:3] != b"ID3"):
+                converted = audio_path + "_conv.wav"
+                import subprocess
+                result = subprocess.run(
+                    ["ffmpeg", "-y", "-i", audio_path, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", converted],
+                    capture_output=True, text=True, timeout=30,
+                    env={**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:" + os.environ.get("PATH", "")}
+                )
+                if result.returncode == 0 and os.path.exists(converted):
+                    os.unlink(audio_path)
+                    audio_path = converted
+                    logger.info(f"[Voice MLP] Converted to wav: {audio_path}")
+        except Exception as e:
+            logger.warning(f"[Voice MLP] Format check/convert skipped: {e}")
+
+        try:
+            logger.info("[Voice MLP] STT...")
+            user_text = stt_whisper(audio_path)
+            logger.info(f"[Voice MLP] 用户: {user_text}")
+
+            # ===== 场景模式检测（优先级最高）=====
+            from jarvis.scene_mode import match_scene, execute_scene
+            scene_id = match_scene(user_text)
+            if scene_id is not None:
+                logger.info(f"[Voice MLP] 匹配场景模式: {scene_id}")
+                result = execute_scene(scene_id)
+                msg = result["message"]
+                ir = result["infrared_list"][0] if (result["success"] and result.get("infrared_list")) else None
+                if ir and ir.get("pattern"):
+                    logger.info(f"[Voice MLP] 场景执行: {msg}, 红外已匹配")
+                    if use_tts:
+                        tts_path = tempfile.mktemp(suffix=".wav")
+                        tts_say(msg, tts_path)
+                        with open(tts_path, "rb") as f:
+                            audio_b64 = base64.b64encode(f.read()).decode()
+                        os.unlink(tts_path)
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": msg,
+                            "audio_data": audio_b64,
+                            "infrared": ir,
+                            "source": "scene_mode",
+                        })
+                    else:
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": msg,
+                            "infrared": ir,
+                            "source": "scene_mode",
+                        })
+                elif msg:
+                    logger.info(f"[Voice MLP] 场景匹配: {msg} (无红外码)")
+                    if use_tts:
+                        tts_path = tempfile.mktemp(suffix=".wav")
+                        tts_say(msg, tts_path)
+                        with open(tts_path, "rb") as f:
+                            audio_b64 = base64.b64encode(f.read()).decode()
+                        os.unlink(tts_path)
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": msg,
+                            "audio_data": audio_b64,
+                            "source": "scene_mode",
+                        })
+                    else:
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": msg,
+                            "source": "scene_mode",
+                        })
+
+            # ===== 笔记/提醒/计时器检测（次优先级）=====
+            from jarvis.notes_reminder_timer import (
+                add_note, add_reminder, add_timer,
+                parse_natural_datetime,
+                list_notes, search_notes,
+                get_upcoming_reminders, list_all_reminders,
+                list_active_timers, get_auto_suggestions,
+            )
+            assistant_text = None
+            infrared_cmd = None
+
+            # 笔记匹配
+            if "记下来" in user_text or "记住" in user_text or "记笔记" in user_text or "写下来" in user_text:
                 content = user_text
-                for kw in ["提醒我", "提醒一下", "设置提醒", "提醒我一下"]:
+                for kw in ["记下来", "记住", "记笔记", "帮我记下来", "帮我记住", "写下来"]:
                     content = content.replace(kw, "")
                 content = content.strip()
-                if not content:
-                    content = "待办事项"
-                result = add_reminder(content, dt)
-                assistant_text = result["message"]
-                logger.info(f"[Voice MLP] 添加提醒: {content} at {dt}")
+                if content:
+                    result = add_note(content)
+                    assistant_text = result["message"]
+                    logger.info(f"[Voice MLP] 添加笔记: {content[:30]}")
         
-        # 计时器匹配
-        elif "计时器" in user_text or "倒计时" in user_text or "分钟后提醒我" in user_text:
-            import re
-            match = re.search(r'(\d+)分钟', user_text)
-            minutes = 10
-            if match:
-                minutes = int(match.group(1))
-            else:
-                match = re.search(r'(\d+)分', user_text)
+            # 提醒匹配
+            elif "提醒我" in user_text or "提醒一下" in user_text or "设置提醒" in user_text:
+                dt = parse_natural_datetime(user_text)
+                if dt is None:
+                    assistant_text = "我没听清具体时间，请再说一遍，比如'明天早上8点提醒我开会'"
+                else:
+                    content = user_text
+                    for kw in ["提醒我", "提醒一下", "设置提醒", "提醒我一下"]:
+                        content = content.replace(kw, "")
+                    content = content.strip()
+                    if not content:
+                        content = "待办事项"
+                    result = add_reminder(content, dt)
+                    assistant_text = result["message"]
+                    logger.info(f"[Voice MLP] 添加提醒: {content} at {dt}")
+        
+            # 计时器匹配
+            elif "计时器" in user_text or "倒计时" in user_text or "分钟后提醒我" in user_text:
+                import re
+                match = re.search(r'(\d+)分钟', user_text)
+                minutes = 10
                 if match:
                     minutes = int(match.group(1))
-            content = user_text.strip()
-            result = add_timer(minutes, content)
-            assistant_text = result["message"]
-            logger.info(f"[Voice MLP] 设置计时器: {minutes}分钟")
+                else:
+                    match = re.search(r'(\d+)分', user_text)
+                    if match:
+                        minutes = int(match.group(1))
+                content = user_text.strip()
+                result = add_timer(minutes, content)
+                assistant_text = result["message"]
+                logger.info(f"[Voice MLP] 设置计时器: {minutes}分钟")
         
-        # 列表提醒
-        elif "显示提醒" in user_text or "看一下提醒" in user_text or "有什么提醒" in user_text or "我的提醒" in user_text:
-            assistant_text = list_all_reminders()
+            # 列表提醒
+            elif "显示提醒" in user_text or "看一下提醒" in user_text or "有什么提醒" in user_text or "我的提醒" in user_text:
+                assistant_text = list_all_reminders()
         
-        # 列表笔记
-        elif "我的笔记" in user_text or "显示笔记" in user_text or "查看笔记" in user_text:
-            assistant_text = list_notes(10)
+            # 列表笔记
+            elif "我的笔记" in user_text or "显示笔记" in user_text or "查看笔记" in user_text:
+                assistant_text = list_notes(10)
         
-        # 搜索笔记
-        elif "搜索笔记" in user_text:
-            import re
-            match = re.search(r'搜索笔记\s*(.*)', user_text)
-            keyword = match.group(1) if match else ""
-            if keyword:
-                assistant_text = search_notes(keyword)
-            else:
-                assistant_text = "请告诉我要搜索什么关键词"
+            # 搜索笔记
+            elif "搜索笔记" in user_text:
+                import re
+                match = re.search(r'搜索笔记\s*(.*)', user_text)
+                keyword = match.group(1) if match else ""
+                if keyword:
+                    assistant_text = search_notes(keyword)
+                else:
+                    assistant_text = "请告诉我要搜索什么关键词"
         
-        # 列表计时器
-        elif "计时器" in user_text and ("列表" in user_text or "显示" in user_text):
-            assistant_text = list_active_timers()
+            # 列表计时器
+            elif "计时器" in user_text and ("列表" in user_text or "显示" in user_text):
+                assistant_text = list_active_timers()
         
-        # 自动建议
-        elif "自动建议" in user_text or "给我建议" in user_text or "有什么建议" in user_text:
-            assistant_text = get_auto_suggestions()
+            # 自动建议
+            elif "自动建议" in user_text or "给我建议" in user_text or "有什么建议" in user_text:
+                assistant_text = get_auto_suggestions()
 
-        if assistant_text is not None:
-            logger.info(f"[Voice MLP] 笔记/提醒/计时器功能: {assistant_text[:60]}")
+            if assistant_text is not None:
+                logger.info(f"[Voice MLP] 笔记/提醒/计时器功能: {assistant_text[:60]}")
+                if use_tts:
+                    tts_path = tempfile.mktemp(suffix=".wav")
+                    tts_say(assistant_text, tts_path)
+                    with open(tts_path, "rb") as f:
+                        audio_b64 = base64.b64encode(f.read()).decode()
+                    os.unlink(tts_path)
+                    return jsonify({
+                        "success": True,
+                        "text": user_text,
+                        "response": assistant_text,
+                        "audio_data": audio_b64,
+                        "source": "notes_reminder",
+                    })
+                else:
+                    return jsonify({
+                        "success": True,
+                        "text": user_text,
+                        "response": assistant_text,
+                        "source": "notes_reminder",
+                    })
+
+            # 检查是否是快速工具功能（购物清单、找手机、备忘、快递查询）
+            if assistant_text is None:
+                from jarvis.quick_tools import quick_tools_handler
+                quick_result = quick_tools_handler(user_text)
+                if quick_result is not None:
+                    assistant_text = quick_result
+                    logger.info(f"[Voice MLP] 快速工具: {assistant_text[:40]}")
+                    if use_tts:
+                        tts_path = tempfile.mktemp(suffix=".wav")
+                        tts_say(assistant_text, tts_path)
+                        with open(tts_path, "rb") as f:
+                            audio_b64 = base64.b64encode(f.read()).decode()
+                        os.unlink(tts_path)
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": assistant_text,
+                            "audio_data": audio_b64,
+                            "source": "quick_tools",
+                        })
+                    else:
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": assistant_text,
+                            "source": "quick_tools",
+                        })
+
+            # 检查是否是计算/单位转换功能
+            if assistant_text is None:
+                from jarvis.calculator_unit import calculator_handler
+                calc_result = calculator_handler(user_text)
+                if calc_result is not None:
+                    assistant_text = calc_result
+                    logger.info(f"[Voice MLP] 计算器: {assistant_text[:40]}")
+                    if use_tts:
+                        tts_path = tempfile.mktemp(suffix=".wav")
+                        tts_say(assistant_text, tts_path)
+                        with open(tts_path, "rb") as f:
+                            audio_b64 = base64.b64encode(f.read()).decode()
+                        os.unlink(tts_path)
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": assistant_text,
+                            "audio_data": audio_b64,
+                            "source": "calculator",
+                        })
+                    else:
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": assistant_text,
+                            "source": "calculator",
+                        })
+
+            # 检查是否是古诗词/成语查询
+            if assistant_text is None:
+                from jarvis.poetry_idiom import poetry_handler
+                poetry_result = poetry_handler(user_text)
+                if poetry_result is not None:
+                    assistant_text = poetry_result
+                    logger.info(f"[Voice MLP] 古诗词成语: {assistant_text[:40]}")
+                    if use_tts:
+                        tts_path = tempfile.mktemp(suffix=".wav")
+                        tts_say(assistant_text, tts_path)
+                        with open(tts_path, "rb") as f:
+                            audio_b64 = base64.b64encode(f.read()).decode()
+                        os.unlink(tts_path)
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": assistant_text,
+                            "audio_data": audio_b64,
+                            "source": "poetry",
+                        })
+                    else:
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": assistant_text,
+                            "source": "poetry",
+                        })
+
+            # ===== 智能家居意图检测 =====
+            from jarvis.smart_home_intent import _parse_smart_home_command
+            result = _parse_smart_home_command(user_text)
+            if result is not None:
+                ir, msg = result
+                if ir and ir.get("pattern"):
+                    logger.info(f"[Voice MLP] 智能家居控制: {msg}, 红外已匹配")
+                    if use_tts:
+                        tts_path = tempfile.mktemp(suffix=".wav")
+                        tts_say(msg, tts_path)
+                        with open(tts_path, "rb") as f:
+                            audio_b64 = base64.b64encode(f.read()).decode()
+                        os.unlink(tts_path)
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": msg,
+                            "audio_data": audio_b64,
+                            "infrared": ir,
+                            "source": "smart_home",
+                        })
+                    else:
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": msg,
+                            "infrared": ir,
+                            "source": "smart_home",
+                        })
+                elif msg:
+                    logger.info(f"[Voice MLP] 智能家居意图: {msg} (无红外码)")
+                    if use_tts:
+                        tts_path = tempfile.mktemp(suffix=".wav")
+                        tts_say(msg, tts_path)
+                        with open(tts_path, "rb") as f:
+                            audio_b64 = base64.b64encode(f.read()).decode()
+                        os.unlink(tts_path)
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": msg,
+                            "audio_data": audio_b64,
+                            "source": "smart_home",
+                        })
+                    else:
+                        return jsonify({
+                            "success": True,
+                            "text": user_text,
+                            "response": msg,
+                            "source": "smart_home",
+                        })
+
+            logger.info(f"[Voice MLP] LLM... (tools={use_tools})")
+            if use_tools:
+                try:
+                    llm_response = _llm_omni_with_tools(user_text)
+                except Exception as e:
+                    logger.warning(f"[Voice MLP] Tools LLM failed: {e}, falling back to plain LLM")
+                    llm_response = llm_chat(user_text, system_prompt=system_prompt)
+            else:
+                llm_response = llm_chat(user_text, system_prompt=system_prompt)
+            logger.info(f"[Voice MLP] 助手: {llm_response[:80]}...")
+
             if use_tts:
+                logger.info("[Voice MLP] TTS...")
                 tts_path = tempfile.mktemp(suffix=".wav")
-                tts_say(assistant_text, tts_path)
+                tts_say(llm_response, tts_path)
                 with open(tts_path, "rb") as f:
                     audio_b64 = base64.b64encode(f.read()).decode()
                 os.unlink(tts_path)
                 return jsonify({
                     "success": True,
                     "text": user_text,
-                    "response": assistant_text,
+                    "response": llm_response,
+                    "audio_file": tts_path,
                     "audio_data": audio_b64,
-                    "source": "notes_reminder",
                 })
             else:
                 return jsonify({
                     "success": True,
                     "text": user_text,
-                    "response": assistant_text,
-                    "source": "notes_reminder",
+                    "response": llm_response,
                 })
 
-        # 检查是否是快速工具功能（购物清单、找手机、备忘、快递查询）
-        if assistant_text is None:
-            from jarvis.quick_tools import quick_tools_handler
-            quick_result = quick_tools_handler(user_text)
-            if quick_result is not None:
-                assistant_text = quick_result
-                logger.info(f"[Voice MLP] 快速工具: {assistant_text[:40]}")
-                if use_tts:
-                    tts_path = tempfile.mktemp(suffix=".wav")
-                    tts_say(assistant_text, tts_path)
-                    with open(tts_path, "rb") as f:
-                        audio_b64 = base64.b64encode(f.read()).decode()
-                    os.unlink(tts_path)
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": assistant_text,
-                        "audio_data": audio_b64,
-                        "source": "quick_tools",
-                    })
-                else:
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": assistant_text,
-                        "source": "quick_tools",
-                    })
-
-        # 检查是否是计算/单位转换功能
-        if assistant_text is None:
-            from jarvis.calculator_unit import calculator_handler
-            calc_result = calculator_handler(user_text)
-            if calc_result is not None:
-                assistant_text = calc_result
-                logger.info(f"[Voice MLP] 计算器: {assistant_text[:40]}")
-                if use_tts:
-                    tts_path = tempfile.mktemp(suffix=".wav")
-                    tts_say(assistant_text, tts_path)
-                    with open(tts_path, "rb") as f:
-                        audio_b64 = base64.b64encode(f.read()).decode()
-                    os.unlink(tts_path)
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": assistant_text,
-                        "audio_data": audio_b64,
-                        "source": "calculator",
-                    })
-                else:
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": assistant_text,
-                        "source": "calculator",
-                    })
-
-        # 检查是否是古诗词/成语查询
-        if assistant_text is None:
-            from jarvis.poetry_idiom import poetry_handler
-            poetry_result = poetry_handler(user_text)
-            if poetry_result is not None:
-                assistant_text = poetry_result
-                logger.info(f"[Voice MLP] 古诗词成语: {assistant_text[:40]}")
-                if use_tts:
-                    tts_path = tempfile.mktemp(suffix=".wav")
-                    tts_say(assistant_text, tts_path)
-                    with open(tts_path, "rb") as f:
-                        audio_b64 = base64.b64encode(f.read()).decode()
-                    os.unlink(tts_path)
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": assistant_text,
-                        "audio_data": audio_b64,
-                        "source": "poetry",
-                    })
-                else:
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": assistant_text,
-                        "source": "poetry",
-                    })
-
-        # ===== 智能家居意图检测 =====
-        from jarvis.smart_home_intent import _parse_smart_home_command
-        result = _parse_smart_home_command(user_text)
-        if result is not None:
-            ir, msg = result
-            if ir and ir.get("pattern"):
-                logger.info(f"[Voice MLP] 智能家居控制: {msg}, 红外已匹配")
-                if use_tts:
-                    tts_path = tempfile.mktemp(suffix=".wav")
-                    tts_say(msg, tts_path)
-                    with open(tts_path, "rb") as f:
-                        audio_b64 = base64.b64encode(f.read()).decode()
-                    os.unlink(tts_path)
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": msg,
-                        "audio_data": audio_b64,
-                        "infrared": ir,
-                        "source": "smart_home",
-                    })
-                else:
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": msg,
-                        "infrared": ir,
-                        "source": "smart_home",
-                    })
-            elif msg:
-                logger.info(f"[Voice MLP] 智能家居意图: {msg} (无红外码)")
-                if use_tts:
-                    tts_path = tempfile.mktemp(suffix=".wav")
-                    tts_say(msg, tts_path)
-                    with open(tts_path, "rb") as f:
-                        audio_b64 = base64.b64encode(f.read()).decode()
-                    os.unlink(tts_path)
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": msg,
-                        "audio_data": audio_b64,
-                        "source": "smart_home",
-                    })
-                else:
-                    return jsonify({
-                        "success": True,
-                        "text": user_text,
-                        "response": msg,
-                        "source": "smart_home",
-                    })
-
-        logger.info(f"[Voice MLP] LLM... (tools={use_tools})")
-        if use_tools:
-            try:
-                llm_response = _llm_omni_with_tools(user_text)
-            except Exception as e:
-                logger.warning(f"[Voice MLP] Tools LLM failed: {e}, falling back to plain LLM")
-                llm_response = llm_chat(user_text, system_prompt=system_prompt)
-        else:
-            llm_response = llm_chat(user_text, system_prompt=system_prompt)
-        logger.info(f"[Voice MLP] 助手: {llm_response[:80]}...")
-
-        if use_tts:
-            logger.info("[Voice MLP] TTS...")
-            tts_path = tempfile.mktemp(suffix=".wav")
-            tts_say(llm_response, tts_path)
-            with open(tts_path, "rb") as f:
-                audio_b64 = base64.b64encode(f.read()).decode()
-            os.unlink(tts_path)
-            return jsonify({
-                "success": True,
-                "text": user_text,
-                "response": llm_response,
-                "audio_file": tts_path,
-                "audio_data": audio_b64,
-            })
-        else:
-            return jsonify({
-                "success": True,
-                "text": user_text,
-                "response": llm_response,
-            })
+        except Exception as e:
+            logger.error(f"[Voice MLP] 错误: {e}")
+            return jsonify({"error": str(e), "success": False}), 500
+        finally:
+            if os.path.exists(audio_path):
+                os.unlink(audio_path)
+            # 释放锁
+            _pipeline_busy = False
+            _pipeline_lock.release()
 
     except Exception as e:
-        logger.error(f"[Voice MLP] 错误: {e}")
+        logger.error(f"[Voice MLP] 外层错误: {e}")
         return jsonify({"error": str(e), "success": False}), 500
-    finally:
-        if os.path.exists(audio_path):
-            os.unlink(audio_path)
 
 
 @voice_bp.route("/mlx-voice/fast", methods=["POST"])
@@ -1155,17 +1199,29 @@ def mlx_voice_fast_compat():
     兼容旧版 termux 客户端 /api/mlx-voice/fast
     快速管线: STT → LLM → 只返回文字（无 TTS）
     """
-    if "file" not in request.files and "audio" not in request.files:
-        return jsonify({"error": "no audio file"}), 400
+    # 尝试获取锁，如果被占用则返回繁忙提示
+    if not _pipeline_lock.acquire(blocking=False):
+        return jsonify({
+            "error": "系统繁忙",
+            "message": "当前已有语音请求在处理，请稍后再试",
+            "busy": True
+        }), 429
 
-    audio_file = request.files.get("file") or request.files.get("audio")
-    max_tokens = int(request.form.get("max_tokens", 256))
-
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        audio_path = tmp.name
-        audio_file.save(audio_path)
+    global _pipeline_busy
+    _pipeline_busy = True
+    audio_path = None
 
     try:
+        if "file" not in request.files and "audio" not in request.files:
+            return jsonify({"error": "no audio file"}), 400
+
+        audio_file = request.files.get("file") or request.files.get("audio")
+        max_tokens = int(request.form.get("max_tokens", 256))
+
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            audio_path = tmp.name
+            audio_file.save(audio_path)
+
         user_text = stt_whisper(audio_path)
         llm_response = llm_chat(user_text)
         return jsonify({
@@ -1177,8 +1233,11 @@ def mlx_voice_fast_compat():
         logger.error(f"[Voice MLP /fast] 错误: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
     finally:
-        if os.path.exists(audio_path):
+        if audio_path and os.path.exists(audio_path):
             os.unlink(audio_path)
+        # 释放锁
+        _pipeline_busy = False
+        _pipeline_lock.release()
 
 
 
@@ -1496,7 +1555,7 @@ def vision_voice_pipeline():
     """
     完整视觉语音管线: 
     手机上传音频 + 图片 → STT → Qwen3-VL → 工具调用 → TTS → 返回音频 + 回答 + 红外指令
-    
+
     POST /api/voice/vision-voice/pipeline
     Content-Type: multipart/form-data
     
@@ -1505,7 +1564,7 @@ def vision_voice_pipeline():
         image: base64 编码的 JPG 图片
         max_tokens: 最大生成token数 (可选)
         use_tools: 是否启用工具调用 (默认 true)
-    
+
     返回:
         success: bool
         text: STT 识别出的用户文字
@@ -1514,21 +1573,32 @@ def vision_voice_pipeline():
         audio_data: base64 编码的 TTS 音频
         infrared: 红外指令 {"frequency": int, "pattern": str}（如果需要）
     """
-    if "audio" not in request.files:
-        return jsonify({"error": "未提供音频文件"}), 400
-    
-    audio_file = request.files["audio"]
-    image_b64 = request.form.get("image", "")
-    max_tokens = int(request.form.get("max_tokens", 256))
-    use_tools = request.form.get("use_tools", "true").lower() != "false"
-    
-    system_prompt = "你是贾维斯，一个智能居家助手，生活在用户家中。你可以通过摄像头看到环境，通过语音和用户交流，还可以控制家中的电器（奥克斯空调、小米电视、奥克斯茶吧机），查询天气。请用中文简洁回答用户的问题。"
-    
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        audio_path = tmp.name
-        audio_file.save(audio_path)
-    
+    # 尝试获取锁，如果被占用则返回繁忙提示
+    if not _pipeline_lock.acquire(blocking=False):
+        return jsonify({
+            "error": "系统繁忙",
+            "message": "当前已有语音请求在处理，请稍后再试",
+            "busy": True
+        }), 429
+
+    global _pipeline_busy
+    _pipeline_busy = True
+    audio_path = None
+
     try:
+        if "audio" not in request.files:
+            return jsonify({"error": "未提供音频文件"}), 400
+
+        audio_file = request.files["audio"]
+        image_b64 = request.form.get("image", "")
+        max_tokens = int(request.form.get("max_tokens", 256))
+        use_tools = request.form.get("use_tools", "true").lower() != "false"
+
+        system_prompt = "你是贾维斯，一个智能居家助手，生活在用户家中。你可以通过摄像头看到环境，通过语音和用户交流，还可以控制家中的电器（奥克斯空调、小米电视、奥克斯茶吧机），查询天气。请用中文简洁回答用户的问题。"
+
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            audio_path = tmp.name
+            audio_file.save(audio_path)
         # Step 1: STT - 语音转文字
         logger.info("[Vision+Voice] STT...")
         user_text = stt_whisper(audio_path)
@@ -1719,11 +1789,53 @@ def vision_voice_pipeline():
             response_data["infrared"] = infrared_cmd
         
         return jsonify(response_data)
-    
+
     except Exception as e:
         logger.error(f"[Vision+Voice] 管线错误: {e}")
         return jsonify({"error": str(e), "success": False}), 500
-    
+
     finally:
-        if os.path.exists(audio_path):
+        if audio_path and os.path.exists(audio_path):
             os.unlink(audio_path)
+        # 释放锁
+        _pipeline_busy = False
+        _pipeline_lock.release()
+
+
+@voice_bp.route("/health", methods=["GET"])
+def voice_health():
+    """语音服务健康检查端点
+    供Android客户端检查服务是否正常运行
+    """
+    try:
+        omlx_ok = False
+        stt_ok = False
+        # 检查OMLX是否可达
+        try:
+            import requests
+            response = requests.get(f"{OMLX_BASE}/v1/models", timeout=5)
+            omlx_ok = response.status_code == 200
+        except:
+            pass
+        
+        # 检查STT模块
+        try:
+            import mlx_whisper
+            stt_ok = True
+        except ImportError:
+            pass
+        
+        return jsonify({
+            "status": "ok",
+            "services": {
+                "omlx": "ok" if omlx_ok else "error",
+                "stt": "ok" if stt_ok else "error",
+                "tts": "ok"  # TTS always works with macOS say
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        }), 500
+
