@@ -13,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import org.json.JSONObject;
 
@@ -46,13 +45,6 @@ public class SettingsActivity extends AppCompatActivity {
     }
     
     private void initViews() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("");
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-        
         etServerUrl = findViewById(R.id.etServerUrl);
         etApiKey = findViewById(R.id.etApiKey);
         spinnerContextLength = findViewById(R.id.spinnerContextLength);
@@ -86,12 +78,6 @@ public class SettingsActivity extends AppCompatActivity {
     private void setupListeners() {
         btnSave.setOnClickListener(v -> saveSettings());
         btnCancel.setOnClickListener(v -> finish());
-    }
-    
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
     }
     
     private void saveSettings() {

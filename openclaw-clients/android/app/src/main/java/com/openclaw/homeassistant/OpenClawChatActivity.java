@@ -1,37 +1,28 @@
 package com.openclaw.homeassistant;
-
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.util.Log;
 
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.Toast;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ScrollView;
+import android.widget.LinearLayout;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.List;
 
 /**
  * OpenClaw AI 对话界面
  * 支持多轮对话上下文、会话管理
- * 支持语音输入输出、说话打断
  */
 public class OpenClawChatActivity extends AppCompatActivity {
 
@@ -40,24 +31,18 @@ public class OpenClawChatActivity extends AppCompatActivity {
     // UI 组件
     private Toolbar toolbar;
     private EditText messageInput;
-    private LinearLayout chatContainer;
+    private TextView chatDisplay;
     private ScrollView scrollView;
+    private LinearLayout chatContainer;
     private Button sendButton;
-    private ImageButton voiceButton;
     private TextView txtSessionInfo;
 
     // 服务
     private OpenClawApiClient apiClient;
     private ConversationHistoryService historyService;
 
-    // 语音组件
-    private VoiceRecorder voiceRecorder;
-    private AudioPlayer audioPlayer;
-
     // 状态
     private boolean isProcessing = false;
-    private boolean isListening = false;
-    private final int REQUEST_RECORD_PERMISSION = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,10 +56,6 @@ public class OpenClawChatActivity extends AppCompatActivity {
         initViews();
         setupListeners();
         loadHistoryMessages();
-
-        // 初始化语音组件
-        voiceRecorder = new VoiceRecorder(this);
-        audioPlayer = new AudioPlayer(this);
     }
 
     private void initViews() {
@@ -89,7 +70,6 @@ public class OpenClawChatActivity extends AppCompatActivity {
 
         messageInput = findViewById(R.id.messageInput);
         sendButton = findViewById(R.id.sendButton);
-        voiceButton = findViewById(R.id.voiceButton);
         chatContainer = findViewById(R.id.chatContainer);
         scrollView = findViewById(R.id.scrollView);
         txtSessionInfo = findViewById(R.id.txt_session_info);
@@ -101,21 +81,6 @@ public class OpenClawChatActivity extends AppCompatActivity {
     private void setupListeners() {
         // 发送按钮
         sendButton.setOnClickListener(v -> sendMessage());
-
-        // 语音按钮 - 切换录音状态，支持说话打断
-        voiceButton.setOnClickListener(v -> {
-            if (isListening) {
-                // 停止录音
-                stopVoiceRecording();
-            } else {
-                // 开始录音，如果正在播放TTS则打断
-                if (audioPlayer.isPlaying()) {
-                    audioPlayer.interrupt();
-                }
-                // 开始录音
-                startVoiceRecording();
-            }
-        });
 
         // 回车发送
         messageInput.setOnEditorActionListener((v, actionId, event) -> {
@@ -139,7 +104,7 @@ public class OpenClawChatActivity extends AppCompatActivity {
 
         // 添加欢迎消息
         if (messages.isEmpty()) {
-            addMessage("🦞 你好！我是你的 AI 助手。我可以记住我们的对话，长按麦克风说话，松开自动识别，随时可以打断我说话。", false);
+            addMessage("🦞 你好！我是你的 AI 助手。我可以记住我们的对话，有什么可以帮你的？", false);
         } else {
             // 加载历史消息
             for (int i = messages.size() - 1; i >= 0; i--) {
@@ -160,17 +125,12 @@ public class OpenClawChatActivity extends AppCompatActivity {
     }
 
     /**
-     * 发送文字消息
+     * 发送消息
      */
     private void sendMessage() {
         if (isProcessing) {
             Toast.makeText(this, "正在处理中...", Toast.LENGTH_SHORT).show();
             return;
-        }
-
-        // 如果正在播放，打断
-        if (audioPlayer.isPlaying()) {
-            audioPlayer.interrupt();
         }
 
         String message = messageInput.getText().toString().trim();
@@ -217,158 +177,32 @@ public class OpenClawChatActivity extends AppCompatActivity {
     }
 
     /**
-     * 开始语音录制
-     */
-    private void startVoiceRecording() {
-        // 检查权限
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO},
-                    REQUEST_RECORD_PERMISSION);
-            return;
-        }
-
-        startVoiceRecordingInternal();
-    }
-
-    private void startVoiceRecordingInternal() {
-        isListening = true;
-        // 录音时变为红色
-        voiceButton.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
-        addMessage("🎤 正在倾听...", false);
-
-        voiceRecorder.startRecording(new VoiceRecorder.VoiceRecorderCallback() {
-            @Override
-            public void onSpeechStart() {
-                Log.d(TAG, "Speech detected");
-            }
-
-            @Override
-            public void onSpeechEnd(String wavFilePath) {
-                Log.d(TAG, "Speech ended, file: " + wavFilePath);
-                runOnUiThread(() -> {
-                    processVoiceResult(wavFilePath);
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                Log.e(TAG, "Recording error: " + error);
-                runOnUiThread(() -> {
-                    Toast.makeText(OpenClawChatActivity.this, error, Toast.LENGTH_SHORT).show();
-                    stopVoiceRecording();
-                });
-            }
-        });
-    }
-
-    /**
-     * 停止语音录制
-     */
-    private void stopVoiceRecording() {
-        voiceRecorder.stopRecording();
-        isListening = false;
-        // 恢复绿色
-        voiceButton.setBackgroundResource(R.drawable.bg_voice_button);
-    }
-
-    /**
-     * 处理录音结果，上传到服务端
-     */
-    private void processVoiceResult(String wavFilePath) {
-        stopVoiceRecording();
-        File audioFile = new File(wavFilePath);
-        if (!audioFile.exists() || audioFile.length() < 1000) {
-            Toast.makeText(this, "录音文件无效，请重试", Toast.LENGTH_SHORT).show();
-            VoiceRecorder.deleteFile(wavFilePath);
-            return;
-        }
-
-        isProcessing = true;
-
-        JSONArray conversationHistory = historyService.getConversationHistory();
-
-        apiClient.voiceChat(audioFile, conversationHistory, new OpenClawApiClient.VoiceChatCallback() {
-            @Override
-            public void onSuccess(String text, byte[] ttsAudio) {
-                runOnUiThread(() -> {
-                    // 显示用户语音转文字
-                    addMessageToView(text, true, true);
-                    historyService.addUserMessage(text);
-
-                    isProcessing = false;
-
-                    // 播放 TTS 音频
-                    audioPlayer.playWav(ttsAudio, new AudioPlayer.PlaybackCallback() {
-                        @Override
-                        public void onPlaybackComplete() {
-                            Log.d(TAG, "TTS playback complete");
-                        }
-
-                        @Override
-                        public void onPlaybackError(String error) {
-                            runOnUiThread(() -> {
-                                Toast.makeText(OpenClawChatActivity.this, error, Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    });
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> {
-                    Toast.makeText(OpenClawChatActivity.this, error, Toast.LENGTH_SHORT).show();
-                    isProcessing = false;
-                });
-            }
-        });
-
-        // 删除临时文件
-        VoiceRecorder.deleteFile(wavFilePath);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_RECORD_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startVoiceRecordingInternal();
-            } else {
-                Toast.makeText(this, "需要录音权限才能使用语音功能", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    /**
      * 添加消息到界面
      */
     private void addMessageToView(String message, boolean isUserMessage, boolean animate) {
         TextView messageView = new TextView(this);
         messageView.setText(message);
-        messageView.setTextSize(15);
-        messageView.setLineSpacing(4, 1.1f);
-        messageView.setPadding(20, 14, 20, 14);
-        int maxWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.78f);
+        messageView.setTextSize(16);
+        messageView.setPadding(32, 24, 32, 24);
+        int maxWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.8f);
         messageView.setMaxWidth(maxWidth);
 
-        // 设置样式 - 豆包简约风格
+        // 设置样式
         if (isUserMessage) {
             messageView.setBackgroundResource(R.drawable.bg_message_user);
-            messageView.setTextColor(getResources().getColor(R.color.white));
+            messageView.setTextColor(getResources().getColor(android.R.color.white));
         } else {
             messageView.setBackgroundResource(R.drawable.bg_message_ai);
-            messageView.setTextColor(getResources().getColor(R.color.text_primary));
+            messageView.setTextColor(getResources().getColor(android.R.color.black));
         }
 
-        // 设置对齐 - 豆包风格：用户右对齐，AI左对齐
+        // 设置对齐
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         params.gravity = isUserMessage ? android.view.Gravity.END : android.view.Gravity.START;
-        params.setMargins(4, 6, 4, 6);
+        params.setMargins(0, 8, 0, 8);
         messageView.setLayoutParams(params);
 
         chatContainer.addView(messageView);
@@ -379,7 +213,7 @@ public class OpenClawChatActivity extends AppCompatActivity {
         // 动画效果
         if (animate) {
             messageView.setAlpha(0f);
-            messageView.animate().alpha(1f).setDuration(150).start();
+            messageView.animate().alpha(1f).setDuration(200).start();
         }
     }
 
@@ -444,7 +278,7 @@ public class OpenClawChatActivity extends AppCompatActivity {
             if (!name.isEmpty()) {
                 historyService.createNewSession(name);
                 chatContainer.removeAllViews();
-                addMessage("🦞 新会话已创建，长按麦克风说话，有什么可以帮你的？", false);
+                addMessage("🦞 新会话已创建，有什么可以帮你的？", false);
                 updateSessionInfo();
             }
         });
@@ -513,12 +347,6 @@ public class OpenClawChatActivity extends AppCompatActivity {
         super.onDestroy();
         if (historyService != null) {
             historyService.close();
-        }
-        if (audioPlayer != null) {
-            audioPlayer.stop();
-        }
-        if (voiceRecorder != null && voiceRecorder.isRecording()) {
-            voiceRecorder.stopRecording();
         }
     }
 }

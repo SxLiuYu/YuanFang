@@ -25,7 +25,7 @@ public class ConversationHistoryService {
 
     // 配置
     private static final int MAX_HISTORY_MESSAGES = 20;  // 最大历史消息数
-    private static final int MAX_CONTEXT_TOKENS = 2000;  // 最大上下文token数（约）
+    private static final int MAX_CONTEXT_TOKENS = 4000;  // 最大上下文token数（约）
 
     private DatabaseHelper dbHelper;
     private Context context;

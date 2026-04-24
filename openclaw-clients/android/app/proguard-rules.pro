@@ -60,3 +60,15 @@
 -keep class * extends androidx.room.RoomDatabase
 -keep @androidx.room.Entity class *
 -dontwarn androidx.room.paging.**
+
+# Hilt
+-keep class dagger.hilt.** { *; }
+-keep class javax.inject.** { *; }
+-keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
+
+# Socket.IO
+-keep class io.socket.** { *; }
+-dontwarn io.socket.**
+
+# Compose
+-dontwarn androidx.compose.**

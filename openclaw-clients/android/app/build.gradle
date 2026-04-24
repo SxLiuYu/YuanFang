@@ -1,5 +1,8 @@
 plugins {
-    id 'com.android.application'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -10,17 +13,19 @@ android {
         applicationId "com.openclaw.homeassistant"
         minSdk 26
         targetSdk 34
-        versionCode 202603051
-        versionName "v2026.03.05-1-EnergyAI"
+        versionCode 202604240
+        versionName "v2026.04.24-Rebuild"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        
-        buildConfigField "String", "DEFAULT_SERVER_URL", "\"https://api.openclaw.ai\""
-        buildConfigField "String", "DEFAULT_CHAT_SERVER_URL", "\"https://chat.openclaw.ai\""
+
+        buildConfigField "String", "DEFAULT_YUANFANG_URL", "\"http://192.168.1.100:8000\""
+        buildConfigField "String", "DEFAULT_JARVIS_URL", "\"http://192.168.1.100:8001\""
+        buildConfigField "String", "DEFAULT_OPENCLAW_URL", "\"https://api.openclaw.ai\""
     }
 
     buildFeatures {
         buildConfig true
+        compose true
     }
 
     buildTypes {
@@ -30,52 +35,79 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    kotlinOptions {
+        jvmTarget = '17'
+        freeCompilerArgs += ['-opt-in=kotlin.RequiresOptIn']
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion libs.versions.compose.compiler.get()
+    }
+
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
-    implementation 'androidx.room:room-runtime:2.5.0'
-    annotationProcessor 'androidx.room:room-compiler:2.5.0'
-    
-    // Security - 加密存储
-    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
-    
-    // SwipeRefreshLayout
-    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-    
-    // ZXing 二维码扫描
-    implementation 'com.google.zxing:core:3.5.1'
-    implementation 'com.journeyapps:zxing-android-embedded:4.3.0@aar'
-    
-    // Gson JSON 解析
-    implementation 'com.google.code.gson:gson:2.10.1'
-    
-    // MPAndroidChart 图表库
-    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
-    
-    // CardView
-    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation libs.core.ktx
+    implementation libs.material
 
-    // CameraX for video chat
-    def camerax_version = "1.4.0-alpha05"
-    implementation "androidx.camera:camera-core:$camerax_version"
-    implementation "androidx.camera:camera-camera2:$camerax_version"
-    implementation "androidx.camera:camera-lifecycle:$camerax_version"
-    implementation "androidx.camera:camera-view:$camerax_version"
+    implementation platform(libs.compose.bom)
+    implementation libs.compose.ui
+    implementation libs.compose.ui.tooling.preview
+    implementation libs.compose.material3
+    implementation libs.compose.material.icons
+    implementation libs.compose.foundation
+    implementation libs.compose.runtime
+    implementation libs.compose.animation
+    implementation libs.activity.compose
+    implementation libs.navigation.compose
+    implementation libs.lifecycle.runtime.compose
+    implementation libs.lifecycle.viewmodel.compose
+    implementation libs.lifecycle.runtime.ktx
+    implementation libs.lifecycle.service
+    debugImplementation libs.compose.ui.tooling
 
-    // 单元测试依赖
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.robolectric:robolectric:4.10'
-    testImplementation 'org.mockito:mockito-core:4.8.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler
+    implementation libs.hilt.navigation.compose
+
+    implementation libs.okhttp
+    implementation libs.okhttp.logging
+    implementation libs.okhttp.sse
+    implementation libs.retrofit
+    implementation libs.retrofit.gson
+    implementation libs.retrofit.scalars
+
+    implementation libs.room.runtime
+    implementation libs.room.ktx
+    ksp libs.room.compiler
+
+    implementation libs.coroutines.core
+    implementation libs.coroutines.android
+
+    implementation libs.security.crypto
+    implementation libs.socket.io
+    implementation libs.gson
+
+    implementation libs.zxing.core
+    implementation libs.zxing.embedded
+
+    testImplementation libs.junit
+    testImplementation libs.mockito
+    testImplementation libs.mockito.kotlin
+    testImplementation libs.robolectric
+    testImplementation libs.coroutines.test
+    testImplementation libs.turbine
+    androidTestImplementation libs.androidx.test
+    androidTestImplementation libs.espresso
 }

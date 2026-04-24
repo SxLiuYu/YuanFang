@@ -43,12 +43,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     
     // UI 组件
-    private androidx.appcompat.widget.Toolbar toolbar;
     private TextView tvConversation;
-    private android.core.widget.NestedScrollView scrollConversation;
+    private ScrollView scrollConversation;
     private EditText etInput;
     private Button btnSend;
-
+    
     // 服务
     private SpeechRecognizer speechRecognizer;
     private TextToSpeech textToSpeech;
@@ -81,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
         initServices();
         setupListeners();
         
-        // 跳过设备认证，直接进入主界面（用户要求去掉确认）
-        // checkDeviceAuthAndShowConfirm();
+        // 检查设备认证状态
+        checkDeviceAuthAndShowConfirm();
     }
     
     /**
@@ -102,13 +101,6 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void initViews() {
-        toolbar = findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setDisplayShowTitleEnabled(false);
-            }
-        }
         tvConversation = findViewById(R.id.tvConversation);
         scrollConversation = findViewById(R.id.scrollConversation);
         etInput = findViewById(R.id.etInput);
@@ -424,29 +416,7 @@ public class MainActivity extends AppCompatActivity {
             default: return "未知错误";
         }
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(android.view.MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_ai_chat) {
-            startActivity(new Intent(this, OpenClawChatActivity.class));
-            return true;
-        } else if (id == R.id.action_video_chat) {
-            startActivity(new Intent(this, VideoChatActivity.class));
-            return true;
-        } else if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
+    
     @Override
     protected void onDestroy() {
         if (speechRecognizer != null) {
