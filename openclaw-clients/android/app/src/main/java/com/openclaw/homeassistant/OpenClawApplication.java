@@ -45,38 +45,13 @@ public class OpenClawApplication extends Application {
     
     /**
      * 初始化设备认证服务
+     * 用户要求去掉设备认证，直接跳过认证启动所有服务
      */
     private void initAuthService() {
         authService = new DeviceAuthService(this);
-        authService.setListener(new DeviceAuthService.AuthListener() {
-            @Override
-            public void onAuthSuccess(String token) {
-                Log.d(TAG, "设备认证成功，token: " + token.substring(0, 8) + "...");
-                // 认证成功后启动其他服务
-                startAllServices();
-            }
-            
-            @Override
-            public void onAuthPending(String tempId) {
-                Log.d(TAG, "等待用户确认，temp_id: " + tempId);
-                // 可以在这里发送本地通知提醒用户
-                NotificationHelper.showAuthNotification(
-                    OpenClawApplication.this,
-                    tempId,
-                    "请查看飞书消息并输入确认码完成设备登录"
-                );
-            }
-            
-            @Override
-            public void onAuthFailed(String error) {
-                Log.e(TAG, "设备认证失败：" + error);
-                // 1 分钟后重试
-                authService.registerOrLogin();
-            }
-        });
-        
-        // 启动认证
-        authService.registerOrLogin();
+        // 用户要求去掉设备认证，直接认为已认证，启动所有服务
+        Log.d(TAG, "设备认证已跳过（用户配置）");
+        startAllServices();
     }
     
     /**
@@ -144,9 +119,10 @@ public class OpenClawApplication extends Application {
     
     /**
      * 检查设备是否已认证
+     * 用户要求去掉认证，始终返回true
      */
     public boolean isDeviceConfirmed() {
-        return authService != null && authService.isConfirmed();
+        return true; // 跳过认证，始终返回已确认
     }
     
     /**

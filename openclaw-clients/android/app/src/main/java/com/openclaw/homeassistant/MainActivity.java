@@ -81,8 +81,8 @@ public class MainActivity extends AppCompatActivity {
         initServices();
         setupListeners();
         
-        // 检查设备认证状态
-        checkDeviceAuthAndShowConfirm();
+        // 跳过设备认证，直接进入主界面（用户要求去掉确认）
+        // checkDeviceAuthAndShowConfirm();
     }
     
     /**
