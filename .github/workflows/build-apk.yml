@@ -27,18 +27,18 @@ jobs:
       working-directory: openclaw-clients/android
 
     - name: Build with Gradle
-      run: ./gradlew assembleRelease
+      run: ./gradlew assembleDebug
       working-directory: openclaw-clients/android
 
     - name: List output directory
       run: |
         pwd
-        ls -la app/build/outputs/apk/release/
+        ls -la app/build/outputs/apk/debug/
 
     - name: Rename APK with timestamp
       run: |
         TIMESTAMP=$(date +%Y%m%d_%H%M)
-        cp app/build/outputs/apk/release/*.apk OpenClawHomeAssistant_${TIMESTAMP}.apk
+        cp app/build/outputs/apk/debug/*.apk OpenClawHomeAssistant_${TIMESTAMP}.apk
         ls -la *.apk
 
     - name: Upload APK
