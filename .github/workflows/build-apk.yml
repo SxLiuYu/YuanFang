@@ -36,7 +36,7 @@ jobs:
 
     - name: Build with Gradle wrapper
       working-directory: openclaw-clients/android
-      run: ./gradlew assembleDebug --no-daemon
+      run: ./gradlew assembleDebug --no-daemon --build-cache --stacktrace
 
     - name: Rename APK with timestamp
       run: |
