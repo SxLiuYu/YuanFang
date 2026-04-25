@@ -30,3 +30,5 @@ tools/putty/
 .fastembed_cache/
 # Gradle wrapper jar shouldn't be committed
 gradle/wrapper/gradle-wrapper.jar
+# Local SDK configuration - don't commit
+local.properties
