@@ -58,18 +58,31 @@ jobs:
       working-directory: openclaw-clients/android
       run: |
         chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon --build-cache
-        echo "Exit code: ${PIPESTATUS[0]}"
+        echo "=== JAVA_HOME ==="
+        echo $JAVA_HOME
+        java -version 2>&1
+        echo ""
+        echo "=== ANDROID_HOME ==="
+        echo $ANDROID_HOME
+        echo ""
+        echo "=== ANDROID_SDK_ROOT ==="
+        echo $ANDROID_SDK_ROOT
+        echo ""
+        echo "=== Running Gradle ==="
+        ./gradlew assembleDebug --no-daemon --build-cache 2>&1
+        EXITCODE=${PIPESTATUS[0]}
+        echo "Gradle exit code: $EXITCODE"
         echo "=== APK location ==="
-        ls -la app/build/outputs/apk/debug/ 2>/dev/null || echo "NOT FOUND"
+        ls -la app/build/outputs/apk/debug/ 2>/dev/null || echo "APK NOT FOUND"
+        exit $EXITCODE
 
     - name: Upload build log on failure
       if: failure()
       uses: actions/upload-artifact@v4
       with:
         name: gradle-build-log
-        path: 'gradle-output.log'
-        retention-days: 3
+        path: /home/runner/work/YuanFang/YuanFang/openclaw-clients/gradle-output.log
+        retention-days: 1
 
     - name: Rename APK
       run: |
