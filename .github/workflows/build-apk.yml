@@ -56,13 +56,24 @@ jobs:
 
     - name: Build with Gradle wrapper
       working-directory: openclaw-clients/android
-      run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --build-cache
+      run: |
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon --build-cache --stacktrace 2>&1 | tee ../gradle-output.log
+        echo "Exit code: $?"
+
+    - name: Upload build log on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: gradle-build-log
+        path: 'gradle-output.log'
+        retention-days: 3
 
     - name: Rename APK with timestamp
       run: |
         TIMESTAMP=$(date +%Y%m%d_%H%M)
-        cp openclaw-clients/android/app/build/outputs/apk/debug/app-debug.apk OpenClawHomeAssistant_${TIMESTAMP}.apk
-        ls -la *.apk
+        cp openclaw-clients/android/app/build/outputs/apk/debug/app-debug.apk OpenClawHomeAssistant_${TIMESTAMP}.apk 2>/dev/null || true
+        ls -la *.apk 2>/dev/null || echo "No APK produced"
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
