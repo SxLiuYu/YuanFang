@@ -56,12 +56,12 @@ jobs:
 
     - name: Build with Gradle wrapper
       working-directory: openclaw-clients/android
-      env:
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
       run: |
         chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon --build-cache 2>&1 | tail -50
+        ./gradlew assembleDebug --no-daemon --build-cache 2>&1 | tail -100
         echo "Exit code: ${PIPESTATUS[0]}"
+        echo "=== APK files after build ==="
+        find . -name "*.apk" -type f 2>/dev/null
 
     - name: Upload build log on failure
       if: failure()
