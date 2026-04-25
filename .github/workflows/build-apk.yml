@@ -82,12 +82,12 @@ jobs:
         path: '*.apk'
 
     - name: Create Release
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/master' && success()
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        name: "Release $(date +%Y%m%d)"
-        tag_name: "v$(date +%Y%m%d)"
+        name: "Release ${{ github.event.head_commit.timestamp }}"
+        tag_name: "v${{ github.run_number }}"
         draft: false
         prerelease: false
         files: '*.apk'
