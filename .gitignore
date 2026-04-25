@@ -28,3 +28,5 @@ logs/
 # Binary tools
 tools/putty/
 .fastembed_cache/
+# Gradle wrapper jar shouldn't be committed
+gradle/wrapper/gradle-wrapper.jar
