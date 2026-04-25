@@ -35,7 +35,8 @@
             android:textColor="@color/white"
             android:textSize="12sp"
             android:background="#80000000"
-            android:padding="6dp 8dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="8dp"
             android:elevation="4dp"/>
 
     </FrameLayout>

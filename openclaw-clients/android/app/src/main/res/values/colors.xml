@@ -10,4 +10,12 @@
     <color name="green_500">#FF4CAF50</color>
     <color name="blue_500">#FF2196F3</color>
     <color name="ic_launcher_background">#FF4CAF50</color>
+
+    <!-- Custom theme colors for video chat and UI -->
+    <color name="bg_page">#F5F5F5</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="border">#E0E0E0</color>
+    <color name="primary">#2196F3</color>
+    <color name="secondary">#03DAC5</color>
+    <color name="text_secondary">#757575</color>
 </resources>
