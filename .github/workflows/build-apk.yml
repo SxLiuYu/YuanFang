@@ -61,12 +61,20 @@ jobs:
         GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Xmx2048m"
       run: |
         chmod +x gradlew
+        echo "::group::Environment"
         echo "JAVA_HOME=$JAVA_HOME"
         echo "ANDROID_HOME=$ANDROID_HOME"
+        echo "pwd=$(pwd)"
         java -version 2>&1 | head -1
+        echo "::endgroup::"
+        echo "::group::Gradle build"
         ./gradlew assembleDebug --no-daemon --build-cache --no-configuration-cache --stacktrace 2>&1; exitcode=${PIPESTATUS[0]}
+        echo "::endgroup::"
         echo "GRADLE_EXITCODE=$exitcode"
-        if ls -la app/build/outputs/apk/debug/ 2>/dev/null; then echo "APK_EXISTS=YES"; else echo "APK_NOT_FOUND"; fi
+        echo "::group::APK check"
+        ls -la app/build/outputs/apk/debug/ 2>/dev/null || echo "APK_DIR_NOT_FOUND"
+        find . -name "*.apk" 2>/dev/null | head -5
+        echo "::endgroup::"
         exit $exitcode
 
     - name: Upload build log on failure

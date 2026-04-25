@@ -1,0 +1,1756 @@
+[
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, mlx, tts",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "system",
+        "mlx",
+        "tts"
+      ]
+    },
+    "timestamp": "2026-04-12T15:00:14.150585"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-13T15:00:07.133978"
+  },
+  {
+    "repo": "tumma72/local-ai",
+    "url": "https://github.com/tumma72/local-ai",
+    "description": "Local AI is a wrapper around Apple silicon mlx-lm library to facilitate local deployment of optimized models for Apple Silicon",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, llm"
+      ],
+      "matched_categories": [
+        "mlx",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-13T15:00:07.849453"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-13T15:00:08.656236"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, llm",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-13T15:00:12.025156"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-13T15:00:14.496212"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-13T15:00:15.221488"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, llm"
+      ],
+      "matched_categories": [
+        "whisper",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-13T15:00:15.937567"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, whisper"
+      ],
+      "matched_categories": [
+        "system",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-13T15:00:16.835663"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, mlx, tts",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "system",
+        "mlx",
+        "tts"
+      ]
+    },
+    "timestamp": "2026-04-13T15:00:17.539868"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-14T15:00:07.624496"
+  },
+  {
+    "repo": "tumma72/local-ai",
+    "url": "https://github.com/tumma72/local-ai",
+    "description": "Local AI is a wrapper around Apple silicon mlx-lm library to facilitate local deployment of optimized models for Apple Silicon",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, mlx"
+      ],
+      "matched_categories": [
+        "llm",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-14T15:00:08.399601"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-14T15:00:09.135545"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "llm",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-14T15:00:11.602045"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-14T15:00:14.374763"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-14T15:00:15.068078"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, whisper"
+      ],
+      "matched_categories": [
+        "llm",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-14T15:00:15.832568"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, system"
+      ],
+      "matched_categories": [
+        "whisper",
+        "system"
+      ]
+    },
+    "timestamp": "2026-04-14T15:00:16.597361"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: tts, mlx, system",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "tts",
+        "mlx",
+        "system"
+      ]
+    },
+    "timestamp": "2026-04-14T15:00:17.797334"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-15T15:00:07.893893"
+  },
+  {
+    "repo": "tumma72/local-ai",
+    "url": "https://github.com/tumma72/local-ai",
+    "description": "Local AI is a wrapper around Apple silicon mlx-lm library to facilitate local deployment of optimized models for Apple Silicon",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, mlx"
+      ],
+      "matched_categories": [
+        "llm",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-15T15:00:08.620090"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-15T15:00:09.410463"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "llm",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-15T15:00:11.978054"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-15T15:00:13.895462"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-15T15:00:14.634167"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, llm"
+      ],
+      "matched_categories": [
+        "whisper",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-15T15:00:15.759116"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, system"
+      ],
+      "matched_categories": [
+        "whisper",
+        "system"
+      ]
+    },
+    "timestamp": "2026-04-15T15:00:16.492789"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, tts, mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "system",
+        "tts",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-15T15:00:17.154733"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-16T15:00:06.918032"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-16T15:00:08.594388"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, llm",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-16T15:00:13.460551"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-16T15:00:15.658522"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-16T15:00:16.341780"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, llm"
+      ],
+      "matched_categories": [
+        "whisper",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-16T15:00:17.023656"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, whisper"
+      ],
+      "matched_categories": [
+        "system",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-16T15:00:17.873357"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, tts, system",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "tts",
+        "system"
+      ]
+    },
+    "timestamp": "2026-04-16T15:00:18.575732"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-17T15:00:05.005696"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-17T15:00:05.746846"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "llm",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-17T15:00:08.755419"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-17T15:00:10.558980"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-17T15:00:11.272189"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, llm"
+      ],
+      "matched_categories": [
+        "whisper",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-17T15:00:11.986936"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, system"
+      ],
+      "matched_categories": [
+        "whisper",
+        "system"
+      ]
+    },
+    "timestamp": "2026-04-17T15:00:12.702130"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, tts, mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "system",
+        "tts",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-17T15:00:13.936758"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-18T15:00:08.012632"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-18T15:00:08.731258"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "llm",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-18T15:00:11.386061"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-18T15:00:13.414514"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-18T15:00:15.291551"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, whisper"
+      ],
+      "matched_categories": [
+        "llm",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-18T15:00:16.333164"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, whisper"
+      ],
+      "matched_categories": [
+        "system",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-18T15:00:18.735248"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, mlx, tts",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "system",
+        "mlx",
+        "tts"
+      ]
+    },
+    "timestamp": "2026-04-18T15:00:19.480953"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-19T15:00:06.967012"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-19T15:00:07.807350"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, llm",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-19T15:00:12.384220"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-19T15:00:14.132790"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-19T15:00:14.952811"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, whisper"
+      ],
+      "matched_categories": [
+        "llm",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-19T15:00:15.771683"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, whisper"
+      ],
+      "matched_categories": [
+        "system",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-19T15:00:16.999175"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, system, tts",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "system",
+        "tts"
+      ]
+    },
+    "timestamp": "2026-04-19T15:00:18.122905"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-20T15:00:07.550581"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-20T15:00:08.283388"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, llm",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-20T15:00:10.747083"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-20T15:00:12.564867"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-20T15:00:13.215997"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, llm"
+      ],
+      "matched_categories": [
+        "whisper",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-20T15:00:13.997618"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, system"
+      ],
+      "matched_categories": [
+        "whisper",
+        "system"
+      ]
+    },
+    "timestamp": "2026-04-20T15:00:14.685574"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, tts, system",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "tts",
+        "system"
+      ]
+    },
+    "timestamp": "2026-04-20T15:00:15.382688"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-21T15:00:06.380900"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-21T15:00:07.209275"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, llm",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-21T15:00:10.724159"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-21T15:00:12.384956"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-21T15:00:13.111752"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, whisper"
+      ],
+      "matched_categories": [
+        "llm",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-21T15:00:13.781504"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, whisper"
+      ],
+      "matched_categories": [
+        "system",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-21T15:00:14.420838"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, tts, system",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "tts",
+        "system"
+      ]
+    },
+    "timestamp": "2026-04-21T15:00:15.161766"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-22T15:00:05.909315"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-22T15:00:11.456632"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, llm",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-22T15:00:46.273291"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-22T15:01:09.899434"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-22T15:01:10.647070"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper, llm"
+      ],
+      "matched_categories": [
+        "whisper",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-22T15:01:11.863340"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, whisper"
+      ],
+      "matched_categories": [
+        "system",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-22T15:01:12.592055"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: tts, system, mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "tts",
+        "system",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-22T15:01:13.249009"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-23T15:00:03.433342"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-23T15:00:04.062647"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "llm",
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-23T15:00:06.460830"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-23T15:00:08.303380"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-23T15:00:09.021080"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, whisper"
+      ],
+      "matched_categories": [
+        "llm",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-23T15:00:09.839545"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, whisper"
+      ],
+      "matched_categories": [
+        "system",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-23T15:00:10.555923"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, mlx, tts",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "system",
+        "mlx",
+        "tts"
+      ]
+    },
+    "timestamp": "2026-04-23T15:00:11.273358"
+  },
+  {
+    "repo": "jbarnes850/mlx-train",
+    "url": "https://github.com/jbarnes850/mlx-train",
+    "description": "Train and deploy AI models across multiple Apple Silicon devices with automatic hardware optimization and a seamless developer experience. A user-friendly CLI framework for distributed training, powered by MLX.",
+    "stars": 4,
+    "analysis": {
+      "score": 5,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-24T15:00:06.327306"
+  },
+  {
+    "repo": "magnusfroste/mlx-ml",
+    "url": "https://github.com/magnusfroste/mlx-ml",
+    "description": "mlx-ml is the open-source repo I created to simplify MLX-LM workflows for LoRA fine-tuning, inference, and deployment of language models on Apple Silicon. Use a single config.yaml to define models, datasets, LoRA params (rank, scale, dropout), optimizers, and more — then run terminal commands for training, text generation, interactive chats, or ...",
+    "stars": 0,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx"
+      ],
+      "matched_categories": [
+        "mlx"
+      ]
+    },
+    "timestamp": "2026-04-24T15:00:07.075789"
+  },
+  {
+    "repo": "secret-ai-labs/awesome-local-llm",
+    "url": "https://github.com/secret-ai-labs/awesome-local-llm",
+    "description": "Your complete guide to running powerful AI models locally in 2025. Covers open-source LLMs, hardware requirements, deployment strategies, and optimization techniques for private, offline AI assistance. Learn more at https://secretai.io",
+    "stars": 4,
+    "analysis": {
+      "score": 9,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, llm",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "llm"
+      ]
+    },
+    "timestamp": "2026-04-24T15:00:10.112579"
+  },
+  {
+    "repo": "JimmyLi-Network/tiny_LLM_device",
+    "url": "https://github.com/JimmyLi-Network/tiny_LLM_device",
+    "description": "The smallest hardware device for efficient large for efficient language models (LLMs) inference optimized for low-power, low-cost embedded SoCs, supporting on-device real-time Whisper speech-to-text and LLM chatbot in the same time.",
+    "stars": 2,
+    "analysis": {
+      "score": 0,
+      "applicable": false,
+      "notes": [],
+      "matched_categories": []
+    },
+    "timestamp": "2026-04-24T15:00:11.786271"
+  },
+  {
+    "repo": "Arjun-B-J/VoiceToText-with-UI",
+    "url": "https://github.com/Arjun-B-J/VoiceToText-with-UI",
+    "description": "An open-source, PyQt6-based AI dictation assistant. Leverages faster-whisper for real-time, local inference on NVIDIA GPUs. Includes hardware-level optimizations to prevent Bluetooth headset degradation, background system tray execution, and graceful VRAM cleanup.",
+    "stars": 1,
+    "analysis": {
+      "score": 2,
+      "applicable": true,
+      "notes": [
+        "相关技术: whisper"
+      ],
+      "matched_categories": [
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-24T15:00:12.502065"
+  },
+  {
+    "repo": "MichaelNotDeveloper/WhisperRT-CPU",
+    "url": "https://github.com/MichaelNotDeveloper/WhisperRT-CPU",
+    "description": "WhisperRT-CPU is a CPU-optimized implementation of OpenAI’s Whisper model designed for near real-time speech recognition. The project focuses on accelerating inference on CPU and provides a comprehensive comparison against baseline GPU and CPU implementations in terms of latency, memory, energy efficiency, and transcription accuracy (WER/CER).",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: llm, whisper"
+      ],
+      "matched_categories": [
+        "llm",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-24T15:00:13.220075"
+  },
+  {
+    "repo": "sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "url": "https://github.com/sofialtamsh/Multilingual-Speech-to-Text-Enhancement",
+    "description": "Fine-tuned OpenAI Whisper on an English–Hindi dataset with advanced audio preprocessing and augmentation, achieving a 22% WER reduction and enabling fast real-time inference with fp16 optimization and caching.",
+    "stars": 0,
+    "analysis": {
+      "score": 4,
+      "applicable": true,
+      "notes": [
+        "相关技术: system, whisper"
+      ],
+      "matched_categories": [
+        "system",
+        "whisper"
+      ]
+    },
+    "timestamp": "2026-04-24T15:00:13.939589"
+  },
+  {
+    "repo": "Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "url": "https://github.com/Rokibul1022/Rnn-text_to_speech-speech_to_text_NLP",
+    "description": "Production-grade Speech Processing System featuring Speech-to-Text (Whisper+BiLSTM+CTC) and Text-to-Speech (Neural+System TTS) with web interface. M1-optimized PyTorch implementation, 95% ASR accuracy, hybrid fallback architecture. Includes browser recording, real-time inference, comprehensive documentation.",
+    "stars": 0,
+    "analysis": {
+      "score": 7,
+      "applicable": true,
+      "notes": [
+        "相关技术: mlx, system, tts",
+        "Apple Silicon 相关"
+      ],
+      "matched_categories": [
+        "mlx",
+        "system",
+        "tts"
+      ]
+    },
+    "timestamp": "2026-04-24T15:00:14.653643"
+  }
+]

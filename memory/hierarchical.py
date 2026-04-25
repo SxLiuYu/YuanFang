@@ -1,437 +1,418 @@
+# memory/hierarchical.py
 """
-memory/hierarchical.py
-层级化记忆系统
-- 短期记忆：Redis（会话级，快速访问，自动过期）
-- 长期记忆：Qdrant 向量库（语义检索，持久化）
-- 永久结构化记忆：SQLite（用户偏好、事实、日程，结构化存储）
-- 记忆遗忘机制：不重要记忆随时间衰减，自动归档
-"""
+分层记忆系统 — Hierarchical Memory
+Hey Tuya OmniMem V2.0 启发，DeepSeek V4 稀疏记忆思路
 
-import os
+三层结构：
+- working:   当前会话，高活跃度，直接拼入 system prompt
+- episodic:  跨会话情景，Qdrant/向量检索，按重要性评分
+- long_term: 持久化压缩记忆，LLM summarization 后存储
+
+重要性评分驱动，自动裁剪低价值记忆
+"""
+import time
 import json
-import sqlite3
-import datetime
-from typing import Optional, List, Dict, Any, Tuple
-from dataclasses import dataclass, asdict
+import threading
+import logging
 from pathlib import Path
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Optional
 
-import redis
-
-# 记忆类型分类
-MEMORY_TYPES = {
-    "short_term": "短期会话记忆",
-    "long_term": "长期语义记忆", 
-    "permanent": "永久结构化记忆"
-}
-
-# 遗忘衰减参数
-DEFAULT_HALF_LIFE_HOURS = 72  # 半衰期72小时，衰减后检索权重降低
-MIN_IMPORTANCE = 0.1  # 最低重要性，低于自动归档/删除
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class MemoryEntry:
-    """记忆条目"""
-    id: str
-    text: str
-    memory_type: str  # short_term | long_term | permanent
-    importance: float  # 0.0 - 1.0，越高越不容易遗忘
-    created_at: str
-    accessed_at: str  # 最后访问时间
-    access_count: int  # 访问次数，频繁访问提升重要性
-    metadata: Dict[str, Any]
-    embedding: Optional[List[float]] = None
+    """单条记忆条目"""
+    content: str
+    importance: float = 5.0        # 1-10 重要性评分
+    access_count: int = 0
+    last_access: float = field(default_factory=time.time)
+    memory_type: str = "short"      # short | episodic | long
+    embedding: Optional[list] = None
+    tags: list[str] = field(default_factory=list)  # 标签：人/地点/设备/偏好
+    source: str = "interaction"      # 来源：interaction/sensor/rule/manual
 
+    def access(self):
+        self.access_count += 1
+        self.last_access = time.time()
+        # 频繁访问自动提升重要性
+        if self.access_count > 5:
+            self.importance = min(10.0, self.importance + 0.1)
 
-class PermanentSQLiteStorage:
-    """永久结构化存储 - SQLite"""
-    
-    def __init__(self, db_path: str = None):
-        if db_path is None:
-            db_path = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), 
-                "data", "permanent_memory.db"
-            )
-        self.db_path = db_path
-        self._init_db()
-    
-    def _init_db(self):
-        Path(os.path.dirname(self.db_path)).mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS facts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                fact_key TEXT UNIQUE,
-                fact_value TEXT,
-                category TEXT,
-                importance REAL,
-                created_at TEXT,
-                updated_at TEXT,
-                source TEXT
-            )
-        """)
-        
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS user_preferences (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                preference_key TEXT UNIQUE,
-                preference_value TEXT,
-                confidence REAL,
-                created_at TEXT,
-                last_verified TEXT
-            )
-        """)
-        
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS events (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT,
-                description TEXT,
-                event_time TEXT,
-                location TEXT,
-                created_at TEXT,
-                remind BOOLEAN DEFAULT 1
-            )
-        """)
-        
-        conn.commit()
-        conn.close()
-    
-    def add_fact(self, fact_key: str, fact_value: Any, category: str, 
-                 importance: float = 0.8, source: str = "dialog") -> bool:
-        """添加/更新事实"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        now = datetime.datetime.now().isoformat()
-        cursor.execute("""
-            REPLACE INTO facts 
-            (fact_key, fact_value, category, importance, created_at, updated_at, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            fact_key, 
-            json.dumps(fact_value) if isinstance(fact_value, (dict, list)) else str(fact_value),
-            category, 
-            importance,
-            now, now, source
-        ))
-        
-        conn.commit()
-        conn.close()
-        return True
-    
-    def get_fact(self, fact_key: str) -> Optional[Any]:
-        """查询事实"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT fact_value FROM facts WHERE fact_key = ?", (fact_key,))
-        row = cursor.fetchone()
-        conn.close()
-        if not row:
-            return None
-        try:
-            return json.loads(row[0])
-        except json.JSONDecodeError:
-            return row[0]
-    
-    def delete_fact(self, fact_key: str) -> bool:
-        """删除事实"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM facts WHERE fact_key = ?", (fact_key,))
-        conn.commit()
-        changed = cursor.rowcount > 0
-        conn.close()
-        return changed
-    
-    def list_facts(self, category: str = None) -> List[Dict]:
-        """列出事实"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        if category:
-            cursor.execute("SELECT * FROM facts WHERE category = ? ORDER BY importance DESC", (category,))
-        else:
-            cursor.execute("SELECT * FROM facts ORDER BY importance DESC")
-        
-        rows = cursor.fetchall()
-        conn.close()
-        
-        result = []
-        for row in rows:
-            result.append({
-                "id": row[0],
-                "fact_key": row[1],
-                "fact_value": row[2],
-                "category": row[3],
-                "importance": row[4],
-                "created_at": row[5],
-                "updated_at": row[6],
-                "source": row[7]
-            })
-        return result
-    
-    def add_preference(self, key: str, value: Any, confidence: float = 0.9) -> bool:
-        """添加用户偏好"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        now = datetime.datetime.now().isoformat()
-        cursor.execute("""
-            REPLACE INTO user_preferences 
-            (preference_key, preference_value, confidence, created_at, last_verified)
-            VALUES (?, ?, ?, ?, ?)
-        """, (
-            key,
-            json.dumps(value) if isinstance(value, (dict, list)) else str(value),
-            confidence,
-            now, now
-        ))
-        conn.commit()
-        conn.close()
-        return True
-    
-    def get_preference(self, key: str) -> Optional[Any]:
-        """获取用户偏好"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT preference_value FROM user_preferences WHERE preference_key = ?", (key,))
-        row = cursor.fetchone()
-        conn.close()
-        if not row:
-            return None
-        try:
-            return json.loads(row[0])
-        except json.JSONDecodeError:
-            return row[0]
+    def to_dict(self) -> dict:
+        return {
+            "content": self.content,
+            "importance": self.importance,
+            "access_count": self.access_count,
+            "last_access": self.last_access,
+            "memory_type": self.memory_type,
+            "tags": self.tags,
+            "source": self.source,
+        }
 
-
-class ShortTermRedisMemory:
-    """短期记忆 - Redis，自动过期"""
-    
-    def __init__(self, host: str = "localhost", port: int = 6379, db: int = 0, 
-                 default_ttl_seconds: int = 3600 * 24):  # 默认24小时过期
-        self.host = os.getenv("REDIS_HOST", host)
-        self.port = int(os.getenv("REDIS_PORT", port))
-        self.db = db
-        self.default_ttl = default_ttl_seconds
-        self._connect()
-    
-    def _connect(self):
-        try:
-            self.client = redis.Redis(
-                host=self.host, 
-                port=self.port, 
-                db=self.db, 
-                decode_responses=True
-            )
-            self.client.ping()
-        except Exception as e:
-            print(f"[ShortTermMemory] Redis连接失败: {e}，将使用内存回退")
-            self.client = None
-    
-    def is_connected(self) -> bool:
-        return self.client is not None
-    
-    def store(self, key: str, value: Any, ttl: int = None) -> bool:
-        """存储短期记忆"""
-        if not self.client:
-            return False
-        try:
-            if isinstance(value, (dict, list)):
-                value = json.dumps(value)
-            self.client.set(key, str(value), ex=ttl or self.default_ttl)
-            return True
-        except Exception as e:
-            print(f"[ShortTermMemory] 存储失败: {e}")
-            return False
-    
-    def get(self, key: str) -> Optional[Any]:
-        """获取短期记忆"""
-        if not self.client:
-            return None
-        try:
-            value = self.client.get(key)
-            if value is None:
-                return None
-            try:
-                return json.loads(value)
-            except json.JSONDecodeError:
-                return value
-        except Exception:
-            return None
-    
-    def delete(self, key: str) -> bool:
-        """删除短期记忆"""
-        if not self.client:
-            return False
-        self.client.delete(key)
-        return True
-    
-    def clear_expired(self):
-        """Redis自动处理过期，不需要手动清理"""
-        pass
+    @classmethod
+    def from_dict(cls, d: dict) -> "MemoryEntry":
+        return cls(
+            content=d["content"],
+            importance=d.get("importance", 5.0),
+            access_count=d.get("access_count", 0),
+            last_access=d.get("last_access", time.time()),
+            memory_type=d.get("memory_type", "short"),
+            tags=d.get("tags", []),
+            source=d.get("source", "interaction"),
+        )
 
 
 class HierarchicalMemory:
-    """层级化记忆系统 - 整合三级存储 + 遗忘机制"""
-    
-    def __init__(self):
-        self.short_term = ShortTermRedisMemory()
-        self.permanent = PermanentSQLiteStorage()
-        # 长期向量记忆使用现有的 VectorMemory / Qdrant
-        self._init_forgetting()
-    
-    def _init_forgetting(self):
-        # 遗忘记录
-        self.forgetting_log_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "data", "forgetting_log.json"
+    """
+    三层稀疏记忆系统
+
+    核心思想（DeepSeek V4 DSA 启发）：
+    - 不所有记忆都以同等精度处理
+    - 高重要性 + 高访问 = 精细存储
+    - 低重要性 + 低访问 = 压缩或丢弃
+    """
+
+    MAX_WORKING = 20       # 工作记忆上限
+    MAX_EPISODIC = 500     # 情景记忆上限
+    COMPRESS_THRESHOLD = 100  # 触发压缩的条目数
+    PERSIST_FILE = Path(__file__).parent / "hierarchical_memory.json"
+    PERSIST_LOCK = threading.Lock()
+
+    def __init__(self, llm_fn=None, vector_store=None):
+        self.working: list[MemoryEntry] = []
+        self.episodic: list[MemoryEntry] = []
+        self.long_term_refs: dict[str, dict] = {}  # key -> compressed_summary
+        self.llm_fn = llm_fn                       # LLM function for summarization
+        self.vector_store = vector_store            # Qdrant or simple dict
+
+        # 标签统计（用于快速查找）
+        self._tag_index: dict[str, list[MemoryEntry]] = defaultdict(list)
+
+        self._load()
+
+    # ─── 添加记忆 ───────────────────────────────────────────────
+
+    def add(
+        self,
+        content: str,
+        memory_type: str = "short",
+        importance: float = 5.0,
+        tags: list[str] = None,
+        source: str = "interaction",
+        embedding: list = None,
+    ) -> str:
+        """
+        添加记忆 — 重要性评分驱动自动分层
+
+        Args:
+            content: 记忆内容
+            memory_type: short(工作) / episodic(情景) / long(长期压缩)
+            importance: 1-10 重要性评分
+            tags: 标签列表
+            source: 来源
+            embedding: 向量（可选）
+
+        Returns:
+            记忆 ID
+        """
+        entry = MemoryEntry(
+            content=content,
+            importance=importance,
+            memory_type=memory_type,
+            tags=tags or [],
+            source=source,
+            embedding=embedding,
         )
-        Path(os.path.dirname(self.forgetting_log_path)).mkdir(parents=True, exist_ok=True)
-        if not os.path.exists(self.forgetting_log_path):
-            with open(self.forgetting_log_path, "w", encoding="utf-8") as f:
-                json.dump([], f)
-    
-    def _calculate_current_importance(self, entry: MemoryEntry) -> float:
-        """计算当前重要性，随时间衰减"""
-        created = datetime.datetime.fromisoformat(entry.created_at)
-        age_hours = (datetime.datetime.now() - created).total_seconds() / 3600
-        
-        # 半衰期衰减公式: importance = base_importance * (1/2)^(age / half_life)
-        half_life = DEFAULT_HALF_LIFE_HOURS
-        decay = (0.5) ** (age_hours / half_life)
-        
-        # 访问次数奖励：每次访问提升10%重要性，最高翻倍
-        access_bonus = 1.0 + (entry.access_count * 0.1)
-        access_bonus = min(access_bonus, 2.0)
-        
-        current = entry.importance * decay * access_bonus
-        return max(current, MIN_IMPORTANCE)
-    
-    def store_short_term(self, key: str, value: Any, ttl: int = None) -> bool:
-        """存储短期记忆"""
-        return self.short_term.store(key, value, ttl)
-    
-    def get_short_term(self, key: str) -> Optional[Any]:
-        """获取短期记忆"""
-        return self.short_term.get(key)
-    
-    def store_permanent_fact(self, key: str, value: Any, category: str, 
-                           importance: float = 0.8) -> bool:
-        """存储永久事实"""
-        return self.permanent.add_fact(key, value, category, importance)
-    
-    def get_permanent_fact(self, key: str) -> Optional[Any]:
-        """获取永久事实"""
-        return self.permanent.get_fact(key)
-    
-    def delete_permanent_fact(self, key: str) -> bool:
-        """删除永久事实"""
-        return self.permanent.delete_fact(key)
-    
-    def store_user_preference(self, key: str, value: Any, confidence: float = 0.9) -> bool:
-        """存储用户偏好"""
-        return self.permanent.add_preference(key, value, confidence)
-    
-    def get_user_preference(self, key: str) -> Optional[Any]:
-        """获取用户偏好"""
-        return self.permanent.get_preference(key)
-    
-    def get_all_facts(self, category: str = None) -> List[Dict]:
-        """获取所有永久事实"""
-        return self.permanent.list_facts(category)
-    
-    def clean_forgetting(self, vector_memory) -> int:
-        """执行遗忘清理：移除重要性过低的长期记忆，返回清理数量"""
-        cleaned = 0
-        # 向量记忆中根据时间衰减清理低重要性条目
-        if hasattr(vector_memory, 'vectors'):
-            original_count = len(vector_memory.vectors)
-            kept = []
-            for entry in vector_memory.vectors:
-                # 获取重要性，默认为0.5
-                importance = entry.get('metadata', {}).get('importance', 0.5)
-                created_at = entry.get('timestamp', datetime.datetime.now().isoformat())
-                created_dt = datetime.datetime.fromisoformat(created_at)
-                age_hours = (datetime.datetime.now() - created_dt).total_seconds() / 3600
-                decay = (0.5) ** (age_hours / DEFAULT_HALF_LIFE_HOURS)
-                current = importance * decay
-                if current >= MIN_IMPORTANCE:
-                    kept.append(entry)
+
+        if memory_type == "short":
+            self.working.append(entry)
+            self._prune_working()
+        elif memory_type == "episodic":
+            self.episodic.append(entry)
+            self._update_tag_index(entry)
+            self._prune_episodic()
+        elif memory_type == "long":
+            self._compress_and_store(entry)
+
+        # 异步持久化
+        threading.Thread(target=self._persist, daemon=True).start()
+        return f"{memory_type[0]}_{int(entry.last_access * 1000)}"
+
+    def add_interaction(self, role: str, content: str, importance: float = 5.0):
+        """快捷方法：添加对话交互记忆"""
+        tag = "user" if role == "user" else "assistant"
+        self.add(
+            content=f"[{role}] {content}",
+            memory_type="episodic",
+            importance=importance,
+            tags=[tag, "conversation"],
+            source="interaction",
+        )
+
+    def add_sensor_event(self, entity_id: str, value: any, importance: float = 5.0):
+        """快捷方法：添加传感器事件记忆"""
+        self.add(
+            content=f"传感器 {entity_id} = {value}",
+            memory_type="episodic",
+            importance=importance,
+            tags=["sensor", entity_id.split(".")[0] if "." in entity_id else "device"],
+            source="sensor",
+        )
+
+    def add_device_action(self, action: str, entity_id: str, result: str = "success"):
+        """快捷方法：添加设备操作记忆"""
+        self.add(
+            content=f"执行 {action} → {entity_id}，结果：{result}",
+            memory_type="episodic",
+            importance=6.0,
+            tags=["device_action", entity_id.split(".")[0] if "." in entity_id else "device"],
+            source="rule",
+        )
+
+    # ─── 检索 ─────────────────────────────────────────────────
+
+    def get_working_context(self, max_entries: int = 10) -> str:
+        """
+        获取工作记忆上下文 — 直接拼入 system prompt
+        按重要性排序，返回 top N
+        """
+        if not self.working:
+            return ""
+
+        scored = sorted(
+            self.working,
+            key=lambda e: e.importance * (1 + 0.1 * e.access_count),
+            reverse=True,
+        )
+        top = scored[:max_entries]
+
+        lines = ["[Working Memory] 近期重要信息："]
+        for e in top:
+            age_min = (time.time() - e.last_access) / 60
+            lines.append(f"- [{e.tags[0] if e.tags else 'misc'}|★{e.importance:.0f}|{age_min:.0f}m] {e.content[:80]}")
+        return "\n".join(lines)
+
+    def search_episodic(self, query: str, tags: list[str] = None, top_k: int = 5) -> list[str]:
+        """
+        检索情景记忆
+        支持关键词匹配 + 标签过滤
+        """
+        results = []
+        search_tags = set(tags) if tags else None
+
+        # 优先搜索有标签的记忆
+        candidates = self.episodic
+        if search_tags:
+            tagged = []
+            for t in search_tags:
+                tagged.extend(self._tag_index.get(t, []))
+            # 去重并合并
+            seen = set()
+            for e in tagged:
+                if id(e) not in seen:
+                    seen.add(id(e))
+                    candidates.append(e)
+
+        for e in candidates:
+            score = e.importance / 10.0
+
+            # 关键词匹配
+            query_words = [w for w in query.split() if len(w) > 1]
+            matched = sum(1 for w in query_words if w in e.content)
+            if matched > 0:
+                score += matched * 0.2
+
+            # 标签匹配加分
+            if search_tags and any(t in e.tags for t in search_tags):
+                score += 0.3
+
+            # 近期加权
+            age_hours = (time.time() - e.last_access) / 3600
+            if age_hours < 1:
+                score *= 1.5
+            elif age_hours < 24:
+                score *= 1.2
+
+            results.append((e, score))
+
+        results.sort(key=lambda x: x[1], reverse=True)
+        return [
+            f"- [{'|'.join(e.tags[:2])}|★{e.importance:.0f}] {e.content[:100]}"
+            for e, _ in results[:top_k]
+        ]
+
+    def search_long_term(self, query: str, top_k: int = 3) -> list[str]:
+        """检索长期记忆（压缩存储的摘要）"""
+        results = []
+        query_words = set(query.split())
+        for key, ref in self.long_term_refs.items():
+            summary = ref.get("summary", "")
+            hint = ref.get("original_hint", "")
+            text = summary + hint
+            matched = sum(1 for w in query_words if w in text)
+            if matched > 0:
+                results.append((ref, matched))
+        results.sort(key=lambda x: x[1], reverse=True)
+        return [
+            f"- [长期记忆] {r[0].get('summary', '')[:100]}"
+            for r, _ in results[:top_k]
+        ]
+
+    def get_full_context(self, query: str = "", max_working: int = 10, max_episodic: int = 5) -> str:
+        """
+        获取完整记忆上下文（供 LLM 使用）
+        工作记忆 + 情景记忆 + 长期记忆
+        """
+        parts = []
+
+        wm = self.get_working_context(max_working)
+        if wm:
+            parts.append(wm)
+
+        em = self.search_episodic(query, top_k=max_episodic)
+        if em:
+            parts.append("[Episodic Memory] 相关情景记忆：\n" + "\n".join(em))
+
+        lm = self.search_long_term(query, top_k=3)
+        if lm:
+            parts.append("[Long Term Memory] 长期记忆：\n" + "\n".join(lm))
+
+        return "\n\n".join(parts) if parts else ""
+
+    # ─── 裁剪 ─────────────────────────────────────────────────
+
+    def _prune_working(self):
+        """工作记忆裁剪 — 保留最重要和最新的"""
+        if len(self.working) <= self.MAX_WORKING:
+            return
+
+        scored = sorted(
+            self.working,
+            key=lambda e: e.importance * (1 + 0.1 * e.access_count),
+            reverse=True,
+        )
+        self.working = scored[: self.MAX_WORKING]
+
+    def _prune_episodic(self):
+        """情景记忆裁剪 — 超过上限则压缩最旧的低价值记忆"""
+        if len(self.episodic) <= self.MAX_EPISODIC:
+            return
+
+        # 按 score 排序，将最低的压缩到长期记忆
+        scored = sorted(
+            self.episodic,
+            key=lambda e: e.importance * (1 + 0.05 * e.access_count),
+        )
+        to_compress = scored[: len(self.episodic) - self.MAX_EPISODIC + 10]
+
+        for entry in to_compress:
+            self.episodic.remove(entry)
+            self._compress_and_store(entry)
+            # 从标签索引移除
+            for tag in entry.tags:
+                if entry in self._tag_index.get(tag, []):
+                    self._tag_index[tag].remove(entry)
+
+    def _compress_and_store(self, entry: MemoryEntry):
+        """压缩存储 — LLM summarization"""
+        key = f"lt_{int(entry.last_access * 1000)}"
+
+        if self.llm_fn and len(entry.content) > 200:
+            try:
+                summary = self.llm_fn.chat_simple([
+                    {"role": "user", "content": f"请用不超过50字概括以下内容的核心信息：{entry.content}"}
+                ])
+                if summary and len(summary) < len(entry.content):
+                    self.long_term_refs[key] = {
+                        "summary": summary,
+                        "importance": entry.importance,
+                        "original_hint": entry.content[:50],
+                        "compressed_at": time.time(),
+                        "tags": entry.tags,
+                    }
                 else:
-                    cleaned += 1
-            if cleaned > 0:
-                vector_memory.vectors = kept
-                vector_memory._save()
-                # 记录遗忘日志
-                self._log_forgetting(cleaned, "vector_memory")
-        return cleaned
-    
-    def _log_forgetting(self, count: int, memory_type: str):
-        """记录遗忘日志"""
+                    self.long_term_refs[key] = {
+                        "summary": entry.content[:100],
+                        "importance": entry.importance,
+                    }
+            except Exception as e:
+                logger.debug(f"[HierarchicalMemory] Compression failed: {e}")
+                self.long_term_refs[key] = {
+                    "summary": entry.content[:100],
+                    "importance": entry.importance,
+                }
+        else:
+            self.long_term_refs[key] = {
+                "summary": entry.content[:100],
+                "importance": entry.importance,
+            }
+
+        # 限制长期记忆大小
+        if len(self.long_term_refs) > 1000:
+            sorted_refs = sorted(
+                self.long_term_refs.items(),
+                key=lambda x: x[1].get("importance", 0),
+                reverse=True,
+            )
+            self.long_term_refs = dict(sorted_refs[:500])
+
+    def _update_tag_index(self, entry: MemoryEntry):
+        """更新标签索引"""
+        for tag in entry.tags:
+            if entry not in self._tag_index[tag]:
+                self._tag_index[tag].append(entry)
+
+    # ─── 持久化 ───────────────────────────────────────────────
+
+    def _persist(self):
+        """异步持久化到文件"""
+        with self.PERSIST_LOCK:
+            try:
+                data = {
+                    "working": [e.to_dict() for e in self.working],
+                    "episodic": [e.to_dict() for e in self.episodic],
+                    "long_term": self.long_term_refs,
+                    "saved_at": time.time(),
+                }
+                self.PERSIST_FILE.write_text(
+                    json.dumps(data, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+            except Exception as e:
+                logger.error(f"[HierarchicalMemory] Persist failed: {e}")
+
+    def _load(self):
+        """启动时从文件加载记忆"""
+        if not self.PERSIST_FILE.exists():
+            return
         try:
-            with open(self.forgetting_log_path, "r", encoding="utf-8") as f:
-                log = json.load(f)
-        except Exception:
-            log = []
-        
-        log.append({
-            "timestamp": datetime.datetime.now().isoformat(),
-            "count": count,
-            "memory_type": memory_type
-        })
-        
-        with open(self.forgetting_log_path, "w", encoding="utf-8") as f:
-            json.dump(log[-100:], f, ensure_ascii=False, indent=2)
-    
-    def get_stats(self) -> Dict[str, Any]:
-        """获取记忆统计"""
-        facts = self.permanent.list_facts()
-        prefs = []  # 偏好单独统计
-        try:
-            conn = sqlite3.connect(self.permanent.db_path)
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM user_preferences")
-            pref_count = cursor.fetchone()[0]
-            conn.close()
-        except Exception:
-            pref_count = 0
-        
+            data = json.loads(self.PERSIST_FILE.read_text("utf-8"))
+            self.working = [MemoryEntry.from_dict(e) for e in data.get("working", [])]
+            self.episodic = [MemoryEntry.from_dict(e) for e in data.get("episodic", [])]
+            self.long_term_refs = data.get("long_term", {})
+            for e in self.episodic:
+                self._update_tag_index(e)
+            logger.info(
+                f"[HierarchicalMemory] Loaded: {len(self.working)} working, "
+                f"{len(self.episodic)} episodic, {len(self.long_term_refs)} long_term"
+            )
+        except Exception as e:
+            logger.error(f"[HierarchicalMemory] Load failed: {e}")
+
+    # ─── 统计 ─────────────────────────────────────────────────
+
+    def stats(self) -> dict:
         return {
-            "permanent_facts_count": len(facts),
-            "user_preferences_count": pref_count,
-            "short_term_connected": self.short_term.is_connected()
+            "working_count": len(self.working),
+            "episodic_count": len(self.episodic),
+            "long_term_count": len(self.long_term_refs),
+            "total_tags": len(self._tag_index),
+            "top_tags": sorted(
+                [(t, len(es)) for t, es in self._tag_index.items()],
+                key=lambda x: x[1],
+                reverse=True,
+            )[:10],
         }
-
-
-# 单例实例
-_hierarchical_memory_instance = None
-
-def get_hierarchical_memory() -> HierarchicalMemory:
-    """获取单例层级记忆实例"""
-    global _hierarchical_memory_instance
-    if _hierarchical_memory_instance is None:
-        _hierarchical_memory_instance = HierarchicalMemory()
-    return _hierarchical_memory_instance
-
-
-if __name__ == "__main__":
-    # 测试
-    hm = HierarchicalMemory()
-    print("✅ HierarchicalMemory 初始化成功")
-    
-    # 测试永久存储
-    hm.store_permanent_fact("user_name", "于金泽", "user_profile", importance=1.0)
-    fact = hm.get_permanent_fact("user_name")
-    print(f"📝 测试永久存储: user_name = {fact}")
-    
-    # 测试用户偏好
-    hm.store_user_preference("favorite_coffee", "美式", 0.95)
-    pref = hm.get_user_preference("favorite_coffee")
-    print(f"❤️ 测试用户偏好: favorite_coffee = {pref}")
-    
-    stats = hm.get_stats()
-    print(f"📊 统计: {stats}")
-    
-    print("✅ 所有测试通过")

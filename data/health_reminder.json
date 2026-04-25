@@ -1,0 +1,10 @@
+{
+  "water_reminder_enabled": true,
+  "water_interval_minutes": 60,
+  "last_water_reminder": "2026-04-23T15:48:08.688699",
+  "stand_reminder_enabled": true,
+  "stand_interval_minutes": 45,
+  "last_stand_reminder": null,
+  "start_time": "08:00",
+  "end_time": "3:00"
+}

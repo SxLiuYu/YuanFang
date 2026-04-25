@@ -267,6 +267,68 @@ def execute_tool_call(tool_name: str, query: str) -> str:
     return tool.run(query)
 
 
+# ==================== P3: 第三方生态工具扩展 ====================
+# Hey Tuya 启发：生活服务闭环（票务、外卖、打车）→ 元芳工具生态补全
+
+def _stock(query: str) -> str:
+    """A股/基金行情查询 — 搜索实时价格和涨跌"""
+    if not query.strip():
+        return "请提供股票代码或名称，如 '贵州茅台' 或 '600519'"
+    return _search(f"{query} 股票 实时行情 今日收盘")
+
+def _delivery(query: str) -> str:
+    """外卖/快递查询 — 搜索配送情况（无真实API，用搜索模拟）"""
+    if not query.strip():
+        return "请提供外卖订单号或快递单号"
+    return _search(f"{query} 外卖配送 快递进度")
+
+def _tv_program(query: str) -> str:
+    """电视节目查询 — 搜索节目单和播放时间"""
+    if not query.strip():
+        return "请提供电视台名称或节目名，如 '央视一套' 或 '新闻联播'"
+    return _search(f"{query} 节目单 播出时间 电视")
+
+def _reminder(query: str) -> str:
+    """设置提醒 — 将提醒写入本地文件（未来可对接日历API）"""
+    import datetime, os
+    parts = query.strip().split("|")
+    if len(parts) < 2:
+        return "格式：时间|提醒内容，如 '明天9点|开会'"
+    time_str, content = parts[0].strip(), parts[1].strip()
+    reminder_file = os.path.expanduser("~/.yuanfang_reminders.txt")
+    with open(reminder_file, "a") as f:
+        f.write(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}] {time_str} — {content}\n")
+    return f"已设置提醒：{time_str} {content}"
+
+def _meeting(query: str) -> str:
+    """会议纪要整理 — 搜索最近对话生成摘要（用搜索模拟会议内容查询）"""
+    if not query.strip():
+        return "请提供会议主题或关键词"
+    return _search(f"会议纪要 {query} 要点 结论")
+
+def _recipe(query: str) -> str:
+    """菜谱/食谱查询 — 搜索做法和食材"""
+    if not query.strip():
+        return "请提供菜名，如 '红烧肉'"
+    return _search(f"{query} 菜谱 做法 食材 步骤")
+
+def _translate(query: str) -> str:
+    """翻译 — 调用搜索翻译结果"""
+    if not query.strip():
+        return "请提供要翻译的内容"
+    return _search(f"翻译 {query}")
+
+
+# 扩展 TOOL_REGISTRY
+TOOL_REGISTRY["stock"]     = Tool("stock",     "A股/基金行情查询",          "股票名称或代码",     _stock)
+TOOL_REGISTRY["delivery"]  = Tool("delivery",  "外卖/快递查询",             "订单号或快递单号",   _delivery)
+TOOL_REGISTRY["tv"]        = Tool("tv",        "电视节目查询",              "电视台或节目名",     _tv_program)
+TOOL_REGISTRY["reminder"]  = Tool("reminder",  "设置提醒（写入本地文件）",   "时间|内容",         _reminder)
+TOOL_REGISTRY["meeting"]   = Tool("meeting",   "会议纪要整理",              "会议主题/关键词",    _meeting)
+TOOL_REGISTRY["recipe"]    = Tool("recipe",    "菜谱/食谱查询",             "菜名",              _recipe)
+TOOL_REGISTRY["translate"]= Tool("translate", "翻译",                     "要翻译的内容",      _translate)
+
+
 def has_tool_prefix(text: str) -> bool:
     """判断文本是否包含工具调用 JSON"""
     return parse_tool_call(text) is not None
