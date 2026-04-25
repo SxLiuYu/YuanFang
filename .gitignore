@@ -27,3 +27,4 @@ logs/
 
 # Binary tools
 tools/putty/
+.fastembed_cache/

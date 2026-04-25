@@ -1,26 +1,7 @@
 # OpenClaw Family Assistant - 服务模块
 # 18 大类功能服务
-
-from . import voice_service
-from . import chat_service
-from . import smart_home_service
-from . import finance_service
-from . import task_service
-from . import shopping_service
-from . import recipe_service
-from . import health_service
-from . import calendar_service
-from . import education_service
-from . import pet_service
-from . import vehicle_service
-from . import home_service
-from . import medication_service
-from . import service_service
-from . import entertainment_service
-from . import security_service
-from . import communication_service
-from . import report_service
-from . import voice_control_service
+# 请勿在此处提前导入服务，避免循环依赖
+# 需要使用时直接 from services.xxx import xxx
 
 __all__ = [
     'voice_service',

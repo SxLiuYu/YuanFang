@@ -11,12 +11,21 @@ from typing import Dict, List, Optional, Set
 from dataclasses import dataclass, field
 import logging
 
-try:
-    import websockets
-    from websockets.server import WebSocketServerProtocol
-except ImportError:
-    logger.info("请安装 websockets: pip install websockets")
-    websockets = None
+# 延迟导入可选依赖，避免启动警告
+websockets = None
+WebSocketServerProtocol = None
+
+def try_import_dependencies():
+    """尝试导入可选依赖，仅在使用时导入"""
+    global websockets, WebSocketServerProtocol
+    if websockets is None:
+        try:
+            import websockets
+            from websockets.server import WebSocketServerProtocol as WSSP
+            WebSocketServerProtocol = WSSP
+        except ImportError:
+            websockets = None
+            WebSocketServerProtocol = None
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("CrossDeviceSync")

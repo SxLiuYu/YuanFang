@@ -11,6 +11,8 @@ from typing import Optional, List, Dict, Any
 from pathlib import Path
 import json
 
+from config import config
+
 logger = logging.getLogger(__name__)
 
 # 会话历史存储
@@ -42,10 +44,9 @@ async def chat(
     from . import voice_service
     
     # 获取配置
-    config = _get_config()
-    chat_config = config.get("ai_chat", {})
-    provider = chat_config.get("provider", "aliyun")
-    
+    chat_config = config.ai_chat
+    provider = chat_config.provider
+
     logger.info(f"Chat: session={session_id}, provider={provider}, message_length={len(message)}")
     
     # 构建对话历史
@@ -56,7 +57,8 @@ async def chat(
     _session_history[session_id].append({"role": "user", "content": message})
     
     # 限制历史长度
-    max_turns = config.get("advanced", {}).get("conversation_memory", {}).get("max_turns", 10)
+    max_turns = 10
+    # TODO: 从高级配置读取对话记忆设置
     if len(_session_history[session_id]) > max_turns * 2:
         _session_history[session_id] = _session_history[session_id][-max_turns * 2:]
     
@@ -91,21 +93,21 @@ async def chat(
         "turn_id": len(_session_history[session_id]) // 2
     }
 
-async def _chat_aliyun(message: str, history: List[Dict], config: Dict) -> str:
+async def _chat_aliyun(message: str, history: List[Dict], chat_config) -> str:
     """阿里云 DashScope 对话"""
     try:
         from http import HTTPStatus
         import dashscope
-        
-        api_key = config.get("aliyun", {}).get("api_key")
+
+        api_key = chat_config.aliyun.api_key
         if not api_key:
             api_key = os.environ.get("DASHSCOPE_API_KEY")
-        
+
         if not api_key:
             raise ValueError("Aliyun API Key not configured")
-        
+
         dashscope.api_key = api_key
-        model = config.get("model", "qwen-max")
+        model = chat_config.model
         
         # 调用 Qwen
         messages = [{"role": "system", "content": "你是一个家庭助手，帮助用户管理家庭生活。"}] + history
@@ -126,32 +128,32 @@ async def _chat_aliyun(message: str, history: List[Dict], config: Dict) -> str:
         logger.error(f"Aliyun chat error: {e}")
         return f"抱歉，出现错误：{str(e)}"
 
-async def _chat_openai(message: str, history: List[Dict], config: Dict) -> str:
+async def _chat_openai(message: str, history: List[Dict], chat_config) -> str:
     """OpenAI 对话"""
     try:
         from openai import OpenAI
-        
-        api_key = config.get("openai", {}).get("api_key")
+
+        api_key = chat_config.openai.api_key
         if not api_key:
             api_key = os.environ.get("OPENAI_API_KEY")
-        
+
         if not api_key:
             raise ValueError("OpenAI API Key not configured")
-        
+
         client = OpenAI(api_key=api_key)
-        base_url = config.get("openai", {}).get("base_url")
+        base_url = chat_config.openai.base_url
         if base_url:
             client.base_url = base_url
-        
-        model = config.get("model", "gpt-3.5-turbo")
-        
+
+        model = chat_config.openai.model
+
         messages = [{"role": "system", "content": "你是一个家庭助手。"}] + history
         
         response = client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=config.get("temperature", 0.7),
-            max_tokens=config.get("max_tokens", 2048)
+            temperature=chat_config.temperature,
+            max_tokens=chat_config.max_tokens
         )
         
         return response.choices[0].message.content
@@ -160,20 +162,20 @@ async def _chat_openai(message: str, history: List[Dict], config: Dict) -> str:
         logger.error(f"OpenAI chat error: {e}")
         return f"抱歉，出现错误：{str(e)}"
 
-async def _chat_anthropic(message: str, history: List[Dict], config: Dict) -> str:
+async def _chat_anthropic(message: str, history: List[Dict], chat_config) -> str:
     """Anthropic Claude 对话"""
     try:
         from anthropic import Anthropic
-        
-        api_key = config.get("anthropic", {}).get("api_key")
+
+        api_key = chat_config.anthropic.api_key
         if not api_key:
             api_key = os.environ.get("ANTHROPIC_API_KEY")
-        
+
         if not api_key:
             raise ValueError("Anthropic API Key not configured")
-        
+
         client = Anthropic(api_key=api_key)
-        
+
         # 转换历史格式
         messages = []
         for msg in history:
@@ -181,10 +183,10 @@ async def _chat_anthropic(message: str, history: List[Dict], config: Dict) -> st
                 messages.append({"role": "user", "content": msg["content"]})
             elif msg["role"] == "assistant":
                 messages.append({"role": "assistant", "content": msg["content"]})
-        
+
         response = client.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=config.get("max_tokens", 2048),
+            model=chat_config.anthropic.model,
+            max_tokens=chat_config.max_tokens,
             messages=messages
         )
         
@@ -194,14 +196,14 @@ async def _chat_anthropic(message: str, history: List[Dict], config: Dict) -> st
         logger.error(f"Anthropic chat error: {e}")
         return f"抱歉，出现错误：{str(e)}"
 
-async def _chat_ollama(message: str, history: List[Dict], config: Dict) -> str:
+async def _chat_ollama(message: str, history: List[Dict], chat_config) -> str:
     """Ollama 本地模型对话"""
     try:
         import requests
-        
-        base_url = config.get("ollama", {}).get("base_url", "http://localhost:11434")
-        model = config.get("ollama", {}).get("model", "qwen2.5:7b")
-        
+
+        base_url = chat_config.ollama.base_url
+        model = chat_config.ollama.model
+
         # 构建 prompt
         prompt = "\n".join([f"{m['role']}: {m['content']}" for m in history])
         prompt += f"\nuser: {message}\nassistant: "
@@ -222,18 +224,6 @@ async def _chat_ollama(message: str, history: List[Dict], config: Dict) -> str:
     except Exception as e:
         logger.error(f"Ollama chat error: {e}")
         return f"抱歉，出现错误：{str(e)}"
-
-def _get_config() -> Dict:
-    """获取配置（从主配置加载）"""
-    # TODO: 从主配置加载
-    return {
-        "ai_chat": {
-            "provider": "aliyun",
-            "aliyun": {
-                "api_key": os.environ.get("DASHSCOPE_API_KEY", "")
-            }
-        }
-    }
 
 def get_session_history(session_id: str) -> List[Dict]:
     """获取会话历史"""
