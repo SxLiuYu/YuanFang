@@ -83,13 +83,7 @@ jobs:
 
     - name: Create Release
       if: github.ref == 'refs/heads/master' && success()
-      uses: ncipollo/release-action@v4
-      with:
-        name: "Release ${{ github.run_number }}"
-        tag: "v${{ github.run_number }}"
-        artifacts: '*.apk'
-        artifactErrorsFatal: true
-        draft: false
-        prerelease: false
+      run: |
+        gh release create "v${{ github.run_number }}" *.apk --repo SxLiuYu/YuanFang --title "Release ${{ github.run_number }}" --notes "Auto-generated release from build ${{ github.run_number }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
