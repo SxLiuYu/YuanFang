@@ -30,24 +30,13 @@ jobs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           openclaw-clients/android/.gradle
-        key: ${{ runner.os }}-gradle-v3-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        key: ${{ runner.os }}-gradle-v4-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
-          ${{ runner.os }}-gradle-v3-
-
-    - name: Fix Gradle Wrapper
-      run: |
-        cd openclaw-clients/android
-        chmod +x gradlew
-        rm -f gradle/wrapper/gradle-wrapper.jar
-        curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar
-        # Verify download
-        size=$(stat -f%z gradle/wrapper/gradle-wrapper.jar 2>/dev/null || stat -c%s gradle/wrapper/gradle-wrapper.jar 2>/dev/null)
-        echo "gradle-wrapper.jar size: $size bytes"
-        if [ "$size" -lt 50000 ]; then echo "ERROR: gradle-wrapper.jar too small"; exit 1; fi
+          ${{ runner.os }}-gradle-
 
     - name: Build with Gradle wrapper
       working-directory: openclaw-clients/android
-      run: ./gradlew assembleDebug --no-daemon --build-cache --stacktrace
+      run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --build-cache
 
     - name: Rename APK with timestamp
       run: |
