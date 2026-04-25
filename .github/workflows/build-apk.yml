@@ -69,11 +69,10 @@ jobs:
         path: 'gradle-output.log'
         retention-days: 3
 
-    - name: Rename APK with timestamp
+    - name: Rename APK
       run: |
-        TIMESTAMP=$(date +%Y%m%d_%H%M)
-        cp openclaw-clients/android/app/build/outputs/apk/debug/app-debug.apk OpenClawHomeAssistant_${TIMESTAMP}.apk 2>/dev/null || true
-        ls -la *.apk 2>/dev/null || echo "No APK produced"
+        cp openclaw-clients/android/app/build/outputs/apk/debug/app-debug.apk ./OpenClawHomeAssistant.apk
+        ls -la *.apk
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
@@ -83,7 +82,24 @@ jobs:
 
     - name: Create Release
       if: github.ref == 'refs/heads/master' && success()
-      run: |
-        gh release create "v${{ github.run_number }}" *.apk --repo SxLiuYu/YuanFang --title "Release ${{ github.run_number }}" --notes "Auto-generated release from build ${{ github.run_number }}"
+      id: create_release
+      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: Release ${{ github.run_number }}
+        draft: false
+        prerelease: false
+        body: "Auto-generated release from build ${{ github.run_number }}"
+
+    - name: Upload Release Asset
+      if: github.ref == 'refs/heads/master' && success()
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./*.apk
+        asset_name: OpenClawHomeAssistant.apk
+        asset_content_type: application/vnd.android.package-archive
