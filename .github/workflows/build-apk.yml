@@ -30,9 +30,9 @@ jobs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           openclaw-clients/android/.gradle
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+        key: ${{ runner.os }}-gradle-v3-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
-          ${{ runner.os }}-gradle-
+          ${{ runner.os }}-gradle-v3-
 
     - name: Fix Gradle Wrapper
       run: |
@@ -40,12 +40,10 @@ jobs:
         chmod +x gradlew
         rm -f gradle/wrapper/gradle-wrapper.jar
         curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar
-        # Keep the existing gradle-wrapper.properties (it's already 8.5 which matches AGP 8.2.2)
-
-    - name: Setup Chinese mirrors for faster downloads
-      run: |
-        mkdir -p openclaw-clients/android/gradle
-        cp openclaw-clients/android/init.gradle openclaw-clients/android/gradle/init.gradle
+        # Verify download
+        size=$(stat -f%z gradle/wrapper/gradle-wrapper.jar 2>/dev/null || stat -c%s gradle/wrapper/gradle-wrapper.jar 2>/dev/null)
+        echo "gradle-wrapper.jar size: $size bytes"
+        if [ "$size" -lt 50000 ]; then echo "ERROR: gradle-wrapper.jar too small"; exit 1; fi
 
     - name: Build with Gradle wrapper
       working-directory: openclaw-clients/android
