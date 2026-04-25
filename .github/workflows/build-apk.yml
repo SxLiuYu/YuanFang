@@ -34,6 +34,26 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
+    - name: Diagnostic - Verify Gradle wrapper
+      working-directory: openclaw-clients/android
+      run: |
+        chmod +x gradlew
+        echo "=== gradlew version ==="
+        ./gradlew --version 2>&1 || true
+        echo ""
+        echo "=== wrapper files ==="
+        ls -la gradle/wrapper/
+        echo ""
+        echo "=== wrapper properties ==="
+        cat gradle/wrapper/gradle-wrapper.properties
+        echo ""
+        echo "=== Java version ==="
+        java -version 2>&1
+        echo ""
+        echo "=== ANDROID_HOME ==="
+        echo "ANDROID_HOME=$ANDROID_HOME"
+        ls "$ANDROID_HOME" 2>&1 || true
+
     - name: Build with Gradle wrapper
       working-directory: openclaw-clients/android
       run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --build-cache
