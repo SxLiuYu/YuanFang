@@ -85,11 +85,13 @@ class AutomationViewModel @Inject constructor(private val repo: RulesRepository)
     fun addRule() {
         viewModelScope.launch {
             try {
-                repo.addRule(AutomationRule(
-                    id = "rule_${System.currentTimeMillis()}",
-                    name = "新规则",
-                    condition = RuleCondition(triggerType = "time"),
-                    actions = listOf(RuleAction(type = "notify"))
+                repo.addRule(
+                    AutomationRule(
+                        id = "rule_${System.currentTimeMillis()}",
+                        name = "新规则",
+                        condition = RuleCondition(triggerType = "time"),
+                        actions = listOf(RuleAction(type = "notify"))
+                    )
                 )
                 syncRules()
             } catch (_: Exception) { }
