@@ -30,7 +30,7 @@ jobs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           openclaw-clients/android/.gradle
-        key: ${{ runner.os }}-gradle-v4-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        key: ${{ runner.os }}-gradle-v5-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
 
