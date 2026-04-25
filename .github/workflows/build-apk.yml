@@ -30,7 +30,7 @@ jobs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           openclaw-clients/android/.gradle
-        key: ${{ runner.os }}-gradle-v5-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        key: ${{ runner.os }}-gradle-v6-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
 
@@ -58,7 +58,7 @@ jobs:
       working-directory: openclaw-clients/android
       run: |
         chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon --build-cache --stacktrace 2>&1 | tee ../gradle-output.log
+        ./gradlew assembleDebug --no-daemon --no-build-cache --stacktrace 2>&1 | tee ../gradle-output.log
         echo "Exit code: $?"
 
     - name: Upload build log on failure
